@@ -1,0 +1,202 @@
+﻿@model darooyab_rewrite.ViewModels.HomePageViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "مرجع اطلاعات دارویی";
+}
+
+<section class="home-slider-section" aria-label="بنرهای حمایت‌شده">
+    <div class="container">
+        <div class="home-carousel hero-carousel" data-home-carousel aria-label="بنرهای حمایت‌شده">
+            <div class="home-carousel-track" data-carousel-track tabindex="0">
+                <a class="hero-slide" href="https://abidipharma.com/?utm_source=darooyab&utm_medium=banner&utm_campaign=mainslider" target="_blank" rel="noopener noreferrer">
+                    <img src="~/images/home/slider/Artboard-Abidi.jpg" alt="آغاز هشتادمین سال فعالیت داروسازی دکتر عبیدی" width="2000" height="600" loading="lazy" />
+                </a>
+                <a class="hero-slide" href="https://www.darooyab.ir/App" target="_blank" rel="noopener noreferrer">
+                    <img src="~/images/home/slider/banner3.jpg" alt="معرفی اپلیکیشن دارویاب" width="2000" height="600" loading="lazy" />
+                </a>
+                <a class="hero-slide" href="https://www.actoverco.com/" target="_blank" rel="noopener noreferrer">
+                    <img src="~/images/home/slider/banner2.jpg" alt="اطلاعیه‌ی شرکت دارویی اکتوور" width="2000" height="600" loading="lazy" />
+                </a>
+                <a class="hero-slide" href="https://www.darooyab.ir/page?Id=110" target="_blank" rel="noopener noreferrer">
+                    <img src="~/images/home/slider/banner1.jpg" alt="اطلاع‌رسانی درباره‌ی اتصال داروخانه به دارویاب" width="2000" height="600" loading="lazy" />
+                </a>
+            </div>
+            <div class="carousel-controls" aria-label="کنترل اسلایدر">
+                <button class="carousel-arrow" type="button" data-carousel-next aria-label="نمایش بنر بعدی">‹</button>
+                <button class="carousel-arrow" type="button" data-carousel-previous aria-label="نمایش بنر قبلی">›</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="updates-section section-space">
+    <div class="container">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">مجله دارویاب</span>
+                <h2>تازه‌ترین مطالب دارویی</h2>
+                <p>آخرین خبرها و مطالب منتخب را از پایگاه اطلاعات دارویاب دنبال کنید.</p>
+            </div>
+            @if (!Model.NewsUnavailable && Model.LatestNews.Count > 0)
+            {
+                <div class="carousel-controls carousel-controls-inline" data-carousel-controls="latest-news" aria-label="کنترل آخرین مطالب">
+                    <button class="carousel-arrow" type="button" data-carousel-next aria-label="نمایش مطلب بعدی">‹</button>
+                    <button class="carousel-arrow" type="button" data-carousel-previous aria-label="نمایش مطلب قبلی">›</button>
+                </div>
+            }
+        </div>
+        @if (Model.NewsUnavailable)
+        {
+            <div class="news-state news-state-error" role="status">
+                <span class="updates-icon" aria-hidden="true">!</span>
+                <div>
+                    <strong>دریافت مطالب در حال حاضر امکان‌پذیر نیست</strong>
+                    <p>اتصال به پایگاه اطلاعات برقرار نشد. کمی بعد دوباره تلاش کنید.</p>
+                </div>
+            </div>
+        }
+        else if (Model.LatestNews.Count == 0)
+        {
+            <div class="news-state" role="status">
+                <span class="updates-icon" aria-hidden="true">▤</span>
+                <div>
+                    <strong>هنوز مطلبی برای نمایش وجود ندارد</strong>
+                    <p>مطالب تازه‌ی دارویی پس از انتشار در این بخش قرار می‌گیرند.</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="home-carousel news-carousel" data-home-carousel="latest-news">
+                <div class="home-carousel-track news-track" data-carousel-track tabindex="0" aria-label="آخرین مطالب دارویی">
+                    @foreach (var news in Model.LatestNews)
+                    {
+                        <article class="news-card">
+                            <a class="news-card-link" asp-route="NewsApp/{id}" asp-route-articleId="@news.Id">
+                                @if (!string.IsNullOrWhiteSpace(news.ImageUrl))
+                                {
+                                    <img class="news-card-image" src="@news.ImageUrl" alt="" loading="lazy" width="480" height="320" />
+                                }
+                                else
+                                {
+                                    <div class="news-card-image news-card-placeholder" aria-hidden="true">دارویاب</div>
+                                }
+                                <span class="news-card-content">
+                                    <span class="news-card-title">@news.Title</span>
+                                    @if (!string.IsNullOrWhiteSpace(news.SubTitle))
+                                    {
+                                        <span class="news-card-subtitle">@news.SubTitle</span>
+                                    }
+                                    <span class="news-card-meta">
+                                        <span>ادامه‌ی مطلب</span>
+                                        @if (!string.IsNullOrWhiteSpace(news.PersianShowDate))
+                                        {
+                                            <time>@news.PersianShowDate</time>
+                                        }
+                                    </span>
+                                </span>
+                            </a>
+                        </article>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="company-intro-section section-space" aria-labelledby="company-intro-title">
+    <div class="container">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">معرفی حمایت‌شده</span>
+                <h2 id="company-intro-title">معرفی محصولات شرکت‌های دارویی</h2>
+                <p>محتوای معرفی محصول با محتوای تحریریه‌ای سایت تفکیک شده است.</p>
+            </div>
+            <div class="carousel-controls carousel-controls-inline" data-carousel-controls="company-intro" aria-label="کنترل معرفی‌های حمایت‌شده">
+                <button class="carousel-arrow" type="button" data-carousel-next aria-label="نمایش معرفی بعدی">‹</button>
+                <button class="carousel-arrow" type="button" data-carousel-previous aria-label="نمایش معرفی قبلی">›</button>
+            </div>
+        </div>
+        <div class="home-carousel product-intro-carousel" data-home-carousel="company-intro">
+            <div class="home-carousel-track intro-track" data-carousel-track tabindex="0">
+                <a class="intro-slide" href="https://www.darooyab.ir/G-788/Desloratadine" target="_blank" rel="noopener noreferrer">
+                    <img src="~/images/home/company-intro/BEHNITIS.jpg" alt="معرفی محصول بهنیتیس" loading="lazy" width="850" height="850" />
+                </a>
+                <a class="intro-slide" href="https://www.darooyab.ir/B-7927592018339223/TEDAPRID-4-mg-Tablet" target="_blank" rel="noopener noreferrer">
+                    <img src="~/images/home/company-intro/TEDAPRID.png" alt="معرفی محصول تدپرید" loading="lazy" width="451" height="451" />
+                </a>
+                <a class="intro-slide" href="https://www.darooyab.ir/News/112" target="_blank" rel="noopener noreferrer">
+                    <img src="~/images/home/company-intro/anidarman.jpg" alt="معرفی محصولات شرکت انی درمان" loading="lazy" width="400" height="322" />
+                </a>
+                <a class="intro-slide" href="https://www.darooyab.ir/NewsApp/202" target="_blank" rel="noopener noreferrer">
+                    <img src="~/images/home/company-intro/BEHFORGE.jpg" alt="معرفی محصولات بهفورژ" loading="lazy" width="850" height="850" />
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="product-section section-space" aria-label="معرفی محصولات دارویی">
+    <div class="container">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">محتوای حمایت‌شده</span>
+                <h2>معرفی محصولات</h2>
+            </div>
+        </div>
+        <div class="promotion-grid">
+            <div class="promotion-card">
+                <img src="~/images/home/promotions/dastgah.webp" alt="معرفی فرآورده‌ی دارویی دانش‌بنیان" width="1000" height="380" loading="lazy" />
+            </div>
+            <div class="promotion-card">
+                <img src="~/images/home/promotions/appetaminKids-Banner.webp" alt="معرفی محصول اپتامیلین کیدز" width="1000" height="380" loading="lazy" />
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="companies-section">
+    <div class="container">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">شبکه‌ی صنعت دارو</span>
+                <h2>شرکت‌های داروسازی</h2>
+            </div>
+        </div>
+        <div class="company-logo-grid" aria-label="شرکت‌های داروسازی">
+            <div class="company-logo-card"><img src="~/images/home/companies/actover.png" alt="شرکت اکتوور" loading="lazy" width="180" height="100" /></div>
+            <div class="company-logo-card"><img src="~/images/home/companies/behestan-logo.png" alt="شرکت بهستان" loading="lazy" width="180" height="100" /></div>
+            <div class="company-logo-card"><img src="~/images/home/companies/Tehranshimi.png" alt="شرکت تهران شیمی" loading="lazy" width="180" height="100" /></div>
+            <div class="company-logo-card"><img src="~/images/home/companies/abidi.png" alt="شرکت داروسازی دکتر عبیدی" loading="lazy" width="180" height="100" /></div>
+            <div class="company-logo-card"><img src="~/images/home/companies/sinajen.png" alt="شرکت سیناژن" loading="lazy" width="180" height="100" /></div>
+            <div class="company-logo-card"><img src="~/images/home/companies/ashba-logo.png" alt="شرکت اشبال شیمی" loading="lazy" width="180" height="100" /></div>
+        </div>
+    </div>
+</section>
+
+<section class="app-section section-space">
+    <div class="container">
+        <div class="app-section-heading">
+            <span class="section-kicker">جامعه‌ی پزشکی دارویاب</span>
+            <h2>اپلیکیشن دارویاب، همراه اطلاعات دارویی</h2>
+            <p>همراه حرفه‌ای‌های سلامت در جست‌وجو و پیگیری اطلاعات دارویی.</p>
+        </div>
+        <div class="app-card">
+            <div class="app-mark" aria-hidden="true">
+                <span class="app-mark-cross">+</span>
+                <span class="app-mark-dot"></span>
+            </div>
+            <div class="app-copy">
+                <span class="section-kicker">اپلیکیشن دارویاب</span>
+                <h2>اطلاعات دارویی را همیشه همراه داشته باشید</h2>
+                <p>اپلیکیشن دارویاب برای جامعه‌ی پزشکی و کاربران حوزه‌ی سلامت.</p>
+            </div>
+            <a class="btn btn-primary" href="https://www.darooyab.ir/App" target="_blank" rel="noopener noreferrer">آشنایی با اپلیکیشن <span aria-hidden="true">←</span></a>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/scroll-carousel.js" asp-append-version="true"></script>
+    <script src="~/js/homepage.js" asp-append-version="true"></script>
+}

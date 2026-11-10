@@ -1,0 +1,177 @@
+@model darooyab_rewrite.ViewModels.DoctorProfileViewModel
+@using DNTPersianUtils.Core
+@using System.Globalization
+
+@{
+    var isMidwife = Model.ActivityId is 9 or 11;
+    var profileType = isMidwife
+        ? string.Empty
+        : string.IsNullOrWhiteSpace(Model.ActivityTitle) ? "کاربر" : "دکتر";
+    var displayName = string.IsNullOrWhiteSpace(profileType)
+        ? $"{Model.Name} {Model.Family}"
+        : $"{profileType} {Model.Name} {Model.Family}";
+}
+
+<section class="doctor-profile" aria-labelledby="doctor-profile-title">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+            <li class="breadcrumb-item"><a asp-route="HealthcareProfessionalsIndex">فهرست متخصصان سلامت</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@displayName</li>
+        </ol>
+    </nav>
+
+    <header class="doctor-profile-hero">
+        <div class="doctor-profile-identity">
+            @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+            {
+                <img class="doctor-profile-image" src="@Model.ImageUrl" alt="تصویر @displayName" />
+            }
+            else
+            {
+                <span class="doctor-profile-avatar" aria-hidden="true">✚</span>
+            }
+            <div>
+                <span class="section-kicker">پروفایل دارویاب</span>
+                <h1 id="doctor-profile-title">@displayName</h1>
+                @if (!string.IsNullOrWhiteSpace(Model.ActivityTitle))
+                {
+                    <p class="doctor-profile-activity">@Model.ActivityTitle</p>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.SystemNumber))
+                {
+                    <p class="doctor-profile-system-number">
+                        شماره نظام پزشکی: @Model.SystemNumber.ToPersianNumbers()
+                    </p>
+                }
+                <p class="doctor-profile-intro">
+                    آشنایی با تخصص‌ها و نشانی @(Model.ActivityId == 9 ? string.Empty : "مطب")
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <div class="doctor-profile-grid">
+        <section class="doctor-profile-panel" aria-labelledby="doctor-qualifications-title">
+            <h2 id="doctor-qualifications-title">سوابق و تخصص‌ها</h2>
+            @if (!string.IsNullOrWhiteSpace(Model.Specialty))
+            {
+                <div class="doctor-qualification">
+                    <span>تخصص</span>
+                    <strong>@Model.Specialty</strong>
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.SubSpecialty))
+            {
+                <div class="doctor-qualification">
+                    <span>فوق تخصص</span>
+                    <strong>@Model.SubSpecialty</strong>
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Fellowship))
+            {
+                <div class="doctor-qualification">
+                    <span>فلوشیپ</span>
+                    <strong>@Model.Fellowship</strong>
+                </div>
+            }
+            @if (string.IsNullOrWhiteSpace(Model.Specialty) &&
+                 string.IsNullOrWhiteSpace(Model.SubSpecialty) &&
+                 string.IsNullOrWhiteSpace(Model.Fellowship))
+            {
+                <p class="doctor-profile-empty">اطلاعات تخصصی ثبت نشده است.</p>
+            }
+        </section>
+
+        <section class="doctor-profile-panel" aria-labelledby="doctor-addresses-title">
+            <h2 id="doctor-addresses-title">نشانی‌ها</h2>
+            @if (Model.Addresses.Count == 0)
+            {
+                <p class="doctor-profile-empty">نشانی معتبری برای این متخصص ثبت نشده است.</p>
+            }
+            else
+            {
+                <div class="doctor-profile-addresses">
+                    @foreach (var address in Model.Addresses)
+                    {
+                        <article class="doctor-profile-address">
+                            <h3>@address.Type</h3>
+                            <p>
+                                @if (!string.IsNullOrWhiteSpace(address.Province))
+                                {
+                                    @address.Province
+                                }
+                                @if (!string.IsNullOrWhiteSpace(address.City))
+                                {
+                                    @:، @address.City
+                                }
+                                @if (!string.IsNullOrWhiteSpace(address.Province) ||
+                                     !string.IsNullOrWhiteSpace(address.City))
+                                {
+                                    @:، 
+                                }
+                                @address.Address
+                            </p>
+                            @if (!string.IsNullOrWhiteSpace(address.PostalCode) ||
+                                 !string.IsNullOrWhiteSpace(address.Phone1) ||
+                                 !string.IsNullOrWhiteSpace(address.Phone2))
+                            {
+                                <div class="doctor-profile-contact">
+                                    @if (!string.IsNullOrWhiteSpace(address.PostalCode))
+                                    {
+                                        <span>کد پستی: @address.PostalCode.ToPersianNumbers()</span>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(address.Phone1))
+                                    {
+                                        <a href="tel:@address.Phone1">@address.Phone1</a>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(address.Phone2))
+                                    {
+                                        <a href="tel:@address.Phone2">@address.Phone2</a>
+                                    }
+                                </div>
+                            }
+                            @if (address.HasCoordinates)
+                            {
+                                var latitude = address.Latitude!.Value.ToString(CultureInfo.InvariantCulture);
+                                var longitude = address.Longitude!.Value.ToString(CultureInfo.InvariantCulture);
+                                var coordinates = $"{latitude},{longitude}";
+                                <details class="doctor-route-picker">
+                                    <summary>انتخاب برنامهٔ مسیریابی</summary>
+                                    <div class="doctor-route-options">
+                                        <a data-map-app href="https://nshn.ir/?lat=@latitude&amp;lng=@longitude" target="_blank" rel="noopener noreferrer">نشان</a>
+                                        <a data-map-app href="https://www.google.com/maps/dir/?api=1&amp;destination=@coordinates&amp;travelmode=driving" target="_blank" rel="noopener noreferrer">Google Maps</a>
+                                        <a data-map-app href="https://maps.apple.com/?daddr=@coordinates&amp;dirflg=d" target="_blank" rel="noopener noreferrer">Apple Maps</a>
+                                        <a data-map-app href="https://waze.com/ul?ll=@coordinates&amp;navigate=yes" target="_blank" rel="noopener noreferrer">Waze</a>
+                                        <a class="doctor-android-route" href="geo:@coordinates?q=@coordinates">بازکردن با برنامهٔ نقشه</a>
+                                    </div>
+                                </details>
+                            }
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        (() => {
+            const userAgent = navigator.userAgent || "";
+            const isAndroid = /Android/i.test(userAgent);
+            const isIOS = /iPad|iPhone|iPod/i.test(userAgent) ||
+                (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+            if (isAndroid) {
+                document.querySelectorAll(".doctor-android-route")
+                    .forEach(option => option.classList.add("is-visible"));
+            }
+
+            if (isAndroid || isIOS) {
+                document.querySelectorAll(".doctor-profile [data-map-app]")
+                    .forEach(link => link.removeAttribute("target"));
+            }
+        })();
+    </script>
+}

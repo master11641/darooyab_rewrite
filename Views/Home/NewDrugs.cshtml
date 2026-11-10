@@ -1,0 +1,101 @@
+@model darooyab_rewrite.ViewModels.NewDrugPageViewModel
+@{
+    Layout = "_LayoutWithRightPanel";
+    ViewData["Title"] = "تازه‌های دارویی";
+    ViewData["OpenGraphTitle"] = "تازه‌های دارویی";
+    ViewData["OpenGraphDescription"] = ViewData["MetaDescription"];
+    ViewData["OpenGraphUrl"] = ViewData["CanonicalUrl"];
+}
+
+<section class="new-drugs-page container" aria-labelledby="new-drugs-title">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+            <li class="breadcrumb-item active" aria-current="page">تازه‌های دارویی</li>
+        </ol>
+    </nav>
+
+    <header class="new-drugs-heading">
+        <span class="section-kicker">پایگاه اطلاعات دارویی</span>
+        <h1 id="new-drugs-title">تازه‌های دارویی</h1>
+        <p>داروهای تازه‌افزوده‌شده به فهرست دارویاب را ببینید.</p>
+    </header>
+
+    @if (Model.DataUnavailable)
+    {
+        <div class="new-drugs-state new-drugs-state-error" role="alert">
+            دریافت تازه‌های دارویی در حال حاضر ممکن نیست. لطفاً کمی بعد دوباره تلاش کنید.
+        </div>
+    }
+    else if (Model.PagedDrugs.TotalCount == 0)
+    {
+        <div class="new-drugs-state" role="status">
+            در حال حاضر داروی تازه‌ای برای نمایش پیدا نشد.
+        </div>
+    }
+    else
+    {
+        <p class="new-drugs-count">@Model.PagedDrugs.TotalCount مورد</p>
+        <div class="new-drugs-list">
+            @foreach (var drug in Model.Items)
+            {
+                var brandUrl = Url.RouteUrl(
+                    "BrandInfo",
+                    new
+                    {
+                        IRC = drug.Irc,
+                        BrandEngName = darooyab_rewrite.Routing.DrugUrl.CreateSlug(drug.EnglishName)
+                    });
+                var genericUrl = Url.RouteUrl(
+                    "G-{DrugId}/{EngGenericName}",
+                    new
+                    {
+                        DrugId = drug.DrugId,
+                        EngGenericName = darooyab_rewrite.Routing.DrugUrl.CreateSlug(drug.GenericEnglishName)
+                    });
+
+                <article class="new-drug-card">
+                    <div class="new-drug-card-media">
+                        @if (!string.IsNullOrWhiteSpace(drug.ImageUrl))
+                        {
+                            <img src="@Url.Content(drug.ImageUrl)"
+                                 alt=""
+                                 loading="lazy"
+                                 decoding="async" />
+                        }
+                        else
+                        {
+                            <span class="new-drug-image-placeholder">تصویر در دسترس نیست</span>
+                        }
+                    </div>
+
+                    <div class="new-drug-card-content">
+                        <h2><a href="@brandUrl">@drug.PersianName</a></h2>
+                        @if (!string.IsNullOrWhiteSpace(drug.GenericPersianName))
+                        {
+                            <p>
+                                <strong>اجزای فرآورده / نام ژنریک:</strong>
+                                <a href="@genericUrl">@drug.GenericPersianName</a>
+                            </p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(drug.TherapeuticApplication))
+                        {
+                            <p><strong>کاربرد درمانی:</strong> @drug.TherapeuticApplication</p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(drug.FactoryName))
+                        {
+                            <p><strong>تولیدکننده:</strong> @drug.FactoryName</p>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+
+        @await Html.PartialAsync("_Pagination", new darooyab_rewrite.ViewModels.PaginationViewModel(
+            Model.PagedDrugs.PageNumber,
+            Model.PagedDrugs.TotalPages,
+            "NewDrugs",
+            "page",
+            new Dictionary<string, string>()))
+    }
+</section>

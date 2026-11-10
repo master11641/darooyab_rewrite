@@ -1,0 +1,41 @@
+﻿@model darooyab_rewrite.ViewModels.SiteSectionViewModel
+@{
+    Layout = "_InnerLayout";
+}
+
+<div class="section-state">
+    @if (Model.Article is not null)
+    {
+        @if (!string.IsNullOrWhiteSpace(Model.Article.ImageUrl))
+        {
+            <img class="article-image" src="@Model.Article.ImageUrl" alt="" />
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.Article.PersianShowDate))
+        {
+            <time class="article-date">@Model.Article.PersianShowDate</time>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.Article.SubTitle))
+        {
+            <p class="article-subtitle">@Model.Article.SubTitle</p>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.Article.Description))
+        {
+            <div class="article-description">@Html.Raw(Model.Article.Description)</div>
+        }
+        <a class="btn btn-primary mt-4" asp-controller="Home" asp-action="Index">بازگشت به صفحه‌ی نخست</a>
+    }
+    else
+    {
+    <span class="state-eyebrow">@Model.Eyebrow</span>
+    <span class="state-icon" aria-hidden="true">@Model.Icon</span>
+    <h2>@Model.Title</h2>
+    <p>@Model.Description</p>
+    @if (!string.IsNullOrWhiteSpace(Model.Query))
+    {
+        <p class="query-note">عبارت «@Model.Query» دریافت شد؛ جست‌وجوی زنده پس از اتصال پایگاه داده فعال می‌شود.</p>
+    }
+    <div class="state-divider"></div>
+    <p class="state-footnote">در این مرحله، ساختار صفحه آماده شده است. اتصال این بخش به داده‌های دارویاب در گام بعد انجام می‌شود.</p>
+    <a class="btn btn-primary" asp-controller="Home" asp-action="Index">بازگشت به صفحه‌ی نخست</a>
+    }
+</div>

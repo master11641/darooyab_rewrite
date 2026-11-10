@@ -1,0 +1,197 @@
+@model darooyab_rewrite.ViewModels.DrugGroupDetailsViewModel
+
+<section class="drug-groups-page" aria-labelledby="drug-group-title">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb drug-group-breadcrumb">
+            <li class="breadcrumb-item"><a href="/">خانه</a></li>
+            @if (Model.IsHerbalPlants)
+            {
+                <li class="breadcrumb-item active" aria-current="page">گیاهان دارویی</li>
+            }
+            else
+            {
+                <li class="breadcrumb-item"><a href="/DrugGroups">طبقه‌بندی مارتیندل</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.Group.PersianName</li>
+            }
+        </ol>
+    </nav>
+
+    <header class="drug-groups-heading drug-group-details-heading">
+        <p class="drug-groups-kicker">
+            @(Model.IsHerbalMedicines
+                ? "فهرست داروهای گیاهی"
+                : Model.IsHerbalPlants ? "فهرست گیاهان دارویی" : "گروه دارویی مارتیندل")
+        </p>
+        <h1 id="drug-group-title">@Model.Group.PersianName</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.Group.EnglishName))
+        {
+            <p class="drug-group-title-en" lang="en" dir="ltr">@Model.Group.EnglishName</p>
+        }
+    </header>
+
+    @if (Model.DataUnavailable)
+    {
+        <div class="drug-groups-state drug-groups-state-error" role="alert">
+            @(Model.IsHerbalPlants
+                ? "دریافت فهرست گیاهان دارویی در حال حاضر ممکن نیست. لطفاً بعداً دوباره تلاش کنید."
+                : "دریافت داروهای این گروه در حال حاضر ممکن نیست. لطفاً بعداً دوباره تلاش کنید.")
+        </div>
+    }
+    else if (Model.Drugs.Count == 0)
+    {
+        <div class="drug-groups-state" role="status">دارویی برای این گروه ثبت نشده است.</div>
+    }
+    else
+    {
+        <div class="drug-group-desktop">
+            <div class="table-responsive">
+                <table class="drug-group-table @(Model.IsHerbalMedicines ? "drug-group-herbal-table" : string.Empty)">
+                    <thead>
+                        <tr>
+                            <th scope="col">ردیف</th>
+                            <th scope="col">تصویر</th>
+                            @if (Model.IsHerbalMedicines)
+                            {
+                                <th scope="col">نام انگلیسی برند</th>
+                                <th scope="col">نام فارسی برند</th>
+                                <th scope="col">تولیدکننده</th>
+                            }
+                            else if (Model.IsHerbalPlants)
+                            {
+                                <th scope="col">نام گیاه</th>
+                                <th scope="col">نام علمی گیاه</th>
+                            }
+                            else
+                            {
+                                <th scope="col">نام ژنریک (فارسی)</th>
+                                <th scope="col">نام ژنریک (انگلیسی)</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var index = 0; index < Model.Drugs.Count; index++)
+                        {
+                            var drug = Model.Drugs[index];
+                            var drugUrl = Model.IsHerbalMedicines && drug.Irc.HasValue
+                                ? $"/B-{drug.Irc.Value}/{darooyab_rewrite.Routing.DrugUrl.CreateSlug(drug.EnglishName)}"
+                                : $"/G-{drug.DrugId}/{darooyab_rewrite.Routing.DrugUrl.CreateSlug(drug.EnglishName)}";
+                            <tr>
+                                <td class="drug-group-row-number">@(index + 1)</td>
+                                <td>
+                                    <a class="drug-group-image-link" href="@drugUrl" aria-label="مشاهده اطلاعات @drug.EnglishName">
+                                        @if (!string.IsNullOrWhiteSpace(drug.ImageUrl))
+                                        {
+                                            <img class="drug-group-image" src="@drug.ImageUrl.Replace("~", string.Empty)"
+                                                 alt="@(drug.PersianName ?? drug.EnglishName)" loading="lazy" />
+                                        }
+                                        else
+                                        {
+                                            <span class="drug-group-image-placeholder">بدون تصویر</span>
+                                        }
+                                    </a>
+                                </td>
+                                @if (Model.IsHerbalMedicines)
+                                {
+                                    <td>
+                                        <a class="drug-group-drug-link drug-group-drug-name-en" href="@drugUrl" lang="en" dir="ltr">@drug.EnglishName</a>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(drug.PersianName))
+                                        {
+                                            <a class="drug-group-drug-link drug-group-drug-name-fa" href="@drugUrl">@drug.PersianName</a>
+                                        }
+                                        else
+                                        {
+                                            <span class="drug-group-missing-value">نام فارسی ثبت نشده</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(drug.ManufacturerName))
+                                        {
+                                            <span>@drug.ManufacturerName</span>
+                                        }
+                                    </td>
+                                }
+                                else if (Model.IsHerbalPlants)
+                                {
+                                    <td>
+                                        <a class="drug-group-drug-link drug-group-drug-name-fa" href="@drugUrl">@drug.PersianName</a>
+                                    </td>
+                                    <td>
+                                        <a class="drug-group-drug-link drug-group-drug-name-en" href="@drugUrl" lang="en" dir="ltr">@drug.EnglishName</a>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td>
+                                        <a class="drug-group-drug-link drug-group-drug-name-fa" href="@drugUrl">@drug.PersianName</a>
+                                    </td>
+                                    <td>
+                                        <a class="drug-group-drug-link drug-group-drug-name-en" href="@drugUrl" lang="en" dir="ltr">@drug.EnglishName</a>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <ol class="drug-group-mobile-list">
+            @for (var index = 0; index < Model.Drugs.Count; index++)
+            {
+                var drug = Model.Drugs[index];
+                var drugUrl = Model.IsHerbalMedicines && drug.Irc.HasValue
+                    ? $"/B-{drug.Irc.Value}/{darooyab_rewrite.Routing.DrugUrl.CreateSlug(drug.EnglishName)}"
+                    : $"/G-{drug.DrugId}/{darooyab_rewrite.Routing.DrugUrl.CreateSlug(drug.EnglishName)}";
+                <li class="drug-group-mobile-card">
+                    <a class="drug-group-mobile-image-link" href="@drugUrl" aria-label="مشاهده اطلاعات @drug.EnglishName">
+                        @if (!string.IsNullOrWhiteSpace(drug.ImageUrl))
+                        {
+                            <img src="@drug.ImageUrl.Replace("~", string.Empty)" alt="@(drug.PersianName ?? drug.EnglishName)" loading="lazy" />
+                        }
+                        else
+                        {
+                            <span class="drug-group-image-placeholder">بدون تصویر</span>
+                        }
+                    </a>
+                    <div class="drug-group-mobile-names">
+                        <span class="drug-group-mobile-counter">@(index + 1)</span>
+                        @if (Model.IsHerbalMedicines)
+                        {
+                            <a class="drug-group-drug-name-en" href="@drugUrl" lang="en" dir="ltr">@drug.EnglishName</a>
+                            @if (!string.IsNullOrWhiteSpace(drug.PersianName))
+                            {
+                                <a class="drug-group-drug-name-fa" href="@drugUrl">@drug.PersianName</a>
+                            }
+                            else
+                            {
+                                <span class="drug-group-missing-value">نام فارسی ثبت نشده</span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(drug.ManufacturerName))
+                            {
+                                <span class="drug-group-manufacturer">تولیدکننده: @drug.ManufacturerName</span>
+                            }
+                        }
+                        else if (Model.IsHerbalPlants)
+                        {
+                            @if (!string.IsNullOrWhiteSpace(drug.PersianName))
+                            {
+                                <a class="drug-group-drug-name-fa" href="@drugUrl">@drug.PersianName</a>
+                            }
+                            <a class="drug-group-drug-name-en" href="@drugUrl" lang="en" dir="ltr">[@drug.EnglishName]</a>
+                        }
+                        else
+                        {
+                            @if (!string.IsNullOrWhiteSpace(drug.PersianName))
+                            {
+                                <a class="drug-group-drug-name-fa" href="@drugUrl">@drug.PersianName</a>
+                            }
+                            <a class="drug-group-drug-name-en" href="@drugUrl" lang="en" dir="ltr">@drug.EnglishName</a>
+                        }
+                    </div>
+                </li>
+            }
+        </ol>
+    }
+</section>

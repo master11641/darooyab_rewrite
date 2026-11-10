@@ -1,0 +1,399 @@
+@model darooyab_rewrite.ViewModels.BrandInfoPageViewModel
+@{
+    Layout = "_LayoutWithRightPanel";
+    ViewData["MetaDescription"] = ViewData["MetaDescription"] as string
+        ?? $"{Model.PersianName} | {Model.EnglishName}";
+    ViewData["DrugId"] = Model.DrugId;
+    var attributes = Model.Attributes;
+    var persianContent = !string.IsNullOrWhiteSpace(attributes?.PersianContent)
+        ? attributes.PersianContent
+        : Model.MartindaleGroupId is not (39 or 52 or 59)
+            ? Model.GenericUsageInformation
+            : null;
+    var hasBrandFacts = attributes is not null &&
+        (attributes.StorageTemperature is not null ||
+         attributes.IsOtc.HasValue ||
+         attributes.IsChemotherapy.HasValue ||
+         attributes.IsUnderSupervision.HasValue ||
+         attributes.IsHospital.HasValue ||
+         (attributes.Price is > 0 && attributes.PriceUnitNumber.HasValue));
+
+    string? GetSafeUrl(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        if (Url.IsLocalUrl(value))
+        {
+            return Url.Content(value);
+        }
+
+        return Uri.TryCreate(value, UriKind.Absolute, out var uri) &&
+            (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp)
+                ? uri.ToString()
+                : null;
+    }
+
+    string? GetImageUrl(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        if (value.StartsWith("~/", StringComparison.Ordinal))
+        {
+            return Url.Content(value);
+        }
+
+        if (value.StartsWith("/", StringComparison.Ordinal))
+        {
+            return value;
+        }
+
+        return GetSafeUrl(value);
+    }
+}
+
+<article class="brand-info-page">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb drug-breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Section" asp-route-id="drugs">اطلاعات دارویی</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.PersianName</li>
+        </ol>
+    </nav>
+
+    <header class="brand-info-header">
+        @if (!string.IsNullOrWhiteSpace(Model.ImporterName))
+        {
+            <p class="brand-info-company">@Model.ImporterName</p>
+        }
+        else if (!string.IsNullOrWhiteSpace(Model.ManufacturerName))
+        {
+            <p class="brand-info-company">@Model.ManufacturerName</p>
+        }
+        <h1>
+            @if (!string.IsNullOrWhiteSpace(Model.PersianName))
+            {
+                <span>@Model.PersianName</span>
+            }
+            else
+            {
+                <span>@Model.EnglishName</span>
+            }
+        </h1>
+        @if (!string.IsNullOrWhiteSpace(Model.PersianName))
+        {
+            <p class="brand-info-english" lang="en" dir="ltr">@Model.EnglishName</p>
+        }
+        @if (attributes is not null && GetSafeUrl(attributes.AdvertisingUrl) is string advertisingUrl)
+        {
+            <a class="brand-info-advertising-link" href="@advertisingUrl" target="_blank" rel="nofollow noopener noreferrer">
+                مشاهده‌ی معرفی برند
+            </a>
+        }
+    </header>
+
+    @if (attributes is not null && GetSafeUrl(attributes.ShopUrl) is string shopUrl)
+    {
+        <p class="brand-info-shop-link">
+            <a class="btn btn-primary" href="@shopUrl" target="_blank" rel="nofollow sponsored noopener noreferrer">
+                مشاهده‌ی فروشگاه
+            </a>
+        </p>
+    }
+
+    <section class="brand-info-section" aria-labelledby="brand-information-title">
+        <h2 id="brand-information-title">اطلاعات برند</h2>
+        <dl class="brand-info-facts">
+            @if (!string.IsNullOrWhiteSpace(Model.GenericName))
+            {
+                <div>
+                    <dt>اجزای فرآورده / نام ژنریک</dt>
+                    <dd>
+                        @if (!string.IsNullOrWhiteSpace(Model.GenericUrl))
+                        {
+                            <a href="@Model.GenericUrl">
+                                @(string.IsNullOrWhiteSpace(Model.GenericPersianName) ? Model.GenericName : Model.GenericPersianName)
+                            </a>
+                            <span class="brand-info-secondary" lang="en" dir="ltr">@Model.GenericName</span>
+                        }
+                        else
+                        {
+                            <span>@Model.GenericName</span>
+                        }
+                    </dd>
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.ManufacturerName))
+            {
+                <div>
+                    <dt>تولیدکننده</dt>
+                    <dd>
+                        @Model.ManufacturerName
+                        @if (!string.IsNullOrWhiteSpace(Model.CountryName))
+                        {
+                            <span class="brand-info-secondary">(@Model.CountryName)</span>
+                        }
+                    </dd>
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.ImporterName))
+            {
+                <div>
+                    <dt>واردکننده</dt>
+                    <dd>@Model.ImporterName</dd>
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.MartindaleName))
+            {
+                <div>
+                    <dt>گروه مارتیندل</dt>
+                    <dd>@Model.MartindaleName</dd>
+                </div>
+            }
+            @if (Model.AhfsPath.Count > 0)
+            {
+                <div>
+                    <dt>گروه درمانی</dt>
+                    <dd>@string.Join(" › ", Model.AhfsPath)</dd>
+                </div>
+            }
+            @if (attributes?.TherapeuticApplication is { Length: > 0 } therapeuticApplication)
+            {
+                <div class="brand-info-fact-wide">
+                    <dt>کاربرد درمانی</dt>
+                    <dd>@therapeuticApplication</dd>
+                </div>
+            }
+        </dl>
+    </section>
+
+    @if (hasBrandFacts)
+    {
+        <section class="brand-info-section" aria-labelledby="brand-attributes-title">
+            <h2 id="brand-attributes-title">ویژگی‌ها و شرایط نگهداری</h2>
+            <dl class="brand-info-facts">
+                @if (!string.IsNullOrWhiteSpace(attributes?.StorageTemperature))
+                {
+                    <div><dt>دمای نگهداری</dt><dd>@attributes.StorageTemperature</dd></div>
+                }
+                @if (attributes?.IsHospital is bool isHospital)
+                {
+                    <div><dt>داروی بیمارستانی</dt><dd>@(isHospital ? "بله" : "خیر")</dd></div>
+                }
+                @if (attributes?.IsChemotherapy is bool isChemotherapy)
+                {
+                    <div><dt>شیمی‌درمانی</dt><dd>@(isChemotherapy ? "بله" : "خیر")</dd></div>
+                }
+                @if (attributes?.IsUnderSupervision is bool isUnderSupervision)
+                {
+                    <div><dt>تحت نظارت</dt><dd>@(isUnderSupervision ? "بله" : "خیر")</dd></div>
+                }
+                @if (attributes?.IsOtc is bool isOtc)
+                {
+                    <div><dt>وضعیت نسخه</dt><dd>@(isOtc ? "بدون نسخه" : "نیازمند نسخه")</dd></div>
+                }
+                @if (attributes?.Price is decimal price && price > 0 &&
+                    attributes.PriceUnitNumber is byte priceUnit)
+                {
+                    <div>
+                        <dt>@(priceUnit == 1 ? "قیمت هر عدد" : priceUnit == 2 ? "قیمت هر بسته" : "قیمت")</dt>
+                        <dd>
+                            @price.ToString("N0") ریال
+                            @if (!string.IsNullOrWhiteSpace(attributes.PricePharmacyName))
+                            {
+                                <span class="brand-info-secondary">
+                                    (قیمت ثبت‌شده توسط داروخانه‌ی @attributes.PricePharmacyName
+                                    @if (!string.IsNullOrWhiteSpace(attributes.PriceCityName))
+                                    {
+                                        <text>، @attributes.PriceCityName</text>
+                                    })
+                                </span>
+                            }
+                        </dd>
+                    </div>
+                }
+            </dl>
+        </section>
+    }
+
+    @if (attributes is { Images.Count: > 0 })
+    {
+        <section class="brand-info-section" aria-labelledby="brand-images-title">
+            <h2 id="brand-images-title">تصاویر @Model.PersianName</h2>
+            <div class="brand-gallery">
+                @foreach (var image in attributes.Images)
+                {
+                    var imageUrl = GetImageUrl(image.Url);
+                    if (imageUrl is not null)
+                    {
+                        <img src="@imageUrl" alt="@image.AltText" loading="lazy" />
+                    }
+                }
+            </div>
+        </section>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(persianContent))
+    {
+        <nav id="brand-content-toc" class="drug-content-toc" aria-label="فهرست مطالب" hidden>
+            <div class="drug-content-toc-heading">
+                <span class="drug-content-toc-icon" aria-hidden="true">☷</span>
+                <div>
+                    <h2>فهرست مطالب</h2>
+                    <p>برای رفتن به هر بخش، عنوان آن را انتخاب کنید.</p>
+                </div>
+            </div>
+            <ol></ol>
+        </nav>
+        <section class="brand-info-section brand-info-rich-content brand-info-persian-content" aria-labelledby="brand-persian-content-title">
+            <h2 id="brand-persian-content-title">
+                @(attributes?.PersianContent is { Length: > 0 } ? $"اطلاعات {Model.PersianName}" : $"موارد مصرف {Model.PersianName}")
+            </h2>
+            @Html.Raw(persianContent)
+        </section>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(attributes?.EnglishContent))
+    {
+        <section class="brand-info-section brand-info-rich-content" aria-labelledby="brand-english-content-title">
+            <h2 id="brand-english-content-title" lang="en">Drug information for @Model.EnglishName</h2>
+            @Html.Raw(attributes.EnglishContent)
+        </section>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.ManufacturerLogoUrl) &&
+        GetImageUrl(Model.ManufacturerLogoUrl) is string manufacturerLogo)
+    {
+        <aside class="brand-manufacturer-card" aria-label="معرفی تولیدکننده">
+            <h2>@Model.ManufacturerName</h2>
+            @if (GetSafeUrl(Model.ManufacturerWebsiteUrl) is string manufacturerWebsite)
+            {
+                <a href="@manufacturerWebsite" target="_blank" rel="nofollow noopener noreferrer">
+                    <img src="@manufacturerLogo" alt="نشان @Model.ManufacturerName" loading="lazy" />
+                    <span>وب‌سایت تولیدکننده</span>
+                </a>
+            }
+            else
+            {
+                <img src="@manufacturerLogo" alt="نشان @Model.ManufacturerName" loading="lazy" />
+            }
+        </aside>
+    }
+
+    @if (Model.RelatedGenericBrands.Count > 0)
+    {
+        <section class="brand-info-section" aria-labelledby="related-generic-brands-title">
+            <h2 id="related-generic-brands-title">برندهای دیگر این ژنریک</h2>
+            <ul class="brand-related-list">
+                @foreach (var brand in Model.RelatedGenericBrands)
+                {
+                    <li>
+                        <a href="@brand.Url">
+                            <strong>@(string.IsNullOrWhiteSpace(brand.PersianName) ? brand.EnglishName : brand.PersianName)</strong>
+                            <span lang="en" dir="ltr">@brand.EnglishName</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+
+    @if (Model.RelatedCompanyBrands.Count > 0)
+    {
+        <section class="brand-info-section" aria-labelledby="related-company-brands-title">
+            <h2 id="related-company-brands-title">سایر برندهای این شرکت</h2>
+            <ul class="brand-related-list">
+                @foreach (var brand in Model.RelatedCompanyBrands)
+                {
+                    <li>
+                        <a href="@brand.Url">
+                            <strong>@(string.IsNullOrWhiteSpace(brand.PersianName) ? brand.EnglishName : brand.PersianName)</strong>
+                            <span lang="en" dir="ltr">@brand.EnglishName</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+
+    <section class="brand-info-section" aria-labelledby="brand-comments-title">
+        <h2 id="brand-comments-title">دیدگاه‌ها و پرسش‌ها</h2>
+        @if (Model.Comments.Count > 0)
+        {
+            <div class="brand-comments">
+                @foreach (var comment in Model.Comments)
+                {
+                    <article class="brand-comment">
+                        <h3>@comment.Name</h3>
+                        <time datetime="@comment.CreatedAt.ToString("O")">@Format(comment.CreatedAt)</time>
+                        <p>@comment.Content</p>
+                        @if (comment.Replies.Count > 0)
+                        {
+                            <div class="brand-comment-replies">
+                                @foreach (var reply in comment.Replies)
+                                {
+                                    <div>
+                                        <strong>@reply.Name</strong>
+                                        <time datetime="@reply.CreatedAt.ToString("O")">@Format(reply.CreatedAt)</time>
+                                        <p>@reply.Content</p>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </article>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="drug-data-note">هنوز دیدگاهی برای این برند ثبت نشده است.</p>
+        }
+        <p class="drug-data-note">ثبت پرسش آنلاین در نسخه‌ی فعلی فعال نیست.</p>
+    </section>
+</article>
+
+@section Scripts {
+    <script>
+        (() => {
+            const toc = document.querySelector("#brand-content-toc");
+            const tocList = toc?.querySelector("ol");
+            const content = document.querySelector(".brand-info-persian-content");
+            if (!toc || !tocList || !content) {
+                return;
+            }
+
+            const title = content.querySelector(":scope > h2");
+            const headings = Array.from(content.querySelectorAll("h2"))
+                .filter(heading =>
+                    heading !== title &&
+                    heading.getClientRects().length > 0 &&
+                    heading.textContent.trim().length > 0);
+
+            headings.forEach((heading, index) => {
+                heading.classList.add("drug-content-indexed-heading");
+
+                const baseId = `brand${index}`;
+                let targetId = baseId;
+                let suffix = 1;
+                while (document.getElementById(targetId) && document.getElementById(targetId) !== heading) {
+                    targetId = `${baseId}-${suffix++}`;
+                }
+                heading.id = targetId;
+
+                const item = document.createElement("li");
+                const link = document.createElement("a");
+                link.href = `#${targetId}`;
+                link.textContent = heading.textContent.trim();
+                item.append(link);
+                tocList.append(item);
+            });
+
+            toc.hidden = headings.length === 0;
+        })();
+    </script>
+}

@@ -1,0 +1,162 @@
+@model darooyab_rewrite.ViewModels.PublicRightPanelViewModel
+
+<div class="public-right-panel" aria-label="دسترسی‌ها و مطالب مرتبط">
+    @if (ViewData["ShowQuickAccess"] is true)
+    {
+        <nav class="right-panel-card" aria-label="دسترسی سریع">
+            <h2 class="right-panel-title">دسترسی سریع</h2>
+            <a asp-controller="Home" asp-action="Section" asp-route-id="drugs">اطلاعات دارویی</a>
+            <a asp-route="PharmacyDirectory">داروخانه‌ها</a>
+            <a asp-controller="Home" asp-action="Section" asp-route-id="shortages">داروهای کمیاب</a>
+            <a asp-controller="Home" asp-action="Section" asp-route-id="news">تازه‌های دارویی</a>
+        </nav>
+    }
+
+    @if (Model.PublicAdvertisements.Count > 0)
+    {
+        <section class="right-panel-card public-advertisement-panel" aria-labelledby="public-advertisement-title">
+            <h2 class="right-panel-title" id="public-advertisement-title">آگهی‌های عمومی</h2>
+            @foreach (var advertisement in Model.PublicAdvertisements)
+            {
+                var link = advertisement.Link;
+                var isSafeLink = !string.IsNullOrWhiteSpace(link) &&
+                    (Url.IsLocalUrl(link) ||
+                     (Uri.TryCreate(link, UriKind.Absolute, out var absoluteLink) &&
+                      (absoluteLink.Scheme == Uri.UriSchemeHttps || absoluteLink.Scheme == Uri.UriSchemeHttp)));
+
+                <article class="public-advertisement-card">
+                    @if (isSafeLink)
+                    {
+                        <a href="@link" rel="sponsored noopener noreferrer">
+                            @if (!string.IsNullOrWhiteSpace(advertisement.ImageUrl))
+                            {
+                                <img src="@Url.Content(advertisement.ImageUrl)" alt="@advertisement.ImageAlt" loading="lazy" />
+                            }
+                            <span>@(string.IsNullOrWhiteSpace(advertisement.ImageAlt) ? "مشاهده‌ی آگهی" : advertisement.ImageAlt)</span>
+                        </a>
+                    }
+                    else
+                    {
+                        @if (!string.IsNullOrWhiteSpace(advertisement.ImageUrl))
+                        {
+                            <img src="@Url.Content(advertisement.ImageUrl)" alt="@advertisement.ImageAlt" loading="lazy" />
+                        }
+                        <span>@(string.IsNullOrWhiteSpace(advertisement.ImageAlt) ? "آگهی عمومی" : advertisement.ImageAlt)</span>
+                    }
+                </article>
+            }
+        </section>
+    }
+
+    @if (Model.Advertisements.Count > 0)
+    {
+        <section class="right-panel-card sponsored-panel" aria-labelledby="sponsored-panel-title">
+            <h2 class="right-panel-title" id="sponsored-panel-title">معرفی‌های حمایت‌شده</h2>
+            @foreach (var advertisement in Model.Advertisements)
+            {
+                var link = advertisement.Link;
+                var isSafeLink = !string.IsNullOrWhiteSpace(link) &&
+                    (Url.IsLocalUrl(link) ||
+                     (Uri.TryCreate(link, UriKind.Absolute, out var absoluteLink) &&
+                      (absoluteLink.Scheme == Uri.UriSchemeHttps || absoluteLink.Scheme == Uri.UriSchemeHttp)));
+
+                <article class="sponsored-card">
+                    @if (isSafeLink)
+                    {
+                        <a href="@link" rel="sponsored noopener noreferrer">
+                            @if (!string.IsNullOrWhiteSpace(advertisement.ImageUrl))
+                            {
+                                <img src="@Url.Content(advertisement.ImageUrl)" alt="@advertisement.ImageAlt" loading="lazy" />
+                            }
+                            <span>@(string.IsNullOrWhiteSpace(advertisement.ImageAlt) ? "مشاهده‌ی معرفی حمایت‌شده" : advertisement.ImageAlt)</span>
+                        </a>
+                    }
+                    else
+                    {
+                        @if (!string.IsNullOrWhiteSpace(advertisement.ImageUrl))
+                        {
+                            <img src="@Url.Content(advertisement.ImageUrl)" alt="@advertisement.ImageAlt" loading="lazy" />
+                        }
+                        <span>@(string.IsNullOrWhiteSpace(advertisement.ImageAlt) ? "معرفی حمایت‌شده" : advertisement.ImageAlt)</span>
+                    }
+                    <small>تبلیغ</small>
+                </article>
+            }
+        </section>
+    }
+
+    @if (Model.LatestArticles.Count > 0)
+    {
+        <section class="right-panel-card" aria-labelledby="latest-articles-title">
+            <h2 class="right-panel-title" id="latest-articles-title">آخرین مطالب</h2>
+            @foreach (var article in Model.LatestArticles)
+            {
+                <a class="right-panel-item"
+                   asp-route="NewsApp/{id}"
+                   asp-route-articleId="@article.Id">
+                    <strong>@article.Title</strong>
+                    @if (!string.IsNullOrWhiteSpace(article.SubTitle))
+                    {
+                        <span>@article.SubTitle</span>
+                    }
+                </a>
+            }
+        </section>
+    }
+
+    @if (Model.NewDrugs.Count > 0)
+    {
+        <section class="right-panel-card" aria-labelledby="new-drugs-title">
+            <h2 class="right-panel-title" id="new-drugs-title">تازه‌های دارویی</h2>
+            @foreach (var drug in Model.NewDrugs)
+            {
+                <a class="right-panel-item"
+                   asp-route="BrandInfo"
+                   asp-route-IRC="@drug.Irc"
+                   asp-route-BrandEngName="@darooyab_rewrite.Routing.DrugUrl.CreateSlug(drug.EnglishName)">
+                    <strong>@drug.PersianName</strong>
+                    <span>@drug.EnglishName</span>
+                </a>
+            }
+        </section>
+    }
+
+    @if (Model.FrequentlyUsedDrugs.Count > 0)
+    {
+        <section class="right-panel-card" aria-labelledby="frequently-used-title">
+            <h2 class="right-panel-title" id="frequently-used-title">داروهای پرمصرف</h2>
+            @foreach (var drug in Model.FrequentlyUsedDrugs)
+            {
+                <a class="right-panel-item"
+                   asp-route="G-{DrugId}/{EngGenericName}"
+                   asp-route-DrugId="@drug.DrugId"
+                   asp-route-EngGenericName="@darooyab_rewrite.Routing.DrugUrl.CreateSlug(drug.EnglishName)">
+                    <strong>@drug.PersianName</strong>
+                    <span>@drug.EnglishName</span>
+                </a>
+            }
+        </section>
+    }
+
+    @if (Model.LatestNews.Count > 0)
+    {
+        <section class="right-panel-card" aria-labelledby="latest-news-title">
+            <h2 class="right-panel-title" id="latest-news-title">آخرین اخبار</h2>
+            @foreach (var news in Model.LatestNews)
+            {
+                <article class="right-panel-item">
+                    <strong>@news.Title</strong>
+                    @if (!string.IsNullOrWhiteSpace(news.SubTitle))
+                    {
+                        <span>@news.SubTitle</span>
+                    }
+                </article>
+            }
+        </section>
+    }
+
+    @if (Model.DataUnavailable)
+    {
+        <p class="right-panel-status" role="status">برخی اطلاعات این ستون در حال حاضر در دسترس نیست.</p>
+    }
+</div>

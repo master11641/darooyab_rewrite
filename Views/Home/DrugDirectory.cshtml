@@ -1,0 +1,116 @@
+@model darooyab_rewrite.ViewModels.DrugDirectoryViewModel
+@{
+    Layout = "_LayoutWithRightPanel";
+    ViewData["DrugSearchInputId"] = "drug-directory-search";
+}
+
+<section class="drug-directory-page" aria-labelledby="drug-directory-title">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+            <li class="breadcrumb-item active" aria-current="page">اطلاعات دارویی</li>
+        </ol>
+    </nav>
+
+    <header class="drug-directory-hero">
+        <span class="section-kicker">پایگاه اطلاعات دارویی</span>
+        <h1 id="drug-directory-title">اطلاعات دارویی</h1>
+        <p>نام فارسی یا انگلیسی دارو را جست‌وجو کنید و به صفحه‌ی اطلاعات ژنریک یا برند آن برسید.</p>
+        <partial name="_DrugSearchBox" />
+        <p class="drug-directory-search-hint">برای پیشنهادهای جست‌وجو، دست‌کم دو حرف وارد کنید.</p>
+    </header>
+
+    <section class="drug-directory-guide" aria-labelledby="drug-directory-guide-title">
+        <h2 id="drug-directory-guide-title">چه اطلاعاتی پیدا می‌کنید؟</h2>
+        <div class="drug-directory-guide-grid">
+            <article class="drug-directory-guide-card">
+                <span class="drug-directory-guide-icon" aria-hidden="true">✚</span>
+                <h3>اطلاعات ژنریک</h3>
+                <p>اطلاعات عمومی و تخصصی ثبت‌شده برای ماده‌ی مؤثره، از جمله موارد مصرف، هشدارها، تداخلات و شکل‌های دارویی؛ بخش‌های موجود برای هر دارو متفاوت است.</p>
+            </article>
+            <article class="drug-directory-guide-card">
+                <span class="drug-directory-guide-icon" aria-hidden="true">▤</span>
+                <h3>اطلاعات برند</h3>
+                <p>مشخصات فرآورده‌ی برند، نام ژنریک، شرکت مرتبط و سایر جزئیات موجود برای همان محصول را مشاهده کنید.</p>
+            </article>
+        </div>
+        <p class="drug-directory-disclaimer">
+            محتوای دارویی برای آگاهی‌رسانی است و جایگزین نظر پزشک یا داروساز و اطلاعات بروشور همان فرآورده نیست.
+        </p>
+    </section>
+
+    @if (Model.DataUnavailable)
+    {
+        <div class="drug-directory-state drug-directory-state-error" role="alert">
+            دریافت فهرست داروها در حال حاضر ممکن نیست. جست‌وجو را کمی بعد دوباره امتحان کنید.
+        </div>
+    }
+    else
+    {
+        @if (Model.PopularDrugs.Count > 0)
+        {
+            <section class="drug-directory-list-section" id="popular-drugs" aria-labelledby="popular-drugs-title">
+                <div class="drug-directory-section-heading">
+                    <div>
+                        <span class="section-kicker">دسترسی سریع</span>
+                        <h2 id="popular-drugs-title">داروهای پرمصرف</h2>
+                    </div>
+                    <span>مشاهده‌ی اطلاعات ژنریک</span>
+                </div>
+                <div class="drug-directory-items">
+                    @foreach (var drug in Model.PopularDrugs)
+                    {
+                        <a class="drug-directory-item"
+                           asp-route="G-{DrugId}/{EngGenericName}"
+                           asp-route-DrugId="@drug.DrugId"
+                           asp-route-EngGenericName="@darooyab_rewrite.Routing.DrugUrl.CreateSlug(drug.EnglishName)">
+                            <span class="drug-directory-item-icon" aria-hidden="true">✚</span>
+                            <span class="drug-directory-item-copy">
+                                <strong>@drug.PersianName</strong>
+                                <span lang="en" dir="ltr">@drug.EnglishName</span>
+                            </span>
+                            <span class="drug-directory-item-arrow" aria-hidden="true">←</span>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+
+        @if (Model.NewestBrands.Count > 0)
+        {
+            <section class="drug-directory-list-section" id="newest-brands" aria-labelledby="newest-brands-title">
+                <div class="drug-directory-section-heading">
+                    <div>
+                        <span class="section-kicker">تازه‌های دارویی</span>
+                        <h2 id="newest-brands-title">برندهای تازه‌افزوده‌شده</h2>
+                    </div>
+                    <a asp-controller="Home" asp-action="NewDrugs">همه‌ی تازه‌ها</a>
+                </div>
+                <div class="drug-directory-items">
+                    @foreach (var brand in Model.NewestBrands)
+                    {
+                        <a class="drug-directory-item"
+                           asp-route="BrandInfo"
+                           asp-route-IRC="@brand.Irc"
+                           asp-route-BrandEngName="@darooyab_rewrite.Routing.DrugUrl.CreateSlug(brand.EnglishName)">
+                            <span class="drug-directory-item-icon" aria-hidden="true">▤</span>
+                            <span class="drug-directory-item-copy">
+                                <strong>@brand.PersianName</strong>
+                                <span lang="en" dir="ltr">@brand.EnglishName</span>
+                            </span>
+                            <span class="drug-directory-item-arrow" aria-hidden="true">←</span>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+
+        @if (Model.PopularDrugs.Count == 0 && Model.NewestBrands.Count == 0)
+        {
+            <div class="drug-directory-state" role="status">
+                <strong>در حال حاضر دارویی برای فهرست‌های پیشنهادی در دسترس نیست.</strong>
+                <span>برای یافتن داروی مشخص، از جست‌وجوی بالای صفحه استفاده کنید.</span>
+            </div>
+        }
+    }
+</section>

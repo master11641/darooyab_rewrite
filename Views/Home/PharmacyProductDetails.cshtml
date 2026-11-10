@@ -1,0 +1,233 @@
+@model darooyab_rewrite.ViewModels.PharmacyDetailViewModel
+@{
+    Layout = "_LayoutWithRightPanel";
+    var daysRemaining = Model.ProductExpireDate.HasValue
+        ? Math.Max(0, (Model.ProductExpireDate.Value.Date - DateTime.Today).Days)
+        : (int?)null;
+    var currentRankNumber = Model.Irc.HasValue
+        ? Model.Availability.Items
+            .Where(item => item.Irc == Model.Irc.Value)
+            .Select(item => item.RankNumber)
+            .FirstOrDefault()
+        : (short)0;
+    var brandUrl = !string.IsNullOrWhiteSpace(Model.EnglishBrandName)
+        ? Url.RouteUrl("BrandInfo", new
+        {
+            IRC = Model.Irc,
+            BrandEngName = darooyab_rewrite.Routing.DrugUrl.CreateSlug(Model.EnglishBrandName)
+        })
+        : null;
+}
+
+<main class="pharmacy-detail container pharmacy-product-detail" aria-labelledby="pharmacy-product-title">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+            <li class="breadcrumb-item"><a asp-route="PharmacyDirectory">داروخانه‌ها</a></li>
+            <li class="breadcrumb-item"><a asp-route="PharmacyDetails" asp-route-pharmacyId="@Model.PharmacyId" asp-route-pharmacyName="@darooyab_rewrite.Routing.PharmacyUrl.CreateSlug(Model.Name, Model.City)">@Model.Name</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.BrandName</li>
+        </ol>
+    </nav>
+
+    <header class="pharmacy-product-hero">
+        @if (Model.ProductImages.Count > 0)
+        {
+            <div class="pharmacy-product-image">
+                <img src="@Model.ProductImages[0]" alt="تصویر @Model.BrandName" />
+            </div>
+        }
+        <div class="pharmacy-product-heading">
+            <span class="section-kicker">اطلاعات ثبت‌شده در داروخانه</span>
+            <h1 id="pharmacy-product-title">@Model.BrandName</h1>
+            @if (!string.IsNullOrWhiteSpace(Model.GenericName))
+            {
+                <p>
+                    نام ژنریک:
+                    @if (!string.IsNullOrWhiteSpace(Model.GenericUrl))
+                    {
+                        <a href="@Model.GenericUrl">@Model.GenericName</a>
+                    }
+                    else
+                    {
+                        @Model.GenericName
+                    }
+                </p>
+            }
+            @if (brandUrl is not null)
+            {
+                <a class="pharmacy-product-brand-link" href="@brandUrl">مشاهده‌ی اطلاعات دارو</a>
+            }
+        </div>
+    </header>
+
+    <div class="pharmacy-detail-grid">
+        <section class="pharmacy-detail-card pharmacy-product-status" aria-labelledby="pharmacy-product-status-title">
+            <div class="pharmacy-detail-card-heading">
+                <span class="section-kicker">وضعیت ارجاع</span>
+                <h2 id="pharmacy-product-status-title">اطلاعات دارو در این داروخانه</h2>
+            </div>
+            @if (Model.ProductExpireDate.HasValue)
+            {
+                <div class="pharmacy-product-status-badge">
+                    <span aria-hidden="true">●</span>
+                    <strong>@(daysRemaining == 0 ? "ارجاع ثبت‌شده تا امروز معتبر است" : $"ارجاع ثبت‌شده حدود {daysRemaining} روز دیگر معتبر است")</strong>
+                </div>
+                @if (currentRankNumber > 0)
+                {
+                    <partial name="_RankingBadge" model="currentRankNumber" />
+                }
+                <p>تاریخ اعتبار ثبت‌شده: <bdi dir="ltr">@Format(Model.ProductExpireDate.Value)</bdi></p>
+                <div class="pharmacy-state pharmacy-product-notice">
+                    دریافت دارو فقط با نسخه‌ی کامل و به‌صورت حضوری در محل داروخانه امکان‌پذیر است. اطلاعات ثبت‌شده را پیش از مراجعه تلفنی با داروخانه بررسی کنید.
+                </div>
+            }
+            else
+            {
+                <div class="pharmacy-state" role="status">
+                    اطلاعاتی از ارجاع فعال این دارو در این داروخانه ثبت نشده است. برای اطلاع از وضعیت فعلی با داروخانه تماس بگیرید.
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.TherapeuticApplication))
+            {
+                <div class="pharmacy-detail-introduction">
+                    <h3>کاربرد درمانی ثبت‌شده</h3>
+                    <p>@Model.TherapeuticApplication</p>
+                </div>
+            }
+        </section>
+
+        <section class="pharmacy-detail-card" aria-labelledby="pharmacy-product-pharmacy-title">
+            <div class="pharmacy-detail-card-heading">
+                <span class="section-kicker">محل مراجعه</span>
+                <h2 id="pharmacy-product-pharmacy-title">@Model.Name</h2>
+                <p>@Model.Province، @Model.City</p>
+            </div>
+            <dl class="pharmacy-detail-facts">
+                <div>
+                    <dt>نشانی</dt>
+                    <dd>@(string.IsNullOrWhiteSpace(Model.Address) ? "نشانی ثبت نشده است." : Model.Address)</dd>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.Phone))
+                {
+                    <div>
+                        <dt>تلفن</dt>
+                        <dd><a href="tel:@Model.Phone"><bdi dir="ltr">@Model.Phone</bdi></a></dd>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.SecondaryPhone))
+                {
+                    <div>
+                        <dt>تلفن دوم</dt>
+                        <dd><a href="tel:@Model.SecondaryPhone"><bdi dir="ltr">@Model.SecondaryPhone</bdi></a></dd>
+                    </div>
+                }
+            </dl>
+            @if (Model.Images.Count > 1)
+            {
+                <div class="home-carousel pharmacy-gallery-carousel" data-home-carousel aria-label="تصاویر داروخانه">
+                    <div class="home-carousel-track pharmacy-gallery-track" data-carousel-track tabindex="0" aria-label="تصاویر داروخانه @Model.Name">
+                        @foreach (var image in Model.Images)
+                        {
+                            <div class="pharmacy-gallery-slide">
+                                <img src="@image" alt="تصویر @Model.Name" loading="lazy" />
+                            </div>
+                        }
+                    </div>
+                    <div class="carousel-controls pharmacy-gallery-controls" aria-label="کنترل تصاویر داروخانه">
+                        <button class="carousel-arrow" type="button" data-carousel-next aria-label="نمایش تصویر بعدی">‹</button>
+                        <button class="carousel-arrow" type="button" data-carousel-previous aria-label="نمایش تصویر قبلی">›</button>
+                    </div>
+                </div>
+            }
+            else if (Model.Images.Count == 1)
+            {
+                <div class="pharmacy-detail-gallery">
+                    <img src="@Model.Images[0]" alt="تصویر @Model.Name" loading="lazy" />
+                </div>
+            }
+        </section>
+    </div>
+
+    <section class="pharmacy-detail-card other-pharmacy-reports"
+             aria-labelledby="other-pharmacy-reports-title"
+             data-cities-url="@Url.RouteUrl("PharmacyCities")">
+        <div class="pharmacy-detail-card-heading">
+            <span class="section-kicker">ارجاع‌های فعال ثبت‌شده</span>
+            <h2 id="other-pharmacy-reports-title">سایر داروخانه‌هایی که این دارو را اعلام موجودی کردند</h2>
+            <p>این فهرست بر اساس ارجاع‌های معتبر و رتبه‌ی ثبت‌شده‌ی موجودی مرتب شده است. پیش از مراجعه با داروخانه تماس بگیرید.</p>
+        </div>
+
+        <form class="other-pharmacy-filter" method="get"
+              action="@Url.RouteUrl("PharmacyDetails", new
+              {
+                  pharmacyId = Model.PharmacyId,
+                  pharmacyName = darooyab_rewrite.Routing.PharmacyUrl.CreateSlug(Model.Name, Model.City),
+                  IRC = Model.Irc
+              })">
+            <div class="other-pharmacy-filter-fields">
+                <div>
+                    <label for="other-pharmacy-province">استان</label>
+                    <select id="other-pharmacy-province" name="provId" class="form-select">
+                        <option value="0" selected="@(Model.ReportingProvinceId == 0)">همه‌ی استان‌ها</option>
+                        @foreach (var province in Model.ReportingProvinces)
+                        {
+                            <option value="@province.Id" selected="@(province.Id == Model.ReportingProvinceId)">@province.Name</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label for="other-pharmacy-city">شهر</label>
+                    <select id="other-pharmacy-city" name="cityId" class="form-select"
+                            disabled="@(Model.ReportingProvinceId == 0)">
+                        <option value="0" selected="@(Model.ReportingCityId == 0)">همه‌ی شهرها</option>
+                        @foreach (var city in Model.ReportingCities)
+                        {
+                            <option value="@city.Id" selected="@(city.Id == Model.ReportingCityId)">@city.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <input type="hidden" name="IRC" value="@Model.Irc" />
+            <button type="submit" class="btn btn-primary">جست‌وجو</button>
+            <p class="other-pharmacy-filter-status" role="status" aria-live="polite"></p>
+        </form>
+
+        @if (Model.OtherPharmacies.Count == 0)
+        {
+            <div class="pharmacy-state" role="status">در محدوده‌ی انتخاب‌شده داروخانه‌ای با ارجاع فعال برای این دارو پیدا نشد.</div>
+        }
+        else
+        {
+            <div class="other-pharmacy-list">
+                @foreach (var report in Model.OtherPharmacies)
+                {
+                    <article class="other-pharmacy-card">
+                        <div class="other-pharmacy-card-main">
+                            <h3><a href="@report.DetailUrl">@report.Name</a></h3>
+                            <p>@report.Province، @report.City</p>
+                            @if (report.RankNumber > 0)
+                            {
+                                <partial name="_RankingBadge" model="report.RankNumber" />
+                            }
+                        </div>
+                        <div class="other-pharmacy-card-contact">
+                            <span>اعتبار ارجاع تا @Format(report.ExpireDate)</span>
+                            @if (!string.IsNullOrWhiteSpace(report.Phone))
+                            {
+                                <a href="tel:@report.Phone"><bdi dir="ltr">@report.Phone</bdi></a>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+</main>
+
+@section Scripts {
+    @if (Model.Images.Count > 1)
+    {
+        <script src="~/js/scroll-carousel.js" asp-append-version="true"></script>
+    }
+    <script src="~/js/other-pharmacy-reports.js" asp-append-version="true"></script>
+}

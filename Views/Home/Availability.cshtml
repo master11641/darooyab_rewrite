@@ -1,0 +1,259 @@
+@model darooyab_rewrite.ViewModels.DrugAvailabilityPageViewModel
+@{
+    var baseUrl = Model.IsBrand
+        ? Url.RouteUrl("AvailabilityIRC", new { IRC = Model.Irc })
+        : Url.RouteUrl("Availability", new { DrugId = Model.DrugId });
+    var paginationRouteName = Model.IsBrand
+        ? (Model.ProvinceId > 0 ? "AvailabilityByProvinceIRC" : "AvailabilityIRC")
+        : (Model.ProvinceId > 0 ? "AvailabilityByProvince" : "Availability");
+    var paginationValues = new Dictionary<string, string>();
+    if (Model.IsBrand)
+    {
+        paginationValues["IRC"] = Model.Irc.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+    else
+    {
+        paginationValues["DrugId"] = Model.DrugId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+    if (Model.ProvinceId > 0)
+    {
+        var provinceName = Model.Provinces.FirstOrDefault(item => item.Id == Model.ProvinceId)?.Name ?? string.Empty;
+        paginationValues["ProvinceId"] = Model.ProvinceId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        paginationValues["ProvinceSlug"] = System.Text.RegularExpressions.Regex.Replace(
+            System.Text.RegularExpressions.Regex.Replace(provinceName.Trim(), @"\s+", "-"),
+            @"[^آ-یا-زA-Za-z0-9\-]", string.Empty).ToLowerInvariant();
+    }
+    paginationValues["cityId"] = Model.CityId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    paginationValues["districtId"] = Model.DistrictId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    paginationValues["pharmacySpecialtyId"] = Model.PharmacySpecialtyId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    if (Model.IsBrand && Model.ByDosageForm)
+    {
+        paginationValues["byDosageForm"] = "true";
+    }
+}
+
+<section class="pharmacy-directory container availability-page" aria-labelledby="availability-title">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+            @if (Model.IsBrand && !string.IsNullOrWhiteSpace(Model.BrandUrl))
+            {
+                <li class="breadcrumb-item"><a href="@Model.BrandUrl">@Model.DrugName</a></li>
+            }
+            else if (!Model.IsBrand && !string.IsNullOrWhiteSpace(Model.GenericUrl))
+            {
+                <li class="breadcrumb-item"><a href="@Model.GenericUrl">@Model.DrugName</a></li>
+            }
+            <li class="breadcrumb-item active" aria-current="page">داروخانه‌های دارای موجودی</li>
+        </ol>
+    </nav>
+
+    <header class="pharmacy-directory-heading">
+        <span class="section-kicker">یافتن دارو در داروخانه</span>
+        <h1 id="availability-title">
+            داروخانه‌هایی که
+            @if (Model.IsBrand)
+            {
+                @if (!string.IsNullOrWhiteSpace(Model.BrandUrl))
+                {
+                    <a href="@Model.BrandUrl">@Model.DrugName</a>
+                }
+                else
+                {
+                    @Model.DrugName
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(Model.GenericUrl))
+            {
+                <a href="@Model.GenericUrl">@Model.DrugName</a>
+            }
+            else
+            {
+                @Model.DrugName
+            }
+            را موجود دارند
+        </h1>
+        @if (Model.IsBrand && !string.IsNullOrWhiteSpace(Model.GenericName) &&
+             !string.IsNullOrWhiteSpace(Model.GenericUrl))
+        {
+            <p>نام ژنریک: <a href="@Model.GenericUrl">@Model.GenericName</a></p>
+        }
+        <p>اطلاعات موجودی بر اساس ارجاع‌های ثبت‌شده است؛ پیش از مراجعه، وضعیت را تلفنی با داروخانه بررسی کنید.</p>
+    </header>
+
+    <form class="pharmacy-filter-panel" method="get" action="@baseUrl"
+          data-cities-url="@Url.RouteUrl("PharmacyCities")"
+          data-districts-url="@Url.RouteUrl("PharmacyDistricts")">
+        <input type="hidden" name="page" value="1" />
+        <div class="pharmacy-filter-grid">
+            <div class="pharmacy-filter-field">
+                <label for="ProvinceId">استان</label>
+                <select id="ProvinceId" name="provId" class="form-select">
+                    <option value="0" selected="@(Model.ProvinceId == 0)">همه‌ی استان‌ها</option>
+                    @foreach (var province in Model.Provinces)
+                    {
+                        <option value="@province.Id" selected="@(Model.ProvinceId == province.Id)">@province.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="pharmacy-filter-field">
+                <label for="CityId">شهر</label>
+                <select id="CityId" name="cityId" class="form-select"
+                        aria-describedby="availability-filter-status"
+                        disabled="@(Model.ProvinceId == 0 || Model.Cities.Count == 0)">
+                    <option value="0" selected="@(Model.CityId == 0)">همه‌ی شهرها</option>
+                    @foreach (var city in Model.Cities)
+                    {
+                        <option value="@city.Id" selected="@(Model.CityId == city.Id)">@city.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="pharmacy-filter-field">
+                <label for="DistrictId">منطقه</label>
+                <select id="DistrictId" name="districtId" class="form-select"
+                        aria-describedby="availability-filter-status"
+                        disabled="@(Model.CityId == 0 || Model.Districts.Count == 0)">
+                    <option value="0" selected="@(Model.DistrictId == 0)">همه‌ی مناطق</option>
+                    @foreach (var district in Model.Districts)
+                    {
+                        <option value="@district.Id" selected="@(Model.DistrictId == district.Id)">@district.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="pharmacy-filter-field">
+                <label for="PharmacySpecialtyId">حوزه‌ی دارویی</label>
+                <select id="PharmacySpecialtyId" name="pharmacySpecialtyId" class="form-select">
+                    <option value="0" selected="@(Model.PharmacySpecialtyId == 0)">همه‌ی حوزه‌ها</option>
+                    @foreach (var specialty in Model.Specialties)
+                    {
+                        <option value="@specialty.Id" selected="@(Model.PharmacySpecialtyId == specialty.Id)">@specialty.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        @if (Model.IsBrand)
+        {
+            <div class="form-check availability-similar-filter">
+                <input id="byDosageForm" name="byDosageForm" class="form-check-input"
+                       type="checkbox" value="true" checked="@Model.ByDosageForm" />
+                <label class="form-check-label" for="byDosageForm">سایر برندها از همین شکل دارویی</label>
+            </div>
+        }
+
+        <p id="availability-filter-status" class="pharmacy-filter-status" role="status" aria-live="polite"></p>
+        <div class="pharmacy-filter-actions">
+            <button type="submit" class="btn btn-primary">جست‌وجو</button>
+            <a class="btn btn-outline-primary" href="@baseUrl">پاک‌کردن فیلترها</a>
+        </div>
+    </form>
+
+    <section class="pharmacy-results" aria-labelledby="availability-results-title">
+        <div class="pharmacy-results-heading">
+            <div>
+                <span class="section-kicker">نتایج جست‌وجو</span>
+                <h2 id="availability-results-title">داروخانه‌های دارای موجودی ثبت‌شده</h2>
+            </div>
+            @if (!Model.DataUnavailable)
+            {
+                <span class="pharmacy-result-count">@Model.Results.TotalCount مورد</span>
+            }
+        </div>
+
+        @if (Model.DataUnavailable)
+        {
+            <div class="pharmacy-state pharmacy-state-error" role="alert">
+                دریافت فهرست موجودی در حال حاضر ممکن نیست. لطفاً کمی بعد دوباره تلاش کنید.
+            </div>
+        }
+        else if (Model.Results.TotalCount == 0)
+        {
+            <div class="pharmacy-state" role="status">
+                داروخانه‌ای با این فیلترها پیدا نشد. فیلترها را تغییر دهید و دوباره جست‌وجو کنید.
+            </div>
+        }
+        else
+        {
+            <div class="pharmacy-card-list">
+                @foreach (var pharmacy in Model.Results.Items)
+                {
+                    <article class="pharmacy-card availability-pharmacy-card">
+                        <div class="pharmacy-card-icon" aria-hidden="true">✚</div>
+                        <div class="pharmacy-card-main">
+                            <div class="pharmacy-card-title-row">
+                                <h3>
+                                    <a asp-route="PharmacyDetails"
+                                       asp-route-pharmacyId="@pharmacy.PharmacyId"
+                                       asp-route-pharmacyName="@darooyab_rewrite.Routing.PharmacyUrl.CreateSlug(pharmacy.PharmacyName, pharmacy.City)">
+                                        @pharmacy.PharmacyName
+                                    </a>
+                                </h3>
+                                @if (pharmacy.RankNumber is > 0)
+                                {
+                                    <partial name="_RankingBadge" model="pharmacy.RankNumber.Value" />
+                                }
+                            </div>
+                            <div class="pharmacy-card-location" aria-label="موقعیت داروخانه">
+                                @if (!string.IsNullOrWhiteSpace(pharmacy.Province))
+                                {
+                                    <span class="pharmacy-location-chip">@pharmacy.Province</span>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(pharmacy.City))
+                                {
+                                    <span class="pharmacy-location-chip">@pharmacy.City</span>
+                                }
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(pharmacy.Address))
+                            {
+                                <p class="pharmacy-card-address"><span aria-hidden="true">⌂</span> @pharmacy.Address</p>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(pharmacy.PersianBrandName) ||
+                                 !string.IsNullOrWhiteSpace(pharmacy.EnglishBrandName))
+                            {
+                                <p class="availability-item-brand">
+                                    @if (pharmacy.Irc > 0)
+                                    {
+                                        <a href="/B-@pharmacy.Irc/@darooyab_rewrite.Routing.DrugUrl.CreateSlug(pharmacy.EnglishBrandName ?? pharmacy.PersianBrandName)">
+                                            @(pharmacy.PersianBrandName ?? pharmacy.EnglishBrandName)
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        @(pharmacy.PersianBrandName ?? pharmacy.EnglishBrandName)
+                                    }
+                                </p>
+                            }
+                            @if (pharmacy.RequestExpireDate.HasValue)
+                            {
+                                <p class="availability-expiry">
+                                    اعتبار ثبت‌شده تا
+                                    <time datetime="@(pharmacy.RequestExpireDate.Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))">
+                                        @darooyab_rewrite.Utilities.PersianDateFormatter.Format(pharmacy.RequestExpireDate)
+                                    </time>
+                                </p>
+                            }
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(pharmacy.Phone))
+                        {
+                            <div class="pharmacy-card-phone">
+                                <span>تماس</span>
+                                <a href="tel:@pharmacy.Phone"><bdi dir="ltr">@pharmacy.Phone</bdi></a>
+                            </div>
+                        }
+                    </article>
+                }
+            </div>
+
+            @await Html.PartialAsync("_Pagination", new darooyab_rewrite.ViewModels.PaginationViewModel(
+                Model.Results.PageNumber,
+                Model.Results.TotalPages,
+                paginationRouteName,
+                "page",
+                paginationValues))
+        }
+    </section>
+
+    @section Scripts {
+        <script src="~/js/pharmacy-directory.js" asp-append-version="true"></script>
+    }
+</section>

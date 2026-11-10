@@ -1,0 +1,66 @@
+@{
+    ViewData["Title"] ??= "درباره ما";
+}
+
+<article class="about-editorial" aria-labelledby="about-title">
+    <header class="about-hero">
+        <p class="about-kicker">دارویاب <span aria-hidden="true">/</span> آشنایی با ما</p>
+        <h1 id="about-title">اطلاعات دارویی،<br /><em>با مسیر روشن‌تر.</em></h1>
+        <p class="about-hero-summary">
+            دارویاب فضایی برای جست‌وجو و مرور اطلاعات دارویی و بخش‌های مرتبط با خدمات دارویی است.
+        </p>
+        <span class="about-hero-index" aria-hidden="true">د / ۰۱</span>
+    </header>
+
+    <section class="about-introduction" aria-labelledby="about-introduction-title">
+        <p class="about-section-label">نگاه ما</p>
+        <div>
+            <h2 id="about-introduction-title">پیدا کردن اطلاعات، ساده‌تر</h2>
+            <p>
+                در دارویاب می‌توانید نام داروها را جست‌وجو کنید، اطلاعات دارویی را مرور کنید
+                و به بخش‌هایی مانند تازه‌های دارویی، داروخانه‌ها و متخصصان سلامت سر بزنید.
+                هدف این تجربه، کمک به دسترسی و یافتن اطلاعات در یک مسیر منظم است.
+            </p>
+            <p class="about-caution">
+                محتوای دارویی وب‌سایت جایگزین تشخیص یا توصیه‌ی پزشک و داروساز نیست.
+                برای تصمیم‌گیری درباره‌ی درمان یا مصرف دارو، با متخصص سلامت مشورت کنید.
+            </p>
+        </div>
+    </section>
+
+    <nav class="about-destinations" aria-label="بخش‌های دارویاب">
+        <div class="about-destinations-heading">
+            <p class="about-section-label">از کجا شروع کنیم؟</p>
+            <h2>به بخش موردنظر بروید</h2>
+        </div>
+        <a class="about-destination" href="/Search">
+            <span class="about-destination-number" aria-hidden="true">۰۱</span>
+            <span class="about-destination-copy">
+                <strong>جست‌وجوی دارو</strong>
+                <span>نام دارو را جست‌وجو کنید و به صفحه‌ی اطلاعات آن بروید.</span>
+            </span>
+            <span class="about-destination-arrow" aria-hidden="true">←</span>
+        </a>
+        <a class="about-destination" href="/NewsApp">
+            <span class="about-destination-number" aria-hidden="true">۰۲</span>
+            <span class="about-destination-copy">
+                <strong>تازه‌های دارویی</strong>
+                <span>خبرها و مطالب منتشرشده در دارویاب را ببینید.</span>
+            </span>
+            <span class="about-destination-arrow" aria-hidden="true">←</span>
+        </a>
+        <a class="about-destination" href="/داروخانه">
+            <span class="about-destination-number" aria-hidden="true">۰۳</span>
+            <span class="about-destination-copy">
+                <strong>داروخانه‌ها</strong>
+                <span>فهرست داروخانه‌ها را مرور کنید.</span>
+            </span>
+            <span class="about-destination-arrow" aria-hidden="true">←</span>
+        </a>
+    </nav>
+
+    <footer class="about-contact-note">
+        <p>پرسشی درباره‌ی دارویاب دارید؟</p>
+        <a href="/Contactus">راه‌های تماس با ما <span aria-hidden="true">↗</span></a>
+    </footer>
+</article>

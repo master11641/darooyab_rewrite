@@ -1,0 +1,22 @@
+@{
+    var inputId = ViewData["DrugSearchInputId"] as string ?? "site-drug-search-input";
+    var formId = inputId == "site-drug-search-input" ? "site-drug-search" : $"{inputId}-form";
+}
+
+<form id="@formId" class="site-drug-search" role="search" aria-label="جست‌وجوی دارو"
+      asp-route="DrugSearch" method="get"
+      data-drug-search data-suggestions-url="@Url.RouteUrl("DrugSearchSuggestions")">
+    <label class="visually-hidden" for="@inputId">نام فارسی یا انگلیسی دارو</label>
+    <div class="search-control drug-search-control">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input id="@inputId" name="SearchText" type="search" placeholder="نام دارو را جست‌وجو کنید"
+               autocomplete="off" maxlength="100" minlength="2" aria-autocomplete="list"
+               aria-controls="@(inputId)-suggestions" aria-expanded="false" />
+        <button class="btn btn-primary drug-search-submit" type="submit">جست‌وجو</button>
+    </div>
+    <div class="drug-search-suggestions" id="@(inputId)-suggestions" hidden>
+        <p class="drug-search-status" role="status" aria-live="polite"></p>
+        <ul class="drug-search-suggestion-list" role="listbox" aria-label="پیشنهادهای دارو"></ul>
+        <button class="drug-search-more" type="submit" hidden>مشاهده‌ی همه‌ی نتایج</button>
+    </div>
+</form>

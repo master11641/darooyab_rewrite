@@ -1,0 +1,73 @@
+@model darooyab_rewrite.ViewModels.NewsPageViewModel
+@{
+    Layout = "_LayoutWithRightPanel";
+}
+
+<section class="news-archive-page" aria-labelledby="news-archive-title">
+    <header class="news-archive-heading">
+        <h1 id="news-archive-title">اخبار</h1>
+    </header>
+
+    @if (Model.DataUnavailable)
+    {
+        <div class="news-state news-state-error" role="alert">
+            <span class="updates-icon" aria-hidden="true">!</span>
+            <div>
+                <strong>دریافت اخبار در حال حاضر امکان‌پذیر نیست</strong>
+                <p>اتصال به پایگاه اطلاعات برقرار نشد. کمی بعد دوباره تلاش کنید.</p>
+            </div>
+        </div>
+    }
+    else if (Model.PagedNews.TotalCount == 0)
+    {
+        <div class="news-state" role="status">
+            <span class="updates-icon" aria-hidden="true">▤</span>
+            <div>
+                <strong>خبری برای نمایش وجود ندارد</strong>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="news-archive-list">
+            @foreach (var news in Model.PagedNews.Items)
+            {
+                <article class="news-archive-card">
+                    <a class="news-archive-card-link" asp-route="NewsApp/{id}" asp-route-articleId="@news.Id">
+                        @if (!string.IsNullOrWhiteSpace(news.ImageUrl))
+                        {
+                            <img class="news-archive-image"
+                                 src="@news.ImageUrl"
+                                 alt=""
+                                 loading="lazy"
+                                 decoding="async" />
+                        }
+                        else
+                        {
+                            <span class="news-archive-image news-archive-image-placeholder" aria-hidden="true">▤</span>
+                        }
+                        <span class="news-archive-content">
+                            <span class="news-archive-title">@news.Title</span>
+                            @if (!string.IsNullOrWhiteSpace(news.SubTitle))
+                            {
+                                <span class="news-archive-subtitle">@news.SubTitle</span>
+                            }
+                        </span>
+                    </a>
+                </article>
+            }
+        </div>
+
+        @await Html.PartialAsync("_Pagination", new darooyab_rewrite.ViewModels.PaginationViewModel(
+            Model.PagedNews.PageNumber,
+            Model.PagedNews.TotalPages,
+            "AllNews",
+            "page",
+            new Dictionary<string, string>()))
+    }
+</section>
+
+@section Scripts {
+    <script src="~/js/scroll-carousel.js" asp-append-version="true"></script>
+    <script src="~/js/homepage.js" asp-append-version="true"></script>
+}

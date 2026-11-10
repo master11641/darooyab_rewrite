@@ -1,0 +1,73 @@
+@model darooyab_rewrite.ViewModels.DrugSearchPageViewModel
+@{
+    Layout = "_LayoutWithRightPanel";
+    ViewData["Title"] = "جستجوی دارو";
+}
+
+<section class="drug-search-page container" aria-labelledby="drug-search-title">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+            <li class="breadcrumb-item active" aria-current="page">جستجوی دارو</li>
+        </ol>
+    </nav>
+
+    <header class="drug-search-page-heading">
+        <span class="section-kicker">پایگاه اطلاعات دارویی</span>
+        <h1 id="drug-search-title">نتایج جستجوی دارو</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.SearchText))
+        {
+            <p>نتایج برای «@Model.SearchText»</p>
+        }
+    </header>
+
+    @if (Model.SearchUnavailable)
+    {
+        <div class="drug-search-state drug-search-state-error" role="alert">
+            جستجوی دارو در حال حاضر در دسترس نیست. لطفاً کمی بعد دوباره تلاش کنید.
+        </div>
+    }
+    else if (string.IsNullOrWhiteSpace(Model.SearchText))
+    {
+        <div class="drug-search-state" role="status">
+            برای مشاهده‌ی نتیجه، نام فارسی یا انگلیسی دارو را در کادر جستجوی بالای صفحه وارد کنید.
+        </div>
+    }
+    else if (Model.SearchText.Length < 2)
+    {
+        <div class="drug-search-state" role="status">
+            برای جستجو دست‌کم دو نویسه وارد کنید.
+        </div>
+    }
+    else if (Model.TotalCount == 0)
+    {
+        <div class="drug-search-state" role="status">
+            دارویی با این نام پیدا نشد. املای نام را بررسی کنید یا عبارت دیگری را جستجو کنید.
+        </div>
+    }
+    else
+    {
+        <p class="drug-search-count">@Model.TotalCount نتیجه پیدا شد.</p>
+        <ul class="drug-search-results-list">
+            @foreach (var result in Model.Results)
+            {
+                <li>
+                    <a href="@result.Url">
+                        <strong>@result.Name</strong>
+                        @if (!string.Equals(result.Name, result.GenericName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span>نام ژنریک: @result.GenericName</span>
+                        }
+                    </a>
+                </li>
+            }
+        </ul>
+
+        @await Html.PartialAsync("_Pagination", new darooyab_rewrite.ViewModels.PaginationViewModel(
+            Model.PageNumber,
+            Model.PageCount,
+            "DrugSearch",
+            "PageNumber",
+            new Dictionary<string, string> { ["SearchText"] = Model.SearchText }))
+    }
+</section>

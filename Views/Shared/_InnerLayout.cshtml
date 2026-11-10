@@ -1,0 +1,58 @@
+﻿@{
+    Layout = "_LayoutWithRightPanel";
+    var activeSection = ViewData["ActiveSection"] as string ?? string.Empty;
+    var isNewsArticle = ViewData["IsNewsArticle"] is true;
+}
+
+<section class="inner-page">
+    @if (isNewsArticle)
+    {
+        <nav aria-label="مسیر صفحه">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+                <li class="breadcrumb-item"><a asp-route="AllNews">اخبار</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
+            </ol>
+        </nav>
+    }
+    else
+    {
+        <div class="inner-page-heading">
+            <nav aria-label="مسیر صفحه">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
+                </ol>
+            </nav>
+            <span class="section-kicker">دارویاب / بخش‌های سایت</span>
+            <h1>@ViewData["Title"]</h1>
+            <p>برای دسترسی به بخش‌های مختلف اطلاعات دارویی از فهرست زیر استفاده کنید.</p>
+        </div>
+    }
+
+    <div class="inner-mobile-nav">
+        <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#section-navigation" aria-controls="section-navigation">
+            نمایش فهرست بخش‌ها
+        </button>
+    </div>
+
+    <div class="inner-content">
+        @RenderBody()
+    </div>
+</section>
+
+<div class="offcanvas offcanvas-start mobile-section-menu" tabindex="-1" id="section-navigation" aria-labelledby="section-navigation-title">
+    <div class="offcanvas-header">
+        <h2 class="offcanvas-title" id="section-navigation-title">بخش‌های دارویاب</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="بستن"></button>
+    </div>
+    <div class="offcanvas-body">
+        <nav class="section-sidebar" aria-label="فهرست بخش‌ها">
+            <a class="sidebar-link @(activeSection == "drugs" ? "active" : "")" asp-controller="Home" asp-action="Section" asp-route-id="drugs"><span aria-hidden="true">✚</span> اطلاعات دارویی</a>
+            <a class="sidebar-link @(activeSection == "pharmacies" ? "active" : "")" asp-route="PharmacyDirectory"><span aria-hidden="true">⌖</span> داروخانه‌ها</a>
+            <a class="sidebar-link @(activeSection == "shortages" ? "active" : "")" asp-controller="Home" asp-action="Section" asp-route-id="shortages"><span aria-hidden="true">＋</span> داروهای کمیاب</a>
+            <a class="sidebar-link @(activeSection == "news" ? "active" : "")" asp-route="AllNews"><span aria-hidden="true">▤</span> تازه‌های دارویی</a>
+        </nav>
+    </div>
+</div>

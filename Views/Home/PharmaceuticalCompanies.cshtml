@@ -1,0 +1,122 @@
+@model darooyab_rewrite.ViewModels.CompanyDirectoryViewModel
+@{
+    var companyDetailsPath = Model.IsImporterDirectory
+        ? "/ImporterCompanies"
+        : Model.IsDistributorDirectory ? "/DistributerCompanies" : "/Pharmaceuticalcompanies";
+}
+
+<section class="company-directory" aria-labelledby="company-directory-title">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @(Model.IsImporterDirectory
+                    ? "شرکت‌های واردکننده‌ی دارو"
+                    : Model.IsDistributorDirectory ? "شرکت‌های توزیع‌کننده‌ی دارو" : "شرکت‌های دارویی")
+            </li>
+        </ol>
+    </nav>
+
+    <header class="company-directory-heading">
+        <span class="section-kicker">پایگاه اطلاعات دارویی</span>
+        @if (Model.IsDistributorDirectory)
+        {
+            <h1 id="company-directory-title">لیست شرکت‌های توزیع‌کننده‌ی دارو</h1>
+            <p>شرکت‌های توزیع‌کننده را همراه با تعداد محصولات ثبت‌شده‌ی مرتبط مشاهده کنید.</p>
+        }
+        else if (Model.IsImporterDirectory)
+        {
+            <h1 id="company-directory-title">لیست شرکت‌های واردکننده‌ی دارو در ایران</h1>
+            <p>شرکت‌های واردکننده را همراه با تعداد محصولات ثبت‌شده‌ی مرتبط مشاهده کنید.</p>
+        }
+        else
+        {
+            <h1 id="company-directory-title">شرکت‌های داروسازی (تولیدکننده دارو)</h1>
+            <p>شرکت‌ها را بر اساس ایرانی یا خارجی بودن تولیدکننده مشاهده کنید.</p>
+        }
+    </header>
+
+    @if (!Model.IsImporterDirectory && !Model.IsDistributorDirectory)
+    {
+        <form class="company-filter-panel" method="get" action="/Pharmaceuticalcompanies">
+            <fieldset>
+                <legend>نوع تولیدکننده</legend>
+                <div class="company-filter-options">
+                    <label class="company-filter-choice">
+                        <input type="radio" name="producerType" value="1" checked="@(Model.ProducerType == 1)" />
+                        <span>تولیدکننده‌ی ایرانی</span>
+                    </label>
+                    <label class="company-filter-choice">
+                        <input type="radio" name="producerType" value="2" checked="@(Model.ProducerType == 2)" />
+                        <span>تولیدکننده‌ی خارجی</span>
+                    </label>
+                </div>
+                <button class="btn btn-primary" type="submit">نمایش فهرست</button>
+            </fieldset>
+        </form>
+    }
+
+    <section class="company-results" aria-labelledby="company-results-title">
+        <div class="company-results-heading">
+            <div>
+                <span class="section-kicker">نتایج</span>
+                <h2 id="company-results-title">
+                    @(Model.IsDistributorDirectory
+                        ? "شرکت‌های توزیع‌کننده‌ی دارو"
+                        : Model.IsImporterDirectory
+                            ? "شرکت‌های واردکننده‌ی دارو"
+                            : Model.ProducerType == 1 ? "تولیدکنندگان ایرانی" : "تولیدکنندگان خارجی")
+                </h2>
+            </div>
+            @if (!Model.DataUnavailable)
+            {
+                <span class="company-result-count">@Model.Companies.Count شرکت</span>
+            }
+        </div>
+
+        @if (Model.DataUnavailable)
+        {
+            <div class="company-state company-state-error" role="alert">
+                دریافت فهرست شرکت‌ها در حال حاضر ممکن نیست. لطفاً کمی بعد دوباره تلاش کنید.
+            </div>
+        }
+        else if (Model.Companies.Count == 0)
+        {
+            <div class="company-state" role="status">
+                شرکتی با محصولات ثبت‌شده در این دسته پیدا نشد.
+            </div>
+        }
+        else
+        {
+            <div class="company-list">
+                @foreach (var company in Model.Companies)
+                {
+                    <article class="company-card">
+                        <div class="company-logo" aria-hidden="true">
+                            @if (!string.IsNullOrWhiteSpace(company.LogoUrl) && Url.IsLocalUrl(company.LogoUrl))
+                            {
+                                <img src="@Url.Content(company.LogoUrl)" alt="" loading="lazy" />
+                            }
+                            else
+                            {
+                                <span>—</span>
+                            }
+                        </div>
+                        <div class="company-card-main">
+                            <h3>
+                                <a class="company-details-link" href="@($"{companyDetailsPath}/{company.Id}")">
+                                    @company.Name
+                                </a>
+                            </h3>
+                            <p>@company.Country</p>
+                        </div>
+                        <div class="company-product-count">
+                            <strong>@company.ProductCount</strong>
+                            <span>تعداد محصولات</span>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+</section>

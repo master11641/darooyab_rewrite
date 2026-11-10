@@ -1,0 +1,430 @@
+@model darooyab_rewrite.ViewModels.DrugInfoPageViewModel
+@{
+    Layout = "_LayoutWithRightPanel";
+    ViewData["MetaDescription"] = Model.PageDescription;
+    ViewData["DrugId"] = Model.DrugId;
+    var hasGeneralInformation = !string.IsNullOrWhiteSpace(Model.GeneralInformation) ||
+        IsHttpUrl(Model.DrugsComUrl) ||
+        IsHttpUrl(Model.MedscapeUrl);
+    var tabs = new List<(string Id, string Title)>();
+    if (hasGeneralInformation)
+    {
+        tabs.Add(("drug-information", "اطلاعات عمومی"));
+    }
+    if (Model.InformationSections.Count > 0)
+    {
+        tabs.Add(("specialized-information", "اطلاعات تخصصی"));
+    }
+    tabs.Add(("pregnancy", "مصرف در بارداری"));
+    tabs.Add(("dosage-forms", "اشکال دارویی"));
+    tabs.Add(("brand-names", "اسامی تجاری"));
+    if (Model.RelatedDrugs.Count > 0)
+    {
+        tabs.Add(("related-drugs", "داروهای هم‌گروه"));
+    }
+    tabs.Add(("drug-comments", "دیدگاه و پرسش"));
+}
+
+<article class="drug-info-page" data-persian-name="@Model.PersianName">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb drug-breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Section" asp-route-id="drugs">اطلاعات دارویی</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.PersianName</li>
+        </ol>
+    </nav>
+
+    <header class="drug-info-header">
+        @if (Model.MartindaleGroupId == 62)
+        {
+            <span class="drug-info-kicker">محصولات @Model.PersianName</span>
+            <h1><span class="drug-name-highlight">@Model.PersianName</span></h1>
+        }
+        else
+        {
+            <span class="drug-info-kicker">راهنمای اطلاعات دارویی</span>
+            <h1><span class="drug-name-highlight">@Model.PersianName</span> <span>چیست و برای چه مواردی استفاده می‌شود؟</span></h1>
+            <p class="drug-info-english" lang="en" dir="ltr">@Model.EnglishName</p>
+        }
+
+    </header>
+
+    <nav class="drug-section-nav" aria-label="بخش‌های اطلاعات دارو">
+        <ul class="drug-tab-list">
+            @foreach (var tab in tabs)
+            {
+                <li class="@(tab.Id == "related-drugs" ? "drug-tab-related" : null)">
+                    <a href="#@tab.Id">@tab.Title</a>
+                </li>
+            }
+        </ul>
+    </nav>
+
+    <nav id="drug-content-toc" class="drug-content-toc" aria-label="فهرست مطالب" hidden>
+        <div class="drug-content-toc-heading">
+            <span class="drug-content-toc-icon" aria-hidden="true">☷</span>
+            <div>
+                <h2>فهرست مطالب</h2>
+                <p>برای رفتن به هر بخش، عنوان آن را انتخاب کنید.</p>
+            </div>
+        </div>
+        <ol></ol>
+    </nav>
+    @if (!string.IsNullOrWhiteSpace(Model.MartindaleNameFa) || Model.AhfsPath.Count > 0)
+    {
+        <section class="drug-classification-card" aria-label="طبقه‌بندی دارو">
+            @if (!string.IsNullOrWhiteSpace(Model.MartindaleNameFa))
+            {
+                <div class="drug-classification-item">
+                    <span class="drug-classification-icon" aria-hidden="true">✚</span>
+                    <div>
+                        <p class="drug-classification-label">@(Model.MartindaleGroupId == 62 ? "گروه" : "گروه مارتیندل")</p>
+                        <p>
+                            @if (Model.MartindaleGroupId.HasValue)
+                            {
+                                <a class="martindale-group-link"
+                                   href="/DrugGroups/@Model.MartindaleGroupId.Value"
+                                   target="_blank"
+                                   rel="noopener noreferrer">@Model.MartindaleNameFa</a>
+                            }
+                            else
+                            {
+                                <strong>@Model.MartindaleNameFa</strong>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.MartindaleNameEn))
+                            {
+                                <span lang="en" dir="ltr">@Model.MartindaleNameEn</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+            }
+            @if (Model.AhfsPath.Count > 0)
+            {
+                <div class="drug-classification-item drug-therapeutic-classification">
+                    <span class="drug-classification-icon" aria-hidden="true">⌖</span>
+                    <div>
+                        <p class="drug-classification-label">گروه درمانی</p>
+                        <p>@string.Join(" › ", Model.AhfsPath)</p>
+                    </div>
+                </div>
+            }
+        </section>
+    }
+
+    <section class="drug-info-section drug-referrals-section" id="pharmacy-availability" aria-labelledby="pharmacy-availability-title">
+        <div class="drug-referrals-heading">
+            <div>
+                <span class="section-kicker">ارجاعات دارویی</span>
+                <h2 id="pharmacy-availability-title">ارجاعات مربوط به @Model.PersianName</h2>
+                <p>صفحه‌ی ارجاعات دارویی در حال آماده‌سازی است.</p>
+            </div>
+            <button type="button" class="btn btn-outline-primary" disabled>
+                مشاهده‌ی ارجاعات (به‌زودی)
+            </button>
+        </div>
+    </section>
+    @if (hasGeneralInformation)
+    {
+        <section class="drug-info-section" id="drug-information" aria-labelledby="drug-information-title">
+            <h2 id="drug-information-title">اطلاعات عمومی @Model.PersianName</h2>
+            @if (!string.IsNullOrWhiteSpace(Model.GeneralInformation))
+            {
+                <div class="drug-rich-content">@Html.Raw(Model.GeneralInformation)</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.DrugsComUrl) && IsHttpUrl(Model.DrugsComUrl))
+            {
+                <p class="drug-reference">
+                    اطلاعات تکمیلی:
+                    <a href="@Model.DrugsComUrl" target="_blank" rel="nofollow noopener noreferrer">Drugs.com</a>
+                </p>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.MedscapeUrl) && IsHttpUrl(Model.MedscapeUrl))
+            {
+                <p class="drug-reference">
+                    <a href="@Model.MedscapeUrl" target="_blank" rel="nofollow noopener noreferrer">Medscape</a>
+                </p>
+            }
+        </section>
+    }
+
+    @if (Model.InformationSections.Count > 0)
+    {
+        <section class="drug-info-section" id="specialized-information" aria-labelledby="specialized-information-title">
+            <h2 id="specialized-information-title">اطلاعات تخصصی @Model.PersianName</h2>
+            @for (var index = 0; index < Model.InformationSections.Count; index++)
+            {
+                var infoSection = Model.InformationSections[index];
+                <section class="drug-detail-block" id="drug-detail-@index">
+                    <h3>@infoSection.Title @Model.PersianName</h3>
+                    <div class="drug-rich-content">@Html.Raw(infoSection.Content)</div>
+                </section>
+            }
+        </section>
+    }
+
+    <section class="drug-info-section" id="pregnancy" aria-labelledby="pregnancy-title">
+        <h2 id="pregnancy-title">مصرف در بارداری</h2>
+        @if (!string.IsNullOrWhiteSpace(Model.PregnancyCategoryCode))
+        {
+            <p class="pregnancy-category">
+                رده‌ی بارداری:
+                <strong lang="en">@Model.PregnancyCategoryCode</strong>
+            </p>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.PregnancyCategoryDescription))
+        {
+            <p class="drug-rich-content">@Model.PregnancyCategoryDescription</p>
+        }
+        else
+        {
+            <p class="drug-data-note">اطلاعاتی برای این بخش ثبت نشده است.</p>
+        }
+    </section>
+
+    <section class="drug-info-section" id="dosage-forms" aria-labelledby="dosage-forms-title">
+        <h2 id="dosage-forms-title">اشکال دارویی</h2>
+        @if (Model.DosageForms.Count == 0)
+        {
+            <p class="drug-data-note">اشکال دارویی برای این دارو ثبت نشده است.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table drug-dosage-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">کد ژنریک</th>
+                            <th scope="col">نام دارویی</th>
+                            <th scope="col">پرخطر</th>
+                            <th scope="col">دمای نگهداری</th>
+                            <th scope="col">حیاتی</th>
+                            <th scope="col">برچسب هشدار</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var form in Model.DosageForms)
+                        {
+                            <tr>
+                                <td>@(form.FdoGenerationCode?.ToString("D5") ?? "ثبت نشده")</td>
+                                <th scope="row">
+                                    @if (!string.IsNullOrWhiteSpace(form.PersianName))
+                                    {
+                                        @form.PersianName
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(form.EnglishName))
+                                    {
+                                        <span class="dosage-form-english" lang="en" dir="ltr">@form.EnglishName</span>
+                                    }
+                                </th>
+                                <td>@(form.HighAlert == true ? "دارد" : "ندارد")</td>
+                                <td>
+                                    @(form.TemperatureType switch
+                                    {
+                                        1 => "۲ تا ۸ درجه",
+                                        2 => "۱۵ تا ۲۵ درجه",
+                                        3 => "فریزر",
+                                        _ => "ثبت نشده"
+                                    })
+                                </td>
+                                <td>@(form.Emergency == "v" ? "بله" : "خیر")</td>
+                                <td>@(form.TopWarningLabel == true ? "دارد" : "ندارد")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section class="drug-info-section" id="brand-names" aria-labelledby="brand-names-title">
+        <h2 id="brand-names-title">اسامی تجاری</h2>
+        <div class="brand-name-columns">
+            <div>
+                <h3>نام‌های فارسی</h3>
+                @if (Model.PersianBrandNames.Count == 0)
+                {
+                    <p class="drug-data-note">نام تجاری فارسی ثبت نشده است.</p>
+                }
+                else
+                {
+                    <ul class="brand-name-list">
+                        @foreach (var brandName in Model.PersianBrandNames)
+                        {
+                            <li>@brandName</li>
+                        }
+                    </ul>
+                }
+            </div>
+            <div>
+                <h3>نام‌های انگلیسی</h3>
+                @if (Model.EnglishBrandNames.Count == 0)
+                {
+                    <p class="drug-data-note">نام تجاری انگلیسی ثبت نشده است.</p>
+                }
+                else
+                {
+                    <ul class="brand-name-list" lang="en">
+                        @foreach (var brandName in Model.EnglishBrandNames)
+                        {
+                            <li>@brandName</li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="drug-info-section" id="related-drugs" aria-labelledby="related-drugs-title">
+        <h2 id="related-drugs-title">داروهای هم‌گروه</h2>
+        @if (Model.RelatedDrugs.Count == 0)
+        {
+            <p class="drug-data-note">داروی هم‌گروهی برای نمایش ثبت نشده است.</p>
+        }
+        else
+        {
+            <ul class="related-drug-list">
+                @foreach (var drug in Model.RelatedDrugs)
+                {
+                    <li>
+                        <a asp-route="G-{DrugId}/{EngGenericName}"
+                           asp-route-DrugId="@drug.DrugId"
+                           asp-route-EngGenericName="@darooyab_rewrite.Routing.DrugUrl.CreateSlug(drug.EnglishName)">
+                            <strong>@drug.PersianName</strong>
+                            <span lang="en" dir="ltr">@drug.EnglishName</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    <section class="drug-info-section" id="drug-comments" aria-labelledby="drug-comments-title">
+        <h2 id="drug-comments-title">دیدگاه و پرسش</h2>
+        @if (Model.Comments.Count == 0)
+        {
+            <p class="drug-data-note">دیدگاه تأییدشده‌ای برای این دارو ثبت نشده است.</p>
+        }
+        else
+        {
+            <div class="drug-comments-list">
+                @foreach (var comment in Model.Comments)
+                {
+                    <article class="drug-comment">
+                        <header>
+                            <strong>@comment.Name</strong>
+                            <time datetime="@comment.CreatedAt.ToString("O")">@Format(comment.CreatedAt)</time>
+                        </header>
+                        <p>@comment.Content</p>
+                        @foreach (var reply in comment.Replies)
+                        {
+                            <div class="drug-comment-reply">
+                                <strong>@reply.Name</strong>
+                                <time datetime="@reply.CreatedAt.ToString("O")">@Format(reply.CreatedAt)</time>
+                                <p>@reply.Content</p>
+                            </div>
+                        }
+                    </article>
+                }
+            </div>
+        }
+        <p class="drug-data-note">ثبت پرسش آنلاین در نسخه‌ی فعلی فعال نیست.</p>
+    </section>
+</article>
+
+@functions {
+    private static bool IsHttpUrl(string? value)
+    {
+        return Uri.TryCreate(value, UriKind.Absolute, out var uri) &&
+            (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp);
+    }
+}
+
+@section Scripts {
+    <script>
+        (() => {
+            const toc = document.querySelector("#drug-content-toc");
+            const tocList = toc?.querySelector("ol");
+            if (toc && tocList) {
+                const headings = Array.from(document.querySelectorAll(
+                    ".drug-info-page h2.h2_TabTitle, .drug-info-page h2.H_TitleTable, .drug-info-page .drug-info-section > h2:not(#pharmacy-availability-title), .drug-info-page .drug-rich-content h2"))
+                    .filter(heading =>
+                        heading.getClientRects().length > 0 &&
+                        heading.textContent.trim().length > 0);
+                const persianName = document.querySelector(".drug-info-page")?.dataset.persianName ?? "";
+                const addPersianName = persianName.split("+").length === 2;
+
+                headings.forEach((heading, index) => {
+                    if (heading.closest(".drug-rich-content")) {
+                        heading.classList.add("drug-content-indexed-heading");
+                    }
+
+                    const baseId = heading.id || `drug-content-heading-${index + 1}`;
+                    let targetId = baseId;
+                    let suffix = 1;
+                    while (document.getElementById(targetId) && document.getElementById(targetId) !== heading) {
+                        targetId = `${baseId}-${suffix++}`;
+                    }
+                    heading.id = targetId;
+
+                    const item = document.createElement("li");
+                    const link = document.createElement("a");
+                    link.href = `#${targetId}`;
+                    link.textContent = `${heading.textContent.trim()}${addPersianName ? ` ${persianName}` : ""}`;
+                    item.append(link);
+                    tocList.append(item);
+                });
+
+                toc.hidden = headings.length === 0;
+            }
+
+            const navigation = document.querySelector(".drug-section-nav");
+            if (!navigation || !("IntersectionObserver" in window)) {
+                return;
+            }
+
+            const links = Array.from(navigation.querySelectorAll("a[href^='#']"));
+            const targets = links
+                .map(link => document.getElementById(decodeURIComponent(link.hash.slice(1))))
+                .filter(target => target !== null);
+
+            if (targets.length === 0) {
+                return;
+            }
+
+            const visibleTargets = new Map();
+            const observer = new IntersectionObserver(entries => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting) {
+                        visibleTargets.set(entry.target.id, entry);
+                    } else {
+                        visibleTargets.delete(entry.target.id);
+                    }
+                }
+
+                const currentTargets = Array.from(visibleTargets.values())
+                    .sort((first, second) => first.boundingClientRect.top - second.boundingClientRect.top);
+
+                if (currentTargets.length === 0) {
+                    return;
+                }
+
+                const activeId = currentTargets[0].target.id;
+                for (const link of links) {
+                    if (decodeURIComponent(link.hash.slice(1)) === activeId) {
+                        link.setAttribute("aria-current", "location");
+                    } else {
+                        link.removeAttribute("aria-current");
+                    }
+                }
+            }, {
+                rootMargin: "-160px 0px -65% 0px",
+                threshold: 0
+            });
+
+            for (const target of targets) {
+                observer.observe(target);
+            }
+        })();
+    </script>
+}

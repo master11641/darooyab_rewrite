@@ -1,0 +1,253 @@
+@model darooyab_rewrite.ViewModels.CompanyProductsPageViewModel
+@{
+    var directoryTitle = Model.DirectoryPath switch
+    {
+        "ImporterCompanies" => "شرکت‌های واردکننده",
+        "DistributerCompanies" => "شرکت‌های توزیع‌کننده",
+        _ => "شرکت‌های دارویی"
+    };
+    var hasOrganizationDetails = Model.Organization is not null &&
+        new[]
+        {
+            Model.Organization.LogoUrl,
+            Model.Organization.WebsiteUrl,
+            Model.Organization.Email,
+            Model.Organization.Phone,
+            Model.Organization.Fax,
+            Model.Organization.Address
+        }.Any(value => !string.IsNullOrWhiteSpace(value));
+}
+
+<section class="company-products-page" aria-labelledby="company-products-title">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+            <li class="breadcrumb-item">
+                <a href="/@Model.DirectoryPath">@directoryTitle</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @(Model.CompanyName ?? "جزئیات شرکت")
+            </li>
+        </ol>
+    </nav>
+
+    <header class="company-products-heading">
+        <span class="section-kicker">@directoryTitle</span>
+        @if (Model.DataUnavailable)
+        {
+            <h1 id="company-products-title">اطلاعات شرکت در دسترس نیست</h1>
+            <p>دریافت محصولات این شرکت در حال حاضر ممکن نیست. لطفاً کمی بعد دوباره تلاش کنید.</p>
+        }
+        else
+        {
+            <h1 id="company-products-title">محصولات شرکت @Model.CompanyName</h1>
+            @if (!string.IsNullOrWhiteSpace(Model.CountryName))
+            {
+                <p>@Model.CountryName</p>
+            }
+        }
+    </header>
+
+    @if (Model.DataUnavailable)
+    {
+        <div class="company-state company-state-error" role="alert">
+            دریافت اطلاعات شرکت و محصولات آن در حال حاضر ممکن نیست.
+        </div>
+    }
+    else
+    {
+        @if (hasOrganizationDetails)
+        {
+            <aside class="company-profile" aria-label="اطلاعات ثبت‌شده‌ی شرکت">
+                @if (!string.IsNullOrWhiteSpace(Model.Organization!.LogoUrl) &&
+                     Url.IsLocalUrl(Model.Organization.LogoUrl))
+                {
+                    <div class="company-profile-logo">
+                        <img src="@Url.Content(Model.Organization.LogoUrl)" alt="لوگوی @Model.CompanyName" />
+                    </div>
+                }
+                <div class="company-profile-data">
+                    @if (!string.IsNullOrWhiteSpace(Model.Organization.WebsiteUrl) &&
+                         Uri.TryCreate(Model.Organization.WebsiteUrl, UriKind.Absolute, out var websiteUri) &&
+                         (websiteUri.Scheme == Uri.UriSchemeHttp || websiteUri.Scheme == Uri.UriSchemeHttps))
+                    {
+                        <p><strong>وب‌سایت</strong> <a href="@websiteUri.AbsoluteUri" target="_blank" rel="noopener noreferrer">@Model.Organization.WebsiteUrl</a></p>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.Organization.Email))
+                    {
+                        <p><strong>رایانامه</strong> <a href="mailto:@Model.Organization.Email">@Model.Organization.Email</a></p>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.Organization.Phone))
+                    {
+                        <p><strong>تلفن</strong> <span dir="auto">@Model.Organization.Phone</span></p>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.Organization.Fax))
+                    {
+                        <p><strong>فکس</strong> <span dir="auto">@Model.Organization.Fax</span></p>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.Organization.Address))
+                    {
+                        <p><strong>نشانی ثبت‌شده</strong> <span>@Model.Organization.Address</span></p>
+                    }
+                </div>
+            </aside>
+        }
+
+        <section class="company-products-results" aria-labelledby="company-products-list-title">
+            <div class="company-products-results-heading">
+                <div>
+                    <span class="section-kicker">فهرست فرآورده‌ها</span>
+                    <h2 id="company-products-list-title">محصولات ثبت‌شده‌ی مرتبط با شرکت</h2>
+                </div>
+                <span class="company-result-count">@Model.Products.Count محصول</span>
+            </div>
+
+            @if (Model.Products.Count == 0)
+            {
+                <div class="company-state" role="status">محصولی برای این شرکت ثبت نشده است.</div>
+            }
+            else
+            {
+                <div class="company-products-table-wrap">
+                    <table class="company-products-table">
+                        <caption class="visually-hidden">محصولات ثبت‌شده‌ی مرتبط با @Model.CompanyName</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">تصویر</th>
+                                <th scope="col">نام دارو</th>
+                                <th scope="col">تولیدکننده</th>
+                                <th scope="col">نام ژنریک</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var product in Model.Products)
+                            {
+                                var imageUrl = !string.IsNullOrWhiteSpace(product.ImageUrl) && Url.IsLocalUrl(product.ImageUrl)
+                                    ? Url.Content(product.ImageUrl)
+                                    : null;
+                                var brandUrl = Url.RouteUrl(
+                                    "BrandInfo",
+                                    new
+                                    {
+                                        IRC = product.Irc,
+                                        BrandEngName = darooyab_rewrite.Routing.DrugUrl.CreateSlug(product.BrandName)
+                                    });
+                                var genericUrl = string.IsNullOrWhiteSpace(product.GenericName)
+                                    ? null
+                                    : Url.RouteUrl(
+                                        "G-{DrugId}/{EngGenericName}",
+                                        new
+                                        {
+                                            DrugId = product.DrugId,
+                                            EngGenericName = darooyab_rewrite.Routing.DrugUrl.CreateSlug(product.GenericName)
+                                        });
+
+                                <tr>
+                                    <td class="company-product-image-cell">
+                                        @if (imageUrl is not null)
+                                        {
+                                            <img src="@imageUrl" alt="" loading="lazy" />
+                                        }
+                                        else
+                                        {
+                                            <span aria-label="تصویر موجود نیست">—</span>
+                                        }
+                                    </td>
+                                    <th scope="row">
+                                        @if (!string.IsNullOrWhiteSpace(brandUrl))
+                                        {
+                                            <a href="@brandUrl">
+                                                @if (!string.IsNullOrWhiteSpace(product.PersianName))
+                                                {
+                                                    <span class="company-product-persian-name">@product.PersianName</span>
+                                                }
+                                                <span lang="en" dir="ltr">@product.BrandName</span>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span>@product.BrandName</span>
+                                        }
+                                    </th>
+                                    <td>@(string.IsNullOrWhiteSpace(product.ManufacturerName) ? "—" : product.ManufacturerName)</td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(genericUrl))
+                                        {
+                                            <a href="@genericUrl">@product.GenericName</a>
+                                        }
+                                        else
+                                        {
+                                            <span>—</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="company-products-mobile-list">
+                    @foreach (var product in Model.Products)
+                    {
+                        var imageUrl = !string.IsNullOrWhiteSpace(product.ImageUrl) && Url.IsLocalUrl(product.ImageUrl)
+                            ? Url.Content(product.ImageUrl)
+                            : null;
+                        var brandUrl = Url.RouteUrl(
+                            "BrandInfo",
+                            new
+                            {
+                                IRC = product.Irc,
+                                BrandEngName = darooyab_rewrite.Routing.DrugUrl.CreateSlug(product.BrandName)
+                            });
+                        var genericUrl = string.IsNullOrWhiteSpace(product.GenericName)
+                            ? null
+                            : Url.RouteUrl(
+                                "G-{DrugId}/{EngGenericName}",
+                                new
+                                {
+                                    DrugId = product.DrugId,
+                                    EngGenericName = darooyab_rewrite.Routing.DrugUrl.CreateSlug(product.GenericName)
+                                });
+
+                        <article class="company-product-card">
+                            <div class="company-product-card-brand">
+                                @if (imageUrl is not null)
+                                {
+                                    <img src="@imageUrl" alt="" loading="lazy" />
+                                }
+                                <div>
+                                    @if (!string.IsNullOrWhiteSpace(brandUrl))
+                                    {
+                                        <a href="@brandUrl">
+                                            @if (!string.IsNullOrWhiteSpace(product.PersianName))
+                                            {
+                                                <span class="company-product-persian-name">@product.PersianName</span>
+                                            }
+                                            <span lang="en" dir="ltr">@product.BrandName</span>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <strong>@product.BrandName</strong>
+                                    }
+                                </div>
+                            </div>
+                            <p><strong>تولیدکننده</strong><span>@(string.IsNullOrWhiteSpace(product.ManufacturerName) ? "—" : product.ManufacturerName)</span></p>
+                            <p>
+                                <strong>نام ژنریک</strong>
+                                @if (!string.IsNullOrWhiteSpace(genericUrl))
+                                {
+                                    <a href="@genericUrl">@product.GenericName</a>
+                                }
+                                else
+                                {
+                                    <span>—</span>
+                                }
+                            </p>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+    }
+</section>

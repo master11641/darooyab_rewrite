@@ -1,0 +1,171 @@
+@model darooyab_rewrite.ViewModels.PharmacyDirectoryViewModel
+@{
+    Layout = "_LayoutWithRightPanel";
+    ViewData["CanonicalUrl"] = Url.RouteUrl("PharmacyDirectory", null, Context.Request.Scheme);
+    ViewData["OpenGraphUrl"] = ViewData["CanonicalUrl"];
+    ViewData["OpenGraphTitle"] = "فهرست داروخانه‌ها";
+    ViewData["OpenGraphDescription"] = ViewData["MetaDescription"];
+}
+
+<section class="pharmacy-directory container" aria-labelledby="pharmacy-directory-title">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+            <li class="breadcrumb-item active" aria-current="page">داروخانه‌ها</li>
+        </ol>
+    </nav>
+
+    <header class="pharmacy-directory-heading">
+        <span class="section-kicker">یافتن داروخانه</span>
+        <h1 id="pharmacy-directory-title">فهرست داروخانه‌های ایران</h1>
+        <p>داروخانه‌ها را بر اساس موقعیت، حوزه‌ی دارویی یا نام جست‌وجو کنید.</p>
+    </header>
+
+    <form class="pharmacy-filter-panel" method="get" asp-route="PharmacyDirectory"
+          data-cities-url="@Url.RouteUrl("PharmacyCities")"
+          data-districts-url="@Url.RouteUrl("PharmacyDistricts")">
+        <input type="hidden" name="page" value="1" />
+        <div class="pharmacy-filter-grid">
+            <div class="pharmacy-filter-field">
+                <label for="ProvinceId">استان</label>
+                <select id="ProvinceId" name="provId" class="form-select">
+                    <option value="0" selected="@(Model.ProvinceId == 0)">همه‌ی استان‌ها</option>
+                    @foreach (var province in Model.Provinces)
+                    {
+                        <option value="@province.Id" selected="@(Model.ProvinceId == province.Id)">@province.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="pharmacy-filter-field">
+                <label for="CityId">شهر</label>
+                <select id="CityId" name="cityId" class="form-select" aria-describedby="pharmacy-filter-status"
+                        disabled="@(Model.Provinces.Count == 0 || Model.ProvinceId == 0)">
+                    <option value="0" selected="@(Model.CityId == 0)">همه‌ی شهرها</option>
+                    @foreach (var city in Model.Cities)
+                    {
+                        <option value="@city.Id" selected="@(Model.CityId == city.Id)">@city.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="pharmacy-filter-field">
+                <label for="DistrictId">منطقه</label>
+                <select id="DistrictId" name="districtId" class="form-select" aria-describedby="pharmacy-filter-status"
+                        disabled="@(Model.CityId == 0)">
+                    <option value="0" selected="@(Model.DistrictId == 0)">همه‌ی مناطق</option>
+                    @foreach (var district in Model.Districts)
+                    {
+                        <option value="@district.Id" selected="@(Model.DistrictId == district.Id)">@district.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="pharmacy-filter-field">
+                <label for="PharmacySpecialtyId">حوزه‌ی دارویی</label>
+                <select id="PharmacySpecialtyId" name="pharmacySpecialtyId" class="form-select">
+                    <option value="0" selected="@(Model.PharmacySpecialtyId == 0)">همه‌ی حوزه‌ها</option>
+                    @foreach (var specialty in Model.Specialties)
+                    {
+                        <option value="@specialty.Id" selected="@(Model.PharmacySpecialtyId == specialty.Id)">@specialty.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="pharmacy-filter-field pharmacy-filter-name">
+                <label for="pharmacyNameFilterTxt">نام داروخانه</label>
+                <input id="pharmacyNameFilterTxt" name="pharmacyName" class="form-control" type="search"
+                       value="@Model.PharmacyName" maxlength="100" placeholder="نام داروخانه را وارد کنید" />
+            </div>
+        </div>
+        <p id="pharmacy-filter-status" class="pharmacy-filter-status" role="status" aria-live="polite"></p>
+        <div class="pharmacy-filter-actions">
+            <button type="submit" class="btn btn-primary">اعمال فیلترها</button>
+            <a class="btn btn-outline-primary" asp-route="PharmacyDirectory">پاک‌کردن فیلترها</a>
+        </div>
+    </form>
+
+    <section class="pharmacy-results" aria-labelledby="pharmacy-results-title">
+        <div class="pharmacy-results-heading">
+            <div>
+                <span class="section-kicker">نتایج جست‌وجو</span>
+                <h2 id="pharmacy-results-title">داروخانه‌ها</h2>
+            </div>
+            @if (!Model.DataUnavailable)
+            {
+                <span class="pharmacy-result-count">@Model.Pharmacies.TotalCount مورد</span>
+            }
+        </div>
+
+        @if (Model.DataUnavailable)
+        {
+            <div class="pharmacy-state pharmacy-state-error" role="alert">
+                دریافت فهرست داروخانه‌ها در حال حاضر ممکن نیست. لطفاً کمی بعد دوباره تلاش کنید.
+            </div>
+        }
+        else if (Model.Pharmacies.TotalCount == 0)
+        {
+            <div class="pharmacy-state" role="status">
+                داروخانه‌ای با این مشخصات پیدا نشد. فیلترها را تغییر دهید و دوباره جست‌وجو کنید.
+            </div>
+        }
+        else
+        {
+            <div class="pharmacy-card-list">
+                @{
+                    var rowNumber = (Model.Pharmacies.PageNumber - 1) * Model.Pharmacies.PageSize;
+                }
+                @foreach (var pharmacy in Model.Pharmacies.Items)
+                {
+                    rowNumber++;
+                    <article class="pharmacy-card">
+                        <div class="pharmacy-card-icon" aria-hidden="true">✚</div>
+                        <div class="pharmacy-card-main">
+                            <div class="pharmacy-card-title-row">
+                                <h3>
+                                    <a asp-route="PharmacyDetails"
+                                       asp-route-pharmacyId="@pharmacy.Id"
+                                       asp-route-pharmacyName="@darooyab_rewrite.Routing.PharmacyUrl.CreateSlug(pharmacy.Name, pharmacy.City)">
+                                        @pharmacy.Name
+                                    </a>
+                                </h3>
+                                <span class="pharmacy-card-number" aria-label="مورد @rowNumber">
+                                    @rowNumber
+                                </span>
+                            </div>
+                            <div class="pharmacy-card-location" aria-label="موقعیت">
+                                <span class="pharmacy-location-chip"><span aria-hidden="true">⌖</span> @pharmacy.Province</span>
+                                <span class="pharmacy-location-chip">@pharmacy.City</span>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(pharmacy.Address))
+                            {
+                                <p class="pharmacy-card-address"><span aria-hidden="true">⌂</span> @pharmacy.Address</p>
+                            }
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(pharmacy.Phone))
+                        {
+                            <div class="pharmacy-card-phone">
+                                <span>تماس</span>
+                                <a href="tel:@pharmacy.Phone"><bdi dir="ltr">@pharmacy.Phone</bdi></a>
+                            </div>
+                        }
+                    </article>
+                }
+            </div>
+
+            @await Html.PartialAsync("_Pagination", new darooyab_rewrite.ViewModels.PaginationViewModel(
+                Model.Pharmacies.PageNumber,
+                Model.Pharmacies.TotalPages,
+                "PharmacyDirectory",
+                "page",
+                new Dictionary<string, string>
+                {
+                    ["provId"] = Model.ProvinceId.ToString(),
+                    ["cityId"] = Model.CityId.ToString(),
+                    ["districtId"] = Model.DistrictId.ToString(),
+                    ["pharmacySpecialtyId"] = Model.PharmacySpecialtyId.ToString(),
+                    ["pharmacyName"] = Model.PharmacyName
+                }))
+        }
+    </section>
+
+    @section Scripts {
+        <script src="~/js/pharmacy-directory.js" asp-append-version="true"></script>
+    }
+</section>

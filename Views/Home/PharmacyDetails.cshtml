@@ -1,0 +1,155 @@
+@model darooyab_rewrite.ViewModels.PharmacyDetailViewModel
+@{
+    Layout = "_LayoutWithRightPanel";
+}
+
+<main class="pharmacy-detail container" aria-labelledby="pharmacy-detail-title">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+            <li class="breadcrumb-item"><a asp-route="PharmacyDirectory">داروخانه‌ها</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <header class="pharmacy-detail-hero">
+        <div class="pharmacy-detail-symbol" aria-hidden="true">✚</div>
+        <div class="pharmacy-detail-heading">
+            <span class="section-kicker">اطلاعات داروخانه</span>
+            <h1 id="pharmacy-detail-title">@Model.Name</h1>
+            <p class="pharmacy-detail-location">@Model.Province، @Model.City</p>
+        </div>
+    </header>
+
+    <div class="pharmacy-detail-grid">
+        <section class="pharmacy-detail-card pharmacy-contact" aria-labelledby="pharmacy-contact-title">
+            <div class="pharmacy-detail-card-heading">
+                <span class="section-kicker">مشخصات</span>
+                <h2 id="pharmacy-contact-title">راه‌های تماس و نشانی</h2>
+            </div>
+            <dl class="pharmacy-detail-facts">
+                <div>
+                    <dt>نشانی</dt>
+                    <dd>@(string.IsNullOrWhiteSpace(Model.Address) ? "نشانی ثبت نشده است." : Model.Address)</dd>
+                </div>
+                <div>
+                    <dt>شهر و استان</dt>
+                    <dd>@Model.City، @Model.Province</dd>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.Phone))
+                {
+                    <div>
+                        <dt>تلفن</dt>
+                        <dd><a href="tel:@Model.Phone"><bdi dir="ltr">@Model.Phone</bdi></a></dd>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.SecondaryPhone))
+                {
+                    <div>
+                        <dt>تلفن دوم</dt>
+                        <dd><a href="tel:@Model.SecondaryPhone"><bdi dir="ltr">@Model.SecondaryPhone</bdi></a></dd>
+                    </div>
+                }
+                @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+                {
+                    <div>
+                        <dt>موقعیت</dt>
+                        <dd><a href="https://www.google.com/maps/search/?api=1&amp;query=@Model.Latitude,@Model.Longitude" target="_blank" rel="noopener noreferrer">مشاهده روی نقشه</a></dd>
+                    </div>
+                }
+            </dl>
+            @if (Model.Images.Count > 1)
+            {
+                <div class="home-carousel pharmacy-gallery-carousel" data-home-carousel aria-label="تصاویر داروخانه">
+                    <div class="home-carousel-track pharmacy-gallery-track" data-carousel-track tabindex="0" aria-label="تصاویر داروخانه @Model.Name">
+                        @foreach (var image in Model.Images)
+                        {
+                            <div class="pharmacy-gallery-slide">
+                                <img src="@image" alt="تصویر @Model.Name" loading="lazy" />
+                            </div>
+                        }
+                    </div>
+                    <div class="carousel-controls pharmacy-gallery-controls" aria-label="کنترل تصاویر داروخانه">
+                        <button class="carousel-arrow" type="button" data-carousel-next aria-label="نمایش تصویر بعدی">‹</button>
+                        <button class="carousel-arrow" type="button" data-carousel-previous aria-label="نمایش تصویر قبلی">›</button>
+                    </div>
+                </div>
+            }
+            else if (Model.Images.Count == 1)
+            {
+                <div class="pharmacy-detail-gallery">
+                    <img src="@Model.Images[0]" alt="تصویر @Model.Name" loading="lazy" />
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Introduction))
+            {
+                <div class="pharmacy-detail-introduction">
+                    <h3>درباره‌ی داروخانه</h3>
+                    <p>@Model.Introduction</p>
+                </div>
+            }
+            @if (Model.Specialties.Count > 0)
+            {
+                <div class="pharmacy-detail-specialties">
+                    <h3>حوزه‌های دارویی</h3>
+                    <ul>
+                        @foreach (var specialty in Model.Specialties)
+                        {
+                            <li>@specialty</li>
+                        }
+                    </ul>
+                </div>
+            }
+        </section>
+
+        <section class="pharmacy-detail-card pharmacy-availability" aria-labelledby="pharmacy-availability-title">
+            <div class="pharmacy-detail-card-heading">
+                <span class="section-kicker">اطلاعات ثبت‌شده</span>
+                <h2 id="pharmacy-availability-title">داروهای دارای ارجاع</h2>
+                <p>وضعیت هر مورد بر اساس تاریخ انقضای ارجاع ثبت‌شده نمایش داده می‌شود؛ برای اطمینان از موجودی با داروخانه تماس بگیرید.</p>
+            </div>
+
+            @if (Model.Availability.TotalCount == 0)
+            {
+                <div class="pharmacy-state" role="status">در حال حاضر ارجاع فعالی برای نمایش ثبت نشده است.</div>
+            }
+            else
+            {
+                <div class="pharmacy-availability-list">
+                    @foreach (var item in Model.Availability.Items)
+                    {
+                        var daysRemaining = Math.Max(0, (item.ExpireDate.Date - DateTime.Today).Days);
+                        <article class="pharmacy-availability-item">
+                            <div class="pharmacy-availability-copy">
+                                <h3><a href="@item.DetailUrl">@item.BrandName</a></h3>
+                                <p>نام ژنریک: @item.GenericName</p>
+                            </div>
+                            <div class="pharmacy-availability-status">
+                                <span class="pharmacy-availability-days">@(daysRemaining == 0 ? "اعتبار تا امروز" : $"اعتبار حدود {daysRemaining} روز دیگر")</span>
+                                <span>تا @Format(item.ExpireDate)</span>
+                            </div>
+                        </article>
+                    }
+                </div>
+
+                @await Html.PartialAsync("_Pagination", new darooyab_rewrite.ViewModels.PaginationViewModel(
+                    Model.Availability.PageNumber,
+                    Model.Availability.TotalPages,
+                    "PharmacyDetails",
+                    "page",
+                    new Dictionary<string, string>
+                    {
+                        ["pharmacyId"] = Model.PharmacyId.ToString(),
+                        ["pharmacyName"] = darooyab_rewrite.Routing.PharmacyUrl.CreateSlug(Model.Name, Model.City)
+                    }))
+            }
+        </section>
+    </div>
+</main>
+
+@section Scripts {
+    @if (Model.Images.Count > 1)
+    {
+        <script src="~/js/scroll-carousel.js" asp-append-version="true"></script>
+    }
+}

@@ -1,0 +1,63 @@
+@model darooyab_rewrite.ViewModels.PaginationViewModel
+@{
+    const int pageWindowSize = 10;
+    var windowStart = Math.Max(1, Math.Min(Model.PageNumber - pageWindowSize / 2, Model.TotalPages - pageWindowSize + 1));
+    var windowEnd = Math.Min(Model.TotalPages, windowStart + pageWindowSize - 1);
+
+    string PageUrl(int pageNumber)
+    {
+        var values = Model.RouteValues.ToDictionary(item => item.Key, item => item.Value);
+        values[Model.PageParameterName] = pageNumber.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return Url.RouteUrl(Model.RouteName, values) ?? "#";
+    }
+}
+
+@if (Model.TotalPages > 1)
+{
+    <nav class="pagination-nav" aria-label="صفحه‌بندی فهرست">
+        <div class="pagination-controls">
+        @if (Model.PageNumber > 1)
+        {
+            <a class="pagination-edge" href="@PageUrl(1)" aria-label="صفحه‌ی اول"><span aria-hidden="true">«</span><span>اول</span></a>
+            <a class="pagination-edge" href="@PageUrl(Model.PageNumber - 1)" rel="prev"><span aria-hidden="true">‹</span><span>قبلی</span></a>
+        }
+        else
+        {
+            <span class="pagination-edge is-disabled" aria-disabled="true"><span aria-hidden="true">«</span><span>اول</span></span>
+            <span class="pagination-edge is-disabled" aria-disabled="true"><span aria-hidden="true">‹</span><span>قبلی</span></span>
+        }
+
+        @if (windowStart > 1)
+        {
+            <span class="pagination-ellipsis" aria-hidden="true">…</span>
+        }
+        @for (var pageNumber = windowStart; pageNumber <= windowEnd; pageNumber++)
+        {
+            if (pageNumber == Model.PageNumber)
+            {
+                <span class="pagination-number is-current" aria-current="page" aria-label="صفحه‌ی @pageNumber">@pageNumber</span>
+            }
+            else
+            {
+                <a class="pagination-number" href="@PageUrl(pageNumber)" aria-label="رفتن به صفحه‌ی @pageNumber">@pageNumber</a>
+            }
+        }
+        @if (windowEnd < Model.TotalPages)
+        {
+            <span class="pagination-ellipsis" aria-hidden="true">…</span>
+        }
+
+        @if (Model.PageNumber < Model.TotalPages)
+        {
+            <a class="pagination-edge" href="@PageUrl(Model.PageNumber + 1)" rel="next"><span>بعدی</span><span aria-hidden="true">›</span></a>
+            <a class="pagination-edge" href="@PageUrl(Model.TotalPages)" aria-label="صفحه‌ی آخر"><span>آخر</span><span aria-hidden="true">»</span></a>
+        }
+        else
+        {
+            <span class="pagination-edge is-disabled" aria-disabled="true"><span>بعدی</span><span aria-hidden="true">›</span></span>
+            <span class="pagination-edge is-disabled" aria-disabled="true"><span>آخر</span><span aria-hidden="true">»</span></span>
+        }
+        </div>
+        <span class="pagination-summary">صفحه‌ی @Model.PageNumber از @Model.TotalPages</span>
+    </nav>
+}

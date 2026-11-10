@@ -1,0 +1,168 @@
+@model darooyab_rewrite.ViewModels.ContactPageViewModel
+@{
+    Layout = "_LayoutWithRightPanel";
+    var activities = Model.Activities;
+}
+
+<article class="contact-editorial" aria-labelledby="contact-title">
+    <header class="contact-editorial-hero">
+        <div class="contact-editorial-index" aria-hidden="true">
+            <span>DY</span>
+            <span>ارتباط مستقیم</span>
+        </div>
+        <div class="contact-editorial-copy">
+            <p class="contact-eyebrow">دارویاب <span aria-hidden="true">/</span> اطلاعات تماس</p>
+            <h1 id="contact-title">گفت‌وگو را<br /><em>از اینجا شروع کنیم.</em></h1>
+            <p class="contact-editorial-lead">
+                برای ارتباط با تیم دارویاب، راهی را انتخاب کنید که برای شما راحت‌تر است.
+            </p>
+        </div>
+        <div class="contact-direct-line">
+            <span class="contact-direct-label">خط تماس</span>
+            <a href="tel:+982128427085" dir="ltr" aria-label="تماس با شماره ۰۲۱ ۲۸۴۲ ۷۰۸۵">۰۲۱ ۲۸۴۲ ۷۰۸۵</a>
+            <span class="contact-direct-caption">شرکت اکسیر دارویاب توانا</span>
+            <span class="contact-direct-ornament" aria-hidden="true">۰۱</span>
+        </div>
+    </header>
+
+    <section class="contact-context" aria-label="درباره دفتر دارویاب">
+        <p class="contact-context-label">دارویاب، در اصفهان</p>
+        <div>
+            <p>شرکت اکسیر دارویاب توانا، صاحب امتیاز سامانه‌ی یکپارچه‌ی اطلاعات دارویی دارویاب</p>
+            <p>مستقر در مرکز رشد فناوری‌های دارویی دانشگاه علوم پزشکی اصفهان</p>
+        </div>
+    </section>
+
+    <section class="contact-channels" aria-labelledby="contact-channels-title">
+        <div class="contact-section-heading">
+            <span class="contact-section-index">۱ / راه‌های تماس</span>
+            <h2 id="contact-channels-title">یک مسیر را انتخاب کنید</h2>
+        </div>
+        <ul class="contact-channel-list">
+            <li>
+                <span class="contact-channel-number" aria-hidden="true">۰۱</span>
+                <span class="contact-channel-name">رایانامه</span>
+                <a class="contact-channel-detail" href="mailto:info@darooyab.ir" dir="ltr">info@darooyab.ir</a>
+                <a class="contact-channel-action" href="mailto:info@darooyab.ir">نوشتن پیام <span aria-hidden="true">↗</span></a>
+            </li>
+            <li>
+                <span class="contact-channel-number" aria-hidden="true">۰۲</span>
+                <span class="contact-channel-name">تلگرام</span>
+                <a class="contact-channel-detail" href="https://t.me/darooyabiran" target="_blank" rel="noopener noreferrer" dir="ltr">darooyabiran</a>
+                <a class="contact-channel-action" href="https://t.me/darooyabiran" target="_blank" rel="noopener noreferrer">رفتن به تلگرام <span aria-hidden="true">↗</span></a>
+            </li>
+            <li>
+                <span class="contact-channel-number" aria-hidden="true">۰۳</span>
+                <span class="contact-channel-name">واتس‌اپ</span>
+                <a class="contact-channel-detail" href="https://wa.me/989308093667" target="_blank" rel="noopener noreferrer" dir="ltr">+98 930 809 3667</a>
+                <a class="contact-channel-action" href="https://wa.me/989308093667" target="_blank" rel="noopener noreferrer">گفت‌وگو در واتس‌اپ <span aria-hidden="true">↗</span></a>
+            </li>
+            <li>
+                <span class="contact-channel-number" aria-hidden="true">۰۴</span>
+                <span class="contact-channel-name">پیام‌رسان بله</span>
+                <a class="contact-channel-detail" href="https://ble.ir/darooyabir" target="_blank" rel="noopener noreferrer" dir="ltr">darooyabir</a>
+                <a class="contact-channel-action" href="https://ble.ir/darooyabir" target="_blank" rel="noopener noreferrer">رفتن به بله <span aria-hidden="true">↗</span></a>
+            </li>
+        </ul>
+    </section>
+
+    <aside class="contact-stock-note" aria-label="توضیح درباره استعلام موجودی">
+        <span class="contact-stock-mark" aria-hidden="true">!</span>
+        <p>
+            <strong>برای استعلام موجودی دارو تماس نگیرید.</strong>
+            موجودی از طریق وب‌سایت و اپلیکیشن دارویاب قابل مشاهده است.
+        </p>
+    </aside>
+
+    <section class="contact-message-section" aria-labelledby="contact-message-title">
+        <div class="contact-section-heading">
+            <span class="contact-section-index">۲ / پیام نوشتاری</span>
+            <h2 id="contact-message-title">ترجیح می‌دهید بنویسید؟</h2>
+            <p>پیام خود را ثبت کنید تا برای بررسی به تیم دارویاب برسد.</p>
+        </div>
+
+        @if (Model.MessageSent)
+        {
+            <div class="contact-form-status contact-form-success" role="status" aria-live="polite">
+                پیام شما ثبت شد. از اینکه با دارویاب در ارتباط هستید سپاسگزاریم.
+            </div>
+        }
+        @if (Model.SubmissionUnavailable)
+        {
+            <div class="contact-form-status contact-form-error" role="alert">
+                ثبت پیام در حال حاضر ممکن نیست. لطفاً از یکی از راه‌های تماس بالا استفاده کنید.
+            </div>
+        }
+        @if (Model.DataUnavailable)
+        {
+            <div class="contact-form-status contact-form-error" role="alert">
+                دریافت موضوع‌های پیام در حال حاضر ممکن نیست؛ ارسال فرم موقتاً غیرفعال است.
+            </div>
+        }
+        else if (activities.Count == 0)
+        {
+            <div class="contact-form-status contact-form-error" role="alert">
+                موضوع‌های پیام در دسترس نیستند؛ لطفاً از یکی از راه‌های تماس بالا استفاده کنید.
+            </div>
+        }
+        else
+        {
+            <form class="contact-message-form" method="post" action="/Contactus">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="contact-validation-summary" role="alert"></div>
+                <div class="contact-form-trap" aria-hidden="true">
+                    <label asp-for="Input.Website">وب‌سایت</label>
+                    <input asp-for="Input.Website" tabindex="-1" autocomplete="off" />
+                </div>
+
+                <div class="contact-form-grid">
+                    <div class="contact-field">
+                        <label asp-for="Input.Name">نام و نام خانوادگی</label>
+                        <input asp-for="Input.Name" autocomplete="name" maxlength="255" />
+                        <span asp-validation-for="Input.Name" class="contact-field-error"></span>
+                    </div>
+                    <div class="contact-field">
+                        <label asp-for="Input.ActivityId">نوع فعالیت</label>
+                        <select asp-for="Input.ActivityId">
+                            @foreach (var activity in activities)
+                            {
+                                <option value="@activity.Id">@activity.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Input.ActivityId" class="contact-field-error"></span>
+                    </div>
+                    <div class="contact-field">
+                        <label asp-for="Input.Organization">نام سازمان یا شرکت <span>اختیاری</span></label>
+                        <input asp-for="Input.Organization" autocomplete="organization" maxlength="255" />
+                        <span asp-validation-for="Input.Organization" class="contact-field-error"></span>
+                    </div>
+                    <div class="contact-field">
+                        <label asp-for="Input.Role">سمت <span>اختیاری</span></label>
+                        <input asp-for="Input.Role" maxlength="255" />
+                        <span asp-validation-for="Input.Role" class="contact-field-error"></span>
+                    </div>
+                    <div class="contact-field">
+                        <label asp-for="Input.Phone">شماره تماس <span>اختیاری</span></label>
+                        <input asp-for="Input.Phone" type="tel" autocomplete="tel" maxlength="255" />
+                        <span asp-validation-for="Input.Phone" class="contact-field-error"></span>
+                    </div>
+                    <div class="contact-field">
+                        <label asp-for="Input.Email">رایانامه <span>اختیاری</span></label>
+                        <input asp-for="Input.Email" type="email" autocomplete="email" maxlength="50" />
+                        <span asp-validation-for="Input.Email" class="contact-field-error"></span>
+                    </div>
+                    <div class="contact-field contact-field-message">
+                        <label asp-for="Input.Message">متن پیام</label>
+                        <textarea asp-for="Input.Message" rows="5" maxlength="4000"></textarea>
+                        <span asp-validation-for="Input.Message" class="contact-field-error"></span>
+                    </div>
+                </div>
+
+                <div class="contact-form-footer">
+                    <p>لطفاً پیام را روشن و مرتبط با موضوع تماس بنویسید.</p>
+                    <button class="contact-submit" type="submit">ثبت پیام <span aria-hidden="true">←</span></button>
+                </div>
+            </form>
+        }
+    </section>
+</article>

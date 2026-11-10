@@ -1,0 +1,242 @@
+@model darooyab_rewrite.ViewModels.DoctorDirectoryViewModel
+@using DNTPersianUtils.Core
+
+<section class="doctor-directory" aria-labelledby="doctor-directory-title">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+            <li class="breadcrumb-item active" aria-current="page">فهرست متخصصان سلامت</li>
+        </ol>
+    </nav>
+
+    <header class="doctor-directory-hero">
+        <div>
+            <span class="section-kicker">شبکه‌ی متخصصان سلامت دارویاب</span>
+            <h1 id="doctor-directory-title">فهرست متخصصان سلامت</h1>
+            <p>متخصص موردنظرتان را پیدا کنید و اطلاعات تخصص و نشانی‌های ثبت‌شده را ببینید.</p>
+        </div>
+        @if (!Model.DataUnavailable)
+        {
+            <div class="doctor-directory-count" aria-label="تعداد متخصصان تأییدشده">
+                <strong>@Model.Doctors.TotalCount.ToPersianNumbers()</strong>
+                <span>متخصص تأییدشده</span>
+            </div>
+        }
+    </header>
+
+    @if (Model.DataUnavailable)
+    {
+        <div class="doctor-directory-state doctor-directory-state-error" role="alert">
+            دریافت فهرست متخصصان سلامت در حال حاضر ممکن نیست. لطفاً کمی بعد دوباره تلاش کنید.
+        </div>
+    }
+    else
+    {
+        @if (Model.Doctors.Items.Count == 0)
+        {
+            <div class="doctor-directory-state" role="status">
+                متخصصی برای نمایش در این فهرست یافت نشد.
+            </div>
+        }
+        else
+        {
+            <div class="doctor-table-wrap">
+                <table class="doctor-table">
+                    <caption class="visually-hidden">فهرست متخصصان سلامت تأییدشده</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">نام و نام خانوادگی</th>
+                            <th scope="col">نوع فعالیت و تخصص</th>
+                            <th scope="col">نشانی‌های ثبت‌شده</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var doctor in Model.Doctors.Items)
+                        {
+                            var displayName = doctor.ActivityId == 9
+                                ? $"{doctor.Name} {doctor.Family}"
+                                : $"دکتر {doctor.Name} {doctor.Family}";
+                            <tr>
+                                <td>
+                                    <div class="doctor-person">
+                                        @if (!string.IsNullOrWhiteSpace(doctor.ImageUrl))
+                                        {
+                                            <img src="@doctor.ImageUrl" alt="" loading="lazy" />
+                                        }
+                                        else
+                                        {
+                                            <span class="doctor-avatar" aria-hidden="true">✚</span>
+                                        }
+                                        <div>
+                                            <a asp-route="DoctorProfile" asp-route-id="@doctor.Id">@displayName</a>
+                                            @if (!string.IsNullOrWhiteSpace(doctor.SystemNumber))
+                                            {
+                                                <span class="doctor-system-number">
+                                                    شماره نظام پزشکی: @doctor.SystemNumber.ToPersianNumbers()
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(doctor.ActivityTitle))
+                                    {
+                                        <span class="doctor-activity-badge">@doctor.ActivityTitle</span>
+                                    }
+                                    <div class="doctor-specialties">
+                                        @if (!string.IsNullOrWhiteSpace(doctor.Specialty))
+                                        {
+                                            <span>@doctor.Specialty@(doctor.ActivityId == 9 ? " مامایی" : string.Empty)</span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(doctor.SubSpecialty))
+                                        {
+                                            <span>@doctor.SubSpecialty</span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(doctor.Fellowship))
+                                        {
+                                            <span>@doctor.Fellowship</span>
+                                        }
+                                        @if (string.IsNullOrWhiteSpace(doctor.Specialty) &&
+                                             string.IsNullOrWhiteSpace(doctor.SubSpecialty) &&
+                                             string.IsNullOrWhiteSpace(doctor.Fellowship))
+                                        {
+                                            <span>—</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (doctor.Addresses.Count == 0)
+                                    {
+                                        <span class="doctor-address-empty">نشانی ثبت نشده</span>
+                                    }
+                                    else
+                                    {
+                                        <div class="doctor-address-list">
+                                            @foreach (var address in doctor.Addresses)
+                                            {
+                                                <div class="doctor-address">
+                                                    <strong>@address.Type</strong>
+                                                    <span>@address.Province، @address.City، @address.Address</span>
+                                                    @if (!string.IsNullOrWhiteSpace(address.Phone1) ||
+                                                         !string.IsNullOrWhiteSpace(address.Phone2))
+                                                    {
+                                                        <span>@address.Phone1@(string.IsNullOrWhiteSpace(address.Phone1) || string.IsNullOrWhiteSpace(address.Phone2) ? string.Empty : "، ")@address.Phone2</span>
+                                                    }
+                                                    @if (!string.IsNullOrWhiteSpace(address.PostalCode))
+                                                    {
+                                                        <span>کد پستی: @address.PostalCode.ToPersianNumbers()</span>
+                                                    }
+                                                    @if (!string.IsNullOrWhiteSpace(address.Website))
+                                                    {
+                                                        <a href="@address.Website" target="_blank" rel="noopener noreferrer">وب‌سایت</a>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doctor-card-list">
+                @foreach (var doctor in Model.Doctors.Items)
+                {
+                    var displayName = doctor.ActivityId == 9
+                        ? $"{doctor.Name} {doctor.Family}"
+                        : $"دکتر {doctor.Name} {doctor.Family}";
+                    <article class="doctor-card">
+                        <header class="doctor-card-person">
+                            @if (!string.IsNullOrWhiteSpace(doctor.ImageUrl))
+                            {
+                                <img src="@doctor.ImageUrl" alt="" loading="lazy" />
+                            }
+                            else
+                            {
+                                <span class="doctor-avatar" aria-hidden="true">✚</span>
+                            }
+                            <div>
+                                <h2><a asp-route="DoctorProfile" asp-route-id="@doctor.Id">@displayName</a></h2>
+                                @if (!string.IsNullOrWhiteSpace(doctor.ActivityTitle))
+                                {
+                                    <span class="doctor-activity-badge">@doctor.ActivityTitle</span>
+                                }
+                            </div>
+                        </header>
+                        @if (!string.IsNullOrWhiteSpace(doctor.SystemNumber))
+                        {
+                            <p class="doctor-card-line">
+                                <strong>شماره نظام پزشکی:</strong> @doctor.SystemNumber.ToPersianNumbers()
+                            </p>
+                        }
+                        <div class="doctor-card-line">
+                            <strong>تخصص‌ها و سوابق:</strong>
+                            @if (!string.IsNullOrWhiteSpace(doctor.Specialty))
+                            {
+                                <span>@doctor.Specialty@(doctor.ActivityId == 9 ? " مامایی" : string.Empty)</span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(doctor.SubSpecialty))
+                            {
+                                <span>@doctor.SubSpecialty</span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(doctor.Fellowship))
+                            {
+                                <span>@doctor.Fellowship</span>
+                            }
+                            @if (string.IsNullOrWhiteSpace(doctor.Specialty) &&
+                                 string.IsNullOrWhiteSpace(doctor.SubSpecialty) &&
+                                 string.IsNullOrWhiteSpace(doctor.Fellowship))
+                            {
+                                <span>—</span>
+                            }
+                        </div>
+                        <div class="doctor-card-line">
+                            <strong>نشانی‌ها:</strong>
+                            @if (doctor.Addresses.Count == 0)
+                            {
+                                <span class="doctor-address-empty">نشانی ثبت نشده</span>
+                            }
+                            else
+                            {
+                                <div class="doctor-address-list">
+                                    @foreach (var address in doctor.Addresses)
+                                    {
+                                        <div class="doctor-address">
+                                            <strong>@address.Type</strong>
+                                            <span>@address.Province، @address.City، @address.Address</span>
+                                            @if (!string.IsNullOrWhiteSpace(address.Phone1) ||
+                                                 !string.IsNullOrWhiteSpace(address.Phone2))
+                                            {
+                                                <span>@address.Phone1@(string.IsNullOrWhiteSpace(address.Phone1) || string.IsNullOrWhiteSpace(address.Phone2) ? string.Empty : "، ")@address.Phone2</span>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(address.PostalCode))
+                                            {
+                                                <span>کد پستی: @address.PostalCode.ToPersianNumbers()</span>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(address.Website))
+                                            {
+                                                <a href="@address.Website" target="_blank" rel="noopener noreferrer">وب‌سایت</a>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+
+            @if (Model.Doctors.TotalPages > 1)
+            {
+                @await Html.PartialAsync("_Pagination", new darooyab_rewrite.ViewModels.PaginationViewModel(
+                    Model.Doctors.PageNumber,
+                    Model.Doctors.TotalPages,
+                    "HealthcareProfessionals",
+                    "page",
+                    new Dictionary<string, string>()))
+            }
+        }
+    }
+</section>

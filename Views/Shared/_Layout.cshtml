@@ -1,0 +1,251 @@
+﻿@{
+    var pageDescription = ViewData["MetaDescription"] as string
+        ?? "دارویاب؛ مرجع اطلاعات دارویی و تازه‌های حوزه‌ی سلامت.";
+    var canonicalUrl = ViewData["CanonicalUrl"] as string;
+    var openGraphTitle = ViewData["OpenGraphTitle"] as string;
+    var openGraphDescription = ViewData["OpenGraphDescription"] as string;
+    var openGraphUrl = ViewData["OpenGraphUrl"] as string;
+    var openGraphType = ViewData["OpenGraphType"] as string ?? "article";
+    var openGraphImage = ViewData["OpenGraphImage"] as string;
+    var twitterCard = ViewData["TwitterCard"] as string ?? "summary";
+    var structuredData = ViewData["StructuredData"] as string;
+    var useLegacyNewsMetadata = ViewData["UseLegacyNewsMetadata"] is bool useLegacy && useLegacy;
+    var useRightPanel = ViewData["UseRightPanelLayout"] is bool usePanel && usePanel;
+    var currentDrugId = ViewData["DrugId"] as int?;
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var currentSection = ViewContext.RouteData.Values["id"]?.ToString();
+    var currentPath = Context.Request.Path.Value ?? string.Empty;
+    var isHomePage = string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase);
+    var isPharmacyPage = string.Equals(currentAction, "Pharmacies", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(currentAction, "PharmacyDetails", StringComparison.OrdinalIgnoreCase) ||
+        currentPath.StartsWith("/ph-", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(currentPath, "/داروخانه", StringComparison.OrdinalIgnoreCase);
+    var isDoctorDirectoryPage =
+        currentPath.StartsWith("/doctors", StringComparison.OrdinalIgnoreCase) ||
+        currentPath.StartsWith("/profile/", StringComparison.OrdinalIgnoreCase);
+    var isHerbalPage =
+        currentPath.StartsWith("/DrugGroups", StringComparison.OrdinalIgnoreCase) ||
+        currentPath.StartsWith("/HerbalMedicines", StringComparison.OrdinalIgnoreCase) ||
+        currentPath.StartsWith("/DrugHerbal", StringComparison.OrdinalIgnoreCase);
+    var isNewsPage = (string.Equals(currentAction, "Section", StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(currentSection, "news", StringComparison.OrdinalIgnoreCase)) ||
+        currentPath.StartsWith("/NewsApp", StringComparison.OrdinalIgnoreCase);
+    var isNewDrugsPage = string.Equals(currentAction, "NewDrugs", StringComparison.OrdinalIgnoreCase);
+    var isContactPage = string.Equals(currentPath, "/Contactus", StringComparison.OrdinalIgnoreCase);
+    var isAboutPage = string.Equals(currentPath, "/About", StringComparison.OrdinalIgnoreCase);
+    var isCompanyDirectoryPage =
+        currentPath.StartsWith("/Pharmaceuticalcompanies", StringComparison.OrdinalIgnoreCase) ||
+        currentPath.StartsWith("/ImporterCompanies", StringComparison.OrdinalIgnoreCase) ||
+        currentPath.StartsWith("/DistributerCompanies", StringComparison.OrdinalIgnoreCase);
+    var isDrugInformationPage =
+        string.Equals(currentAction, "DrugInfo", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(currentAction, "BrandInfo", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(currentAction, "Search", StringComparison.OrdinalIgnoreCase) ||
+        isHerbalPage ||
+        (string.Equals(currentAction, "Section", StringComparison.OrdinalIgnoreCase) &&
+         string.Equals(currentSection, "drugs", StringComparison.OrdinalIgnoreCase));
+}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    @if (useLegacyNewsMetadata)
+    {
+        <meta name="robots" content="noindex, follow" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    }
+    <meta name="theme-color" content="@(useLegacyNewsMetadata ? "#009688" : "#f5f8fc")" />
+    @if (!useLegacyNewsMetadata)
+    {
+        <meta name="description" content="@pageDescription" />
+    }
+    @if (!string.IsNullOrWhiteSpace(canonicalUrl))
+    {
+        <link rel="canonical" href="@canonicalUrl" />
+        @if (!useLegacyNewsMetadata)
+        {
+            <meta property="og:url" content="@openGraphUrl" />
+            <meta property="og:locale:alternate" content="fa_IR" />
+            <meta property="og:type" content="@openGraphType" />
+            <meta property="og:title" content="@openGraphTitle" />
+            <meta property="og:description" content="@openGraphDescription" />
+            <meta property="og:site_name" content="دارویاب" />
+            @if (!string.IsNullOrWhiteSpace(openGraphImage))
+            {
+                <meta property="og:image" content="@openGraphImage" />
+                <meta property="og:image:alt" content="@openGraphTitle" />
+            }
+            <meta name="twitter:card" content="@twitterCard" />
+            <meta name="twitter:title" content="@openGraphTitle" />
+            <meta name="twitter:description" content="@openGraphDescription" />
+            @if (!string.IsNullOrWhiteSpace(openGraphImage))
+            {
+                <meta name="twitter:image" content="@openGraphImage" />
+            }
+        }
+    }
+    @if (!string.IsNullOrWhiteSpace(structuredData))
+    {
+        <script type="application/ld+json">@Html.Raw(structuredData)</script>
+    }
+    <title>@ViewData["Title"] | دارویاب</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.rtl.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <a class="skip-link" href="#main-content">رفتن به محتوای اصلی</a>
+    <header class="site-header">
+        <div class="container site-header-top">
+            <a class="brand" asp-controller="Home" asp-action="Index" aria-label="دارویاب، صفحه نخست">
+                <span class="brand-mark" aria-hidden="true">د</span>
+                <span class="brand-copy">
+                    <strong>دارویاب</strong>
+                    <small>همراه اطلاعات دارویی</small>
+                </span>
+            </a>
+            @{ ViewData["DrugSearchInputId"] = "site-drug-search-input"; }
+            <partial name="_DrugSearchBox" />
+            <button class="mobile-search-toggle" type="button" aria-controls="site-drug-search"
+                    aria-expanded="false" aria-label="نمایش جست‌وجوی دارو">
+                <span aria-hidden="true">⌕</span>
+                <span class="visually-hidden">نمایش جست‌وجوی دارو</span>
+            </button>
+            <button class="navbar-toggler nav-toggle" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#site-navigation" aria-controls="site-navigation"
+                    aria-expanded="false" aria-label="باز کردن منوی اصلی">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+        <nav class="site-menu" aria-label="منوی اصلی">
+            <div class="container">
+                <div class="collapse site-menu-collapse" id="site-navigation">
+                    <ul class="navbar-nav site-menu-list">
+                        <li class="nav-item">
+                            <a class="nav-link @(isHomePage ? "is-active" : "")"
+                               asp-controller="Home" asp-action="Index"
+                               aria-current="@(isHomePage ? "page" : null)">خانه</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/App">اپلیکیشن</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <button class="nav-link dropdown-toggle @(isPharmacyPage ? "is-active" : "")"
+                                    type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                    aria-current="@(isPharmacyPage ? "location" : null)">داروخانه ها</button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-route="PharmacyDirectory">لیست داروخانه‌ها</a></li>
+                                <li><a class="dropdown-item" href="/ph/login">ورود داروخانه</a></li>
+                                <li><a class="dropdown-item" href="/page?Id=110">اتصال داروخانه به دارویاب</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-divider" aria-hidden="true"></li>
+                        <li class="nav-item">
+                            <a class="nav-link @(isNewDrugsPage ? "is-active" : "")"
+                               asp-controller="Home" asp-action="NewDrugs"
+                               aria-current="@(isNewDrugsPage ? "page" : null)">تازه های دارویی</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(isNewsPage ? "is-active" : "")"
+                               asp-route="AllNews"
+                               aria-current="@(isNewsPage ? "page" : null)">اخبار</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <button class="nav-link dropdown-toggle @(isCompanyDirectoryPage ? "is-active" : "")"
+                                    type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                    aria-current="@(isCompanyDirectoryPage ? "location" : null)">شرکت دارویی</button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/Pharmaceuticalcompanies" aria-current="@(currentPath.StartsWith("/Pharmaceuticalcompanies", StringComparison.OrdinalIgnoreCase) ? "page" : null)">تولید کننده</a></li>
+                                <li><a class="dropdown-item" href="/ImporterCompanies" aria-current="@(currentPath.StartsWith("/ImporterCompanies", StringComparison.OrdinalIgnoreCase) ? "page" : null)">وارد کننده</a></li>
+                                <li><a class="dropdown-item" href="/DistributerCompanies" aria-current="@(currentPath.StartsWith("/DistributerCompanies", StringComparison.OrdinalIgnoreCase) ? "page" : null)">توزیع کننده</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <button class="nav-link dropdown-toggle @(isDoctorDirectoryPage ? "is-active" : "")"
+                                    type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                    aria-current="@(isDoctorDirectoryPage ? "location" : null)">پزشکان</button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/doctors">لیست پزشکان</a></li>
+                                <li><a class="dropdown-item" href="/doctorpanel/login">ورود پزشکان</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <button class="nav-link dropdown-toggle @(isDrugInformationPage ? "is-active" : "")"
+                                    type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                    aria-current="@(isDrugInformationPage ? "location" : null)">طبقه بندی داروها</button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/DrugGroups">مارتیندل</a></li>
+                                <li><a class="dropdown-item" href="/ClassificationAHFS">AHFS</a></li>
+                                <li><a class="dropdown-item" href="/DrugGroups/39">مکمل ها</a></li>
+                                <li><a class="dropdown-item" href="/HerbalMedicines">دارو های گیاهی</a></li>
+                                <li><a class="dropdown-item" href="/DrugHerbal">گیاهان دارویی</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <button class="nav-link dropdown-toggle @(isContactPage || isAboutPage ? "is-active" : "")"
+                                    type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                    aria-current="@(isContactPage || isAboutPage ? "location" : null)">تماس باما</button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/Contactus">اطلاعات تماس</a></li>
+                                <li><a class="dropdown-item" href="/About" aria-current="@(isAboutPage ? "page" : null)">درباره ما</a></li>
+                                <li>
+                                    <a class="dropdown-item" rel="nofollow"
+                                       href="https://drsaniei.darooyab.ir/%D9%85%D8%AC%D9%88%D8%B2%D9%87%D8%A7-%D9%88-%D9%82%D9%88%D8%A7%D9%86%DB%8C%D9%86">مجوزها</a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main id="main-content">
+        @if (useRightPanel)
+        {
+            <div class="container public-page-shell">
+                <div class="row g-4 align-items-start">
+                    <aside class="col-12 col-lg-4 order-2 order-lg-1" aria-label="مطالب و دسترسی‌های جانبی">
+                        @await Component.InvokeAsync("PublicRightPanel", new { drugId = currentDrugId })
+                    </aside>
+                    <div class="col-12 col-lg-8 order-1 order-lg-2">
+                        @RenderBody()
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            @RenderBody()
+        }
+    </main>
+    <footer class="site-footer">
+        <div class="container footer-main">
+            <div class="footer-brand">
+                <a class="brand brand-light" asp-controller="Home" asp-action="Index">
+                    <span class="brand-mark" aria-hidden="true">د</span>
+                    <span class="brand-copy">
+                        <strong>دارویاب</strong>
+                        <small>همراه اطلاعات دارویی</small>
+                    </span>
+                </a>
+                <p>مسیرهای دسترسی به اطلاعات دارویی و معرفی بخش‌های دارویاب.</p>
+            </div>
+            <div class="footer-links">
+                <strong>دسترسی سریع</strong>
+                <a asp-controller="Home" asp-action="Section" asp-route-id="drugs">اطلاعات دارویی</a>
+                <a asp-route="PharmacyDirectory">داروخانه‌ها</a>
+                <a asp-route="AllNews">تازه‌های دارویی</a>
+            </div>
+        </div>
+        <div class="container footer-bottom">
+            <span>© @Format(DateTime.Now, yearOnly: true) دارویاب</span>
+            <span>اطلاعات این نسخه به‌تدریج تکمیل می‌شود.</span>
+        </div>
+    </footer>
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
+    <script src="~/js/drug-search.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

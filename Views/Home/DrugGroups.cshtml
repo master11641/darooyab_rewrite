@@ -1,0 +1,45 @@
+@model darooyab_rewrite.ViewModels.DrugGroupDirectoryViewModel
+
+<section class="drug-groups-page" aria-labelledby="drug-groups-title">
+    <header class="drug-groups-heading">
+        <p class="drug-groups-kicker">طبقه‌بندی مارتیندل</p>
+        <h1 id="drug-groups-title">طبقه‌بندی مارتیندل (گروه‌های دارویی)</h1>
+        <p>گروه دارویی را برای مشاهده‌ی داروهای مرتبط انتخاب کنید.</p>
+    </header>
+
+    @if (Model.DataUnavailable)
+    {
+        <div class="drug-groups-state drug-groups-state-error" role="alert">
+            دریافت فهرست گروه‌های دارویی در حال حاضر ممکن نیست. لطفاً بعداً دوباره تلاش کنید.
+        </div>
+    }
+    else if (Model.Groups.Count == 0)
+    {
+        <div class="drug-groups-state" role="status">گروهی برای نمایش ثبت نشده است.</div>
+    }
+    else
+    {
+        <ol class="drug-groups-list">
+            @for (var index = 0; index < Model.Groups.Count; index++)
+            {
+                var group = Model.Groups[index];
+                <li class="drug-group-card">
+                    <span class="drug-group-index" aria-hidden="true">@(index + 1)</span>
+                    <div class="drug-group-name">
+                        <a href="/DrugGroups/@group.Id">
+                            <span>@group.PersianName</span>
+                            @if (!string.IsNullOrWhiteSpace(group.EnglishName))
+                            {
+                                <span class="drug-group-name-en" lang="en" dir="ltr">@group.EnglishName</span>
+                            }
+                        </a>
+                    </div>
+                    <a class="drug-group-action" href="/DrugGroups/@group.Id" aria-label="مشاهده داروهای گروه @group.PersianName">
+                        مشاهده داروها
+                        <span aria-hidden="true">←</span>
+                    </a>
+                </li>
+            }
+        </ol>
+    }
+</section>
