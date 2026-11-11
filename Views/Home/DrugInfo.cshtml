@@ -3,6 +3,9 @@
     Layout = "_LayoutWithRightPanel";
     ViewData["MetaDescription"] = Model.PageDescription;
     ViewData["DrugId"] = Model.DrugId;
+    var referralDrugName = string.IsNullOrWhiteSpace(Model.PersianName)
+        ? Model.EnglishName
+        : Model.PersianName;
     var hasGeneralInformation = !string.IsNullOrWhiteSpace(Model.GeneralInformation) ||
         IsHttpUrl(Model.DrugsComUrl) ||
         IsHttpUrl(Model.MedscapeUrl);
@@ -23,6 +26,12 @@
         tabs.Add(("related-drugs", "داروهای هم‌گروه"));
     }
     tabs.Add(("drug-comments", "دیدگاه و پرسش"));
+    var commentForm = new darooyab_rewrite.ViewModels.PublicCommentFormViewModel(
+        "generic",
+        Model.DrugId,
+        Model.PersianName,
+        string.Concat(Context.Request.PathBase, Context.Request.Path, Context.Request.QueryString),
+        ViewData["CaptchaEnabled"] as bool? ?? true);
 }
 
 <article class="drug-info-page" data-persian-name="@Model.PersianName">
@@ -34,7 +43,7 @@
         </ol>
     </nav>
 
-    <header class="drug-info-header">
+    <header class="drug-info-header site-hero site-hero--glass site-hero--drug-info">
         @if (Model.MartindaleGroupId == 62)
         {
             <span class="drug-info-kicker">محصولات @Model.PersianName</span>
@@ -116,12 +125,13 @@
         <div class="drug-referrals-heading">
             <div>
                 <span class="section-kicker">ارجاعات دارویی</span>
-                <h2 id="pharmacy-availability-title">ارجاعات مربوط به @Model.PersianName</h2>
-                <p>صفحه‌ی ارجاعات دارویی در حال آماده‌سازی است.</p>
+                <h2 id="pharmacy-availability-title">ارجاعات مربوط به @referralDrugName</h2>
+                <p>برای مشاهده‌ی ارجاعات ثبت‌شده‌ی این ژنریک، صفحه‌ی ارجاعات دارویی را ببینید.</p>
             </div>
-            <button type="button" class="btn btn-outline-primary" disabled>
-                مشاهده‌ی ارجاعات (به‌زودی)
-            </button>
+            <div class="drug-availability-actions">
+                <a class="btn btn-primary" href="/availability/@Model.DrugId">در کدام داروخانه موجود است؟</a>
+                <a class="btn btn-outline-primary" href="/App">دریافت اپلیکیشن دارویاب</a>
+            </div>
         </div>
     </section>
     @if (hasGeneralInformation)
@@ -328,7 +338,7 @@
                 }
             </div>
         }
-        <p class="drug-data-note">ثبت پرسش آنلاین در نسخه‌ی فعلی فعال نیست.</p>
+        <partial name="_PublicCommentForm" model="commentForm" />
     </section>
 </article>
 

@@ -1,0 +1,276 @@
+@model PharmacyDrugShortagePageViewModel
+@{
+    ViewData["Title"] = "ثبت کسری داروخانه";
+    var statusMessage = TempData["PharmacyDrugShortageMessage"] as string;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pharmacy-drug-shortage.css" asp-append-version="true" />
+}
+
+<div class="admin-page pharmacy-shortage" dir="rtl">
+    <nav class="admin-breadcrumb" aria-label="مسیر صفحه">
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">داشبورد</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">ثبت کسری داروخانه</span>
+    </nav>
+
+    <section class="admin-panel-card shortage-intro" aria-labelledby="shortage-page-title">
+        <div>
+            <span class="admin-eyebrow">مدیریت نیاز دارویی</span>
+            <h2 id="shortage-page-title">@(Model.IsEditMode ? "ویرایش کسری داروخانه" : "ثبت کسری داروخانه")</h2>
+            <p>کسری یک برند یا شکل دارویی را ثبت کنید تا مازادهای قابل‌تبادل داروخانه‌های دیگر را بررسی کنید.</p>
+        </div>
+        <span class="shortage-owner">
+            <small>داروخانه</small>
+            <strong>@ViewData["PharmacyName"]</strong>
+        </span>
+    </section>
+
+    @if (!string.IsNullOrWhiteSpace(statusMessage))
+    {
+        <div class="shortage-alert shortage-alert-success" role="status">@statusMessage</div>
+    }
+
+    <div asp-validation-summary="ModelOnly" class="shortage-alert shortage-alert-error" role="alert"></div>
+    @if (Model.EditRequestNotFound)
+    {
+        <div class="shortage-alert shortage-alert-error" role="alert">
+            درخواست برای ویرایش در دسترس نیست یا متعلق به این داروخانه نیست.
+        </div>
+    }
+
+    <section class="admin-panel-card shortage-form-card" aria-labelledby="shortage-form-title">
+        <div class="shortage-section-heading">
+            <div>
+                <span class="admin-eyebrow">اطلاعات درخواست</span>
+                <h2 id="shortage-form-title">@(Model.IsEditMode ? "ویرایش درخواست" : "درخواست جدید")</h2>
+            </div>
+        </div>
+
+        <form method="post" action="/DrugShortage/AddOrEdit" data-shortage-form>
+            @Html.AntiForgeryToken()
+            <input asp-for="Form.Id" type="hidden" />
+            <input asp-for="Form.SearchProperty" type="hidden" data-selected-drug-id />
+
+            <fieldset class="shortage-search-type">
+                <legend>روش انتخاب دارو</legend>
+                <label>
+                    <input type="radio" name="Form.SearchType" value="2"
+                           checked="@(Model.Form.SearchType == 2)" />
+                    <span>جستجو در برند</span>
+                </label>
+                <label>
+                    <input type="radio" name="Form.SearchType" value="1"
+                           checked="@(Model.Form.SearchType == 1)" />
+                    <span>جستجو در شکل دارویی</span>
+                </label>
+            </fieldset>
+
+            <div class="shortage-drug-picker">
+                <label for="shortage-drug-search" data-search-label>
+                    @(Model.Form.SearchType == 1 ? "جستجوی شکل دارویی" : "جستجوی برند")
+                </label>
+                <input id="shortage-drug-search"
+                       type="search"
+                       autocomplete="off"
+                       class="shortage-input"
+                       role="combobox"
+                       aria-autocomplete="list"
+                       aria-expanded="false"
+                       aria-controls="shortage-search-results"
+                       aria-describedby="shortage-search-status"
+                       data-search-url="/DrugShortage/Search"
+                       placeholder="برای جستجو حداقل دو نویسه وارد کنید" />
+                <ul id="shortage-search-results"
+                    class="shortage-search-results"
+                    role="listbox"
+                    aria-label="نتایج جستجوی دارو"
+                    hidden></ul>
+                <div id="shortage-search-status"
+                     class="shortage-live"
+                     data-search-status
+                     role="status"
+                     aria-live="polite"></div>
+                <div class="shortage-selected-drug" data-selected-drug aria-live="polite">
+                    @if (Model.SelectedDrug is not null)
+                    {
+                        <span class="shortage-drug-chip">
+                            <span>@Model.SelectedDrug.Name</span>
+                            <button type="button" data-clear-drug aria-label="حذف داروی انتخاب‌شده">حذف</button>
+                        </span>
+                    }
+                </div>
+                <span asp-validation-for="Form.SearchProperty" class="shortage-validation"></span>
+            </div>
+
+            <div class="shortage-form-actions">
+                <button class="shortage-primary-button" type="submit" data-save-button>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l3 3v13H4V4h1Zm2 0v6h10V4M8 20v-7h8v7" /></svg>
+                    <span>@(Model.IsEditMode ? "ذخیره تغییرات" : "ثبت کسری")</span>
+                </button>
+                @if (Model.IsEditMode)
+                {
+                    <a class="shortage-secondary-button" href="/DrugShortage/AddOrEdit">انصراف از ویرایش</a>
+                }
+            </div>
+        </form>
+    </section>
+
+    <section class="admin-panel-card shortage-list-card" aria-labelledby="shortage-list-title">
+        <div class="shortage-section-heading">
+            <div>
+                <span class="admin-eyebrow">درخواست‌های فعال</span>
+                <h2 id="shortage-list-title">کسری‌های ثبت‌شده</h2>
+            </div>
+            <span class="shortage-count">@Model.Requests.Count مورد در این صفحه</span>
+        </div>
+
+        @if (Model.Requests.Count == 0)
+        {
+            <div class="shortage-empty" role="status">
+                <strong>درخواست فعالی برای نمایش وجود ندارد.</strong>
+                <p>پس از ثبت کسری، درخواست‌های باز در این فهرست قرار می‌گیرند.</p>
+            </div>
+        }
+        else
+        {
+            <div class="shortage-list" data-shortage-list data-page="@Model.Page">
+                @foreach (var item in Model.Requests)
+                {
+                    <article class="shortage-item" data-shortage-item data-id="@item.Id">
+                        <div class="shortage-item-main">
+                            <span class="shortage-item-date">تاریخ ثبت: @item.RegisteredAtDisplay</span>
+                            <h3>@item.DrugName</h3>
+                        </div>
+                        <div class="shortage-item-actions">
+                            <a class="shortage-edit-button" href="/DrugShortage/AddOrEdit?id=@item.Id">
+                                ویرایش
+                            </a>
+                            <button class="shortage-result-button"
+                                    type="button"
+                                    data-open-results
+                                    data-id="@item.Id"
+                                    data-drug-name="@item.DrugName">
+                                نتیجه
+                            </button>
+                            <form method="post"
+                                  action="/DrugShortage/Delete/@item.Id"
+                                  data-delete-form>
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="page" value="@Model.Page" />
+                                <button class="shortage-delete-button" type="submit">حذف</button>
+                            </form>
+                        </div>
+                        <div class="shortage-item-feedback" data-delete-feedback role="alert" hidden></div>
+                    </article>
+                }
+            </div>
+        }
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="shortage-pagination" aria-label="صفحه‌بندی کسری‌های ثبت‌شده">
+                @if (Model.Page > 1)
+                {
+                    <a href="/DrugShortage/AddOrEdit?page=@(Model.Page - 1)">صفحه قبل</a>
+                }
+                <span>صفحه @Model.Page از @Model.TotalPages</span>
+                @if (Model.Page < Model.TotalPages)
+                {
+                    <a href="/DrugShortage/AddOrEdit?page=@(Model.Page + 1)">صفحه بعد</a>
+                }
+            </nav>
+        }
+    </section>
+</div>
+
+<section class="shortage-results-modal"
+         data-results-modal
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="shortage-results-title"
+         aria-hidden="true"
+         hidden>
+    <header class="shortage-modal-header">
+        <button type="button" class="shortage-modal-close" data-close-results aria-label="بستن نتایج">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+        </button>
+        <div>
+            <span class="admin-eyebrow">پیشنهادهای داروخانه‌های دیگر</span>
+            <h2 id="shortage-results-title" data-results-title>نتیجه</h2>
+        </div>
+    </header>
+
+    <div class="shortage-modal-body">
+        <div class="shortage-result-filters">
+            <div class="shortage-filter-field">
+                <label for="shortage-province">استان</label>
+                <select id="shortage-province" class="shortage-input" data-province>
+                    <option value="0">همه استان‌ها</option>
+                    @foreach (var province in Model.Provinces)
+                    {
+                        <option value="@province.Id"
+                                selected="@(Model.SelectedProvinceId == province.Id)">
+                            @province.Name
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="shortage-filter-field">
+                <label for="shortage-township">شهر</label>
+                <select id="shortage-township" class="shortage-input" data-township>
+                    <option value="0">همه شهرها</option>
+                    @foreach (var township in Model.Townships)
+                    {
+                        <option value="@township.Id"
+                                selected="@(Model.SelectedTownshipId == township.Id)">
+                            @township.Name
+                        </option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="shortage-result-tabs" role="tablist" aria-label="گروه پیشنهادهای تبادل">
+            <button type="button"
+                    role="tab"
+                    id="shortage-tab-normal"
+                    aria-controls="shortage-panel-normal"
+                    aria-selected="true"
+                    data-result-tab="NormalExchange">
+                عادی و تاریخ‌نزدیک
+            </button>
+            <button type="button"
+                    role="tab"
+                    id="shortage-tab-star"
+                    aria-controls="shortage-panel-star"
+                    aria-selected="false"
+                    data-result-tab="StarExchange"
+                    tabindex="-1">
+                ویژه، لوکس و کمیاب
+            </button>
+            <button type="button"
+                    role="tab"
+                    id="shortage-tab-near-date"
+                    aria-controls="shortage-panel-near-date"
+                    aria-selected="false"
+                    data-result-tab="NearDate"
+                    tabindex="-1">
+                تاریخ نزدیک
+            </button>
+        </div>
+
+        <div id="shortage-panel-normal" role="tabpanel" aria-labelledby="shortage-tab-normal"
+             data-result-panel="NormalExchange" aria-live="polite" tabindex="0"></div>
+        <div id="shortage-panel-star" role="tabpanel" aria-labelledby="shortage-tab-star"
+             data-result-panel="StarExchange" aria-live="polite" tabindex="0" hidden></div>
+        <div id="shortage-panel-near-date" role="tabpanel" aria-labelledby="shortage-tab-near-date"
+             data-result-panel="NearDate" aria-live="polite" tabindex="0" hidden></div>
+        <div class="shortage-modal-feedback" data-modal-feedback role="status" aria-live="polite"></div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/pharmacy-drug-shortage.js" asp-append-version="true" defer></script>
+}

@@ -1,0 +1,184 @@
+@model PharmacyRequestBrandDetailsViewModel
+@using System.Globalization
+@{
+    var dailyPrice = Model.DailyPriceToman ?? 0;
+    var selectedDays = Math.Clamp(Model.PurchaseRankDays ?? 20, 1, 60);
+    var priceValue = Model.SubmittedBrandPrice ?? Model.CurrentPrice;
+    var priceUnit = Model.SubmittedBrandPriceUnitNumber ?? Model.CurrentPriceUnitNumber ?? 2;
+}
+
+<section class="pharmacy-request-brand-details"
+         aria-labelledby="brand-details-title"
+         data-brand-details>
+    <div class="pharmacy-request-section-heading">
+        <div>
+            <span class="admin-eyebrow">امکانات برند انتخاب‌شده</span>
+            <h2 id="brand-details-title">@Model.BrandName</h2>
+        </div>
+        <span class="pharmacy-request-owner">
+            <small>استان رتبه‌بندی</small>
+            <strong>@Model.ProvinceName</strong>
+        </span>
+    </div>
+
+    <section class="pharmacy-request-active-ranks" aria-labelledby="active-ranks-title">
+        <h3 id="active-ranks-title">جایگاه‌های خریداری‌شده در استان @Model.ProvinceName</h3>
+        @if (Model.ActiveRankings.Count > 0)
+        {
+            <div class="pharmacy-request-rank-grid">
+                @foreach (var rank in Model.ActiveRankings)
+                {
+                    <article class="pharmacy-request-rank-card">
+                        @if (rank.RankNumber is >= 1 and <= 10)
+                        {
+                            <img src="@Url.Content($"~/Content/Images/ranking{rank.RankNumber}.webp")"
+                                 alt="نشان رتبه @rank.RankNumber"
+                                 width="72"
+                                 height="72"
+                                 loading="lazy" />
+                        }
+                        <div class="pharmacy-request-rank-card-copy">
+                            <strong>رتبه‌ی @rank.RankNumber</strong>
+                            <span>@rank.PharmacyName</span>
+                            <span>پایان رزرو: @rank.ExpiresAtDisplay</span>
+                            <span>هزینه‌ی روزانه: @rank.DailyPriceToman.ToString("N0", CultureInfo.InvariantCulture) تومان</span>
+                        </div>
+                        <span class="pharmacy-request-rank-badge">خریداری‌شده</span>
+                    </article>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="pharmacy-request-rank-empty">در حال حاضر جایگاه خریداری‌شده‌ی فعالی برای این برند در استان وجود ندارد.</p>
+        }
+    </section>
+
+    @if (Model.OwnedRankNumber.HasValue)
+    {
+        <p class="pharmacy-request-rank-status" role="status">
+            داروخانه‌ی شما رتبه‌ی @Model.OwnedRankNumber را تا
+            @Model.OwnedRankExpiresAtDisplay
+            در اختیار دارد؛ خرید هم‌زمان رتبه‌ی دیگری برای این برند ممکن نیست.
+        </p>
+    }
+    else if (Model.AvailableRankNumber.HasValue && Model.DailyPriceToman.HasValue)
+    {
+        <fieldset class="pharmacy-request-rank-offer">
+            <legend>خرید جایگاه نمایش</legend>
+            <label class="pharmacy-request-offer-toggle">
+                <input type="checkbox"
+                       name="Form.BuyRanking"
+                       value="true"
+                       checked="@Model.BuyRanking"
+                       data-buy-ranking />
+                <span>
+                    خرید رتبه‌ی @Model.AvailableRankNumber
+                    (رتبه‌ی خالی بعدی در استان @Model.ProvinceName)
+                </span>
+            </label>
+            <input type="hidden"
+                   name="Form.PurchaseRankNumber"
+                   value="@Model.AvailableRankNumber" />
+            <div class="pharmacy-request-ranking-fields">
+                <label for="purchase-rank-days">مدت رتبه</label>
+                <select id="purchase-rank-days"
+                        name="Form.PurchaseRankDays"
+                        class="pharmacy-request-input"
+                        data-rank-days
+                        data-daily-price="@dailyPrice">
+                    @for (var day = 1; day <= 60; day++)
+                    {
+                        <option value="@day" selected="@(day == selectedDays)">@day روز</option>
+                    }
+                </select>
+                <span>
+                    قیمت روزانه:
+                    <strong>@dailyPrice.ToString("N0", CultureInfo.InvariantCulture) تومان</strong>
+                </span>
+            </div>
+            <p class="pharmacy-request-rank-total" aria-live="polite">
+                هزینه‌ی این خرید:
+                <strong data-rank-total>@((dailyPrice * selectedDays).ToString("N0", CultureInfo.InvariantCulture)) تومان</strong>
+            </p>
+            <p class="pharmacy-request-hint">
+                موجودی قابل استفاده‌ی کیف پول: @Model.WalletBalanceToman.ToString("N0", CultureInfo.InvariantCulture) تومان.
+                مبلغ نهایی در سرور و بر اساس رتبه‌ی خالی دوباره محاسبه می‌شود.
+                مدت نمایش درخواست موجودی، در صورت نیاز، حداقل برابر با مدت رتبه خواهد شد.
+            </p>
+            @Html.ValidationMessage("Form.PurchaseRankDays", "", new { @class = "pharmacy-request-validation" })
+        </fieldset>
+    }
+    else
+    {
+        <p class="pharmacy-request-rank-status">
+            در حال حاضر جایگاه خالی برای خرید این برند در استان وجود ندارد.
+        </p>
+    }
+
+    @if (!Model.IsEditMode)
+    {
+        <fieldset class="pharmacy-request-price-editor">
+            <legend>قیمت آخر ثبت‌شده‌ی برند</legend>
+            <div class="pharmacy-request-current-price">
+                <span>
+                    قیمت:
+                    <strong>
+                        @(Model.CurrentPrice?.ToString("N0", CultureInfo.InvariantCulture) ?? "ثبت نشده")
+                        @if (Model.CurrentPrice.HasValue)
+                        {
+                            @(Model.CurrentPriceUnitNumber == 1 ? "ریال برای هر عدد" : "ریال برای هر بسته")
+                        }
+                    </strong>
+                </span>
+                @if (Model.LastPriceEditDateDisplay is not null)
+                {
+                    <span>آخرین ویرایش: @Model.LastPriceEditDateDisplay</span>
+                    <span>
+                        ثبت‌کننده:
+                        @(string.IsNullOrWhiteSpace(Model.LastPriceEditorName) ? "نامشخص" : Model.LastPriceEditorName)
+                        @if (!string.IsNullOrWhiteSpace(Model.LastPriceEditorCity))
+                        {
+                            <text> — @Model.LastPriceEditorCity</text>
+                        }
+                    </span>
+                }
+                else
+                {
+                    <span>برای این برند هنوز قیمتی ثبت نشده است.</span>
+                }
+            </div>
+            <label class="pharmacy-request-offer-toggle">
+                <input type="checkbox"
+                       name="Form.UpdateBrandPrice"
+                       value="true"
+                       checked="@Model.UpdateBrandPrice"
+                       data-update-brand-price />
+                <span>ثبت یا به‌روزرسانی قیمت برند</span>
+            </label>
+            <div class="pharmacy-request-price-fields" data-brand-price-fields hidden="@(!Model.UpdateBrandPrice)">
+                <label for="brand-price">قیمت (ریال)</label>
+                <input id="brand-price"
+                       type="text"
+                       inputmode="numeric"
+                       autocomplete="off"
+                       value="@priceValue?.ToString(CultureInfo.InvariantCulture)"
+                       class="pharmacy-request-input"
+                       data-brand-price />
+                <input type="hidden"
+                       name="Form.BrandPrice"
+                       value="@priceValue?.ToString(CultureInfo.InvariantCulture)"
+                       data-brand-price-value />
+                <label for="brand-price-unit">واحد قیمت</label>
+                <select id="brand-price-unit"
+                        name="Form.BrandPriceUnitNumber"
+                        class="pharmacy-request-input">
+                    <option value="2" selected="@(priceUnit == 2)">بسته</option>
+                    <option value="1" selected="@(priceUnit == 1)">عدد</option>
+                </select>
+                @Html.ValidationMessage("Form.BrandPrice", "", new { @class = "pharmacy-request-validation" })
+                @Html.ValidationMessage("Form.BrandPriceUnitNumber", "", new { @class = "pharmacy-request-validation" })
+            </div>
+        </fieldset>
+    }
+</section>

@@ -1,0 +1,44 @@
+@model darooyab_rewrite.ViewModels.AppPageViewModel
+@{
+    Layout = "_LayoutWithRightPanel";
+    ViewData["MetaDescription"] ??= "معرفی اپلیکیشن دارویاب.";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/app-page.css" asp-append-version="true" />
+}
+
+<article class="app-page">
+    <nav aria-label="مسیر صفحه">
+        <ol class="breadcrumb drug-breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">خانه</a></li>
+            <li class="breadcrumb-item active" aria-current="page">اپلیکیشن دارویاب</li>
+        </ol>
+    </nav>
+
+    <header class="app-page-hero site-hero site-hero--glass site-hero--inner">
+        <span class="app-page-kicker">معرفی اپلیکیشن</span>
+        <h1>@Model.Title</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.Subtitle))
+        {
+            <p>@Model.Subtitle</p>
+        }
+    </header>
+
+    @if (Model.DataUnavailable)
+    {
+        <p class="app-page-message" role="status">
+            محتوای معرفی این صفحه در حال حاضر در دسترس نیست؛ لطفاً بعداً دوباره تلاش کنید.
+        </p>
+    }
+    else if (!string.IsNullOrWhiteSpace(Model.ContentHtml))
+    {
+        <section class="app-page-content" aria-label="معرفی اپلیکیشن دارویاب">
+            @Html.Raw(Model.ContentHtml)
+        </section>
+    }
+    else
+    {
+        <p class="app-page-message">متن معرفی این صفحه هنوز ثبت نشده است.</p>
+    }
+</article>

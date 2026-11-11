@@ -1,0 +1,70 @@
+@model PharmacyDrugShortageOffersViewModel
+@using darooyab_rewrite.Utilities
+
+@if (Model.Offers.Count == 0)
+{
+    <div class="shortage-empty" role="status">
+        <strong>موردی برای نمایش پیدا نشد.</strong>
+        <p>استان یا شهر دیگری را انتخاب کنید.</p>
+    </div>
+}
+else
+{
+    <div class="shortage-offers">
+        @foreach (var offer in Model.Offers)
+        {
+            <article class="shortage-offer">
+                <header class="shortage-offer-header">
+                    <span class="shortage-offer-pharmacy">@offer.PharmacyName</span>
+                    <span class="shortage-offer-location">
+                        @string.Join(" - ", new[] { offer.ProvinceName, offer.TownshipName }.Where(value => !string.IsNullOrWhiteSpace(value)))
+                    </span>
+                </header>
+                <h3>@offer.DrugName</h3>
+                <dl class="shortage-offer-details">
+                    <div>
+                        <dt>تاریخ ثبت</dt>
+                        <dd>@offer.RegisteredAtDisplay</dd>
+                    </div>
+                    <div>
+                        <dt>تاریخ انقضا</dt>
+                        <dd>@PersianDateFormatter.Format(offer.DrugExpireDate)</dd>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(offer.Address))
+                    {
+                        <div class="shortage-offer-wide">
+                            <dt>نشانی</dt>
+                            <dd>@offer.Address</dd>
+                        </div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(offer.Phone))
+                    {
+                        <div>
+                            <dt>تلفن</dt>
+                            <dd><a href="tel:@offer.Phone">@offer.Phone</a></dd>
+                        </div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(offer.Mobile))
+                    {
+                        <div>
+                            <dt>تلفن همراه</dt>
+                            <dd><a href="tel:@offer.Mobile">@offer.Mobile</a></dd>
+                        </div>
+                    }
+                </dl>
+                @if (offer.MyExcessDrugNames.Count > 0)
+                {
+                    <div class="shortage-matching-drugs">
+                        <strong>مازادهای متناظر داروخانه شما</strong>
+                        <ul>
+                            @foreach (var name in offer.MyExcessDrugNames)
+                            {
+                                <li>@name</li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </article>
+        }
+    </div>
+}

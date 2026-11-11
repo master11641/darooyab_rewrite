@@ -16,6 +16,8 @@
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
     var currentSection = ViewContext.RouteData.Values["id"]?.ToString();
     var currentPath = Context.Request.Path.Value ?? string.Empty;
+    var isBrandPage = currentPath.StartsWith("/B-", StringComparison.OrdinalIgnoreCase);
+    var isGenericDrugPage = currentPath.StartsWith("/G-", StringComparison.OrdinalIgnoreCase);
     var isHomePage = string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase) &&
         string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase);
     var isPharmacyPage = string.Equals(currentAction, "Pharmacies", StringComparison.OrdinalIgnoreCase) ||
@@ -92,8 +94,40 @@
         <script type="application/ld+json">@Html.Raw(structuredData)</script>
     }
     <title>@ViewData["Title"] | دارویاب</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.rtl.min.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @if (isBrandPage || isGenericDrugPage)
+    {
+        <link rel="preload" href="~/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+        <link rel="preload" href="~/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
+    }
+    @if (isGenericDrugPage)
+    {
+        <link rel="preload" href="~/fonts/Vazirmatn-Medium.woff2" as="font" type="font/woff2" crossorigin />
+        <link rel="preload" href="~/fonts/Vazirmatn-SemiBold.woff2" as="font" type="font/woff2" crossorigin />
+    }
+    @if (isBrandPage)
+    {
+        <link rel="preload"
+              href="~/Content/AdvertisementImages/2bf4af54-9130-4dc4-a8e7-6cf70e72f834_banner(1).gif"
+              as="image" type="image/gif" fetchpriority="high" media="(min-width: 992px)" />
+    }
+    @if (isBrandPage)
+    {
+        <link rel="stylesheet" href="~/css/brand-info.css" asp-append-version="true" />
+    }
+    else if (isGenericDrugPage)
+    {
+        <link rel="stylesheet" href="~/css/drug-info.css" asp-append-version="true" />
+    }
+    else
+    {
+        <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.rtl.min.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+        @if (!isHomePage)
+        {
+            <link rel="stylesheet" href="~/css/site-heroes.css" asp-append-version="true" />
+        }
+    }
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <a class="skip-link" href="#main-content">رفتن به محتوای اصلی</a>
@@ -244,8 +278,10 @@
             <span>اطلاعات این نسخه به‌تدریج تکمیل می‌شود.</span>
         </div>
     </footer>
-    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
-    <script src="~/js/drug-search.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js" asp-append-version="true"
+            defer="@(isBrandPage || isGenericDrugPage ? "defer" : null)"></script>
+    <script src="~/js/drug-search.js" asp-append-version="true"
+            defer="@(isGenericDrugPage ? "defer" : null)"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

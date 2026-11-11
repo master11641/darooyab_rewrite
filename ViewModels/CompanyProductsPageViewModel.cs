@@ -25,4 +25,5 @@ public sealed record CompanyProductsPageViewModel(
     string DirectoryPath,
     CompanyOrganizationDetails? Organization,
     IReadOnlyList<CompanyProductListItem> Products,
-    bool DataUnavailable = false);
+    bool DataUnavailable = false,
+    bool CanReceiveMessages = false);

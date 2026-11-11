@@ -5,6 +5,9 @@
         ?? $"{Model.PersianName} | {Model.EnglishName}";
     ViewData["DrugId"] = Model.DrugId;
     var attributes = Model.Attributes;
+    var brandDisplayName = string.IsNullOrWhiteSpace(Model.PersianName)
+        ? Model.EnglishName
+        : Model.PersianName;
     var persianContent = !string.IsNullOrWhiteSpace(attributes?.PersianContent)
         ? attributes.PersianContent
         : Model.MartindaleGroupId is not (39 or 52 or 59)
@@ -17,6 +20,12 @@
          attributes.IsUnderSupervision.HasValue ||
          attributes.IsHospital.HasValue ||
          (attributes.Price is > 0 && attributes.PriceUnitNumber.HasValue));
+    var commentForm = new darooyab_rewrite.ViewModels.PublicCommentFormViewModel(
+        "brand",
+        Model.Irc,
+        brandDisplayName,
+        string.Concat(Context.Request.PathBase, Context.Request.Path, Context.Request.QueryString),
+        ViewData["CaptchaEnabled"] as bool? ?? true);
 
     string? GetSafeUrl(string? value)
     {
@@ -66,7 +75,7 @@
         </ol>
     </nav>
 
-    <header class="brand-info-header">
+    <header class="brand-info-header site-hero site-hero--brand-info">
         @if (!string.IsNullOrWhiteSpace(Model.ImporterName))
         {
             <p class="brand-info-company">@Model.ImporterName</p>
@@ -96,6 +105,18 @@
             </a>
         }
     </header>
+
+    <section class="brand-info-section drug-availability-section" aria-labelledby="brand-availability-title">
+        <div>
+            <span class="section-kicker">ارجاعات دارویی</span>
+            <h2 id="brand-availability-title">ارجاعات مربوط به @brandDisplayName</h2>
+            <p>برای مشاهده‌ی ارجاعات ثبت‌شده‌ی این برند، صفحه‌ی ارجاعات دارویی را ببینید.</p>
+        </div>
+        <div class="drug-availability-actions">
+            <a class="btn btn-primary" href="/availability/IRC/@Model.Irc">در کدام داروخانه موجود است؟</a>
+            <a class="btn btn-outline-primary" href="/App">دریافت اپلیکیشن دارویاب</a>
+        </div>
+    </section>
 
     @if (attributes is not null && GetSafeUrl(attributes.ShopUrl) is string shopUrl)
     {
@@ -353,7 +374,7 @@
         {
             <p class="drug-data-note">هنوز دیدگاهی برای این برند ثبت نشده است.</p>
         }
-        <p class="drug-data-note">ثبت پرسش آنلاین در نسخه‌ی فعلی فعال نیست.</p>
+        <partial name="_PublicCommentForm" model="commentForm" />
     </section>
 </article>
 

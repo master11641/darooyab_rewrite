@@ -212,6 +212,8 @@ namespace darooyab.Models
         public virtual DbSet<Answer> Answers { get; set; }
         public DbSet<PatientReferralGenericResult> PatientReferralGenericResults => Set<PatientReferralGenericResult>();
         public virtual DbSet<SimilarBrandPharmacyRequestResult> SimilarBrandPharmacyRequestResults { get; set; }
+        public DbSet<PharmacyDrugShortageExchangeRow> PharmacyDrugShortageExchangeRows =>
+            Set<PharmacyDrugShortageExchangeRow>();
         public virtual DbSet<PharmacyRankingDiscountCard> PharmacyRankingDiscountCards { get; set; }
 
 
@@ -240,6 +242,34 @@ namespace darooyab.Models
             modelBuilder.Entity<PatientReferralGenericResult>().HasNoKey();
              modelBuilder.Entity<SimilarBrandPharmacyRequestResult>().HasNoKey();
              modelBuilder.Entity<PatientReferralSimilarBrandPagedResult>().HasNoKey();
+            modelBuilder.Entity<PharmacyDrugShortageExchangeRow>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(row => row.Id).HasColumnName("ID");
+                entity.Property(row => row.PharmacyAccountIdFk).HasColumnName("PharmacyAccountId_fk");
+                entity.Property(row => row.DrugName).HasColumnName("DrugName");
+                entity.Property(row => row.DrugCount).HasColumnName("DrugCount");
+                entity.Property(row => row.DrugExpireDate).HasColumnName("DrugExpireDate");
+                entity.Property(row => row.UnitPrice).HasColumnName("UnitPrice");
+                entity.Property(row => row.DrugUnitNum).HasColumnName("DrugUnitNum");
+                entity.Property(row => row.RegistrationDateTime).HasColumnName("RegistrationDateTime");
+                entity.Property(row => row.ExcessPharmacyProvinceName)
+                    .HasColumnName("ExcessPharmacy_ProvinceName");
+                entity.Property(row => row.ExcessPharmacyTownshipName)
+                    .HasColumnName("ExcessPharmacy_TownShipName");
+                entity.Property(row => row.ExcessPharmacyAddress)
+                    .HasColumnName("ExcessPharmacy_Address");
+                entity.Property(row => row.ExcessPharmacyTell)
+                    .HasColumnName("ExcessPharmacy_Tell");
+                entity.Property(row => row.ExcessPharmacyName)
+                    .HasColumnName("ExcessPharmacy_Name");
+                entity.Property(row => row.ExcessPharmacyMobile)
+                    .HasColumnName("ExcessPharmacy_Mobile");
+                entity.Property(row => row.SumRequireCountExchAlready)
+                    .HasColumnName("SumRequireCountExchAlready");
+                entity.Property(row => row.ShortageThatMyExcessDrugName)
+                    .HasColumnName("ShortageThatMyExcess_DrugName");
+            });
 
   modelBuilder.Entity<PharmacyRankingDiscountCard>(entity =>
             {

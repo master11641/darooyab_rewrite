@@ -1,5 +1,32 @@
 @model darooyab_rewrite.ViewModels.PublicRightPanelViewModel
 
+@{
+    var currentPath = ViewContext.HttpContext.Request.Path.Value ?? string.Empty;
+    var isBrandPage = currentPath.StartsWith("/B-", StringComparison.OrdinalIgnoreCase);
+    var isGenericDrugPage = currentPath.StartsWith("/G-", StringComparison.OrdinalIgnoreCase);
+}
+
+@functions {
+    private static (int Width, int Height)? GetAdvertisementDimensions(string? imageUrl)
+    {
+        if (imageUrl is null)
+        {
+            return null;
+        }
+
+        return imageUrl switch
+        {
+            "/Content/AdvertisementImages/c2c847ff-4303-4b92-8ab3-16ac2229b260_Dr.Abidi-Diabetes-Gift-Gelotrio-FA-010307-V02.gif" => (260, 160),
+            "/Content/AdvertisementImages/2bf4af54-9130-4dc4-a8e7-6cf70e72f834_banner(1).gif" => (260, 160),
+            "/Content/AdvertisementImages/6cdf631b-05b6-4828-a649-b1c824eb9e22_3___-web-gift (1).gif" => (260, 160),
+            "/Content/AdvertisementImages/def2f898-9d33-41e7-a383-96dbdec231a8_faramox.gif" => (264, 170),
+            "/Content/AdvertisementImages/dfd4867c-060a-4f87-a450-9841f6fdf57b_Ursobil Gif.gif" => (260, 160),
+            "/Content/AdvertisementImages/5551676e-7137-4d2f-85d5-4b64a2cb75de_darooyab-app_banner2.jpg" => (264, 74),
+            _ => null,
+        };
+    }
+}
+
 <div class="public-right-panel" aria-label="دسترسی‌ها و مطالب مرتبط">
     @if (ViewData["ShowQuickAccess"] is true)
     {
@@ -19,6 +46,17 @@
             @foreach (var advertisement in Model.PublicAdvertisements)
             {
                 var link = advertisement.Link;
+                var imageUrl = string.IsNullOrWhiteSpace(advertisement.ImageUrl)
+                    ? null
+                    : Url.Content(advertisement.ImageUrl);
+                var imageDimensions = isBrandPage || isGenericDrugPage
+                    ? GetAdvertisementDimensions(imageUrl)
+                    : null;
+                var isLcpAdvertisementImage = isBrandPage &&
+                    string.Equals(
+                        imageUrl,
+                        "/Content/AdvertisementImages/2bf4af54-9130-4dc4-a8e7-6cf70e72f834_banner(1).gif",
+                        StringComparison.OrdinalIgnoreCase);
                 var isSafeLink = !string.IsNullOrWhiteSpace(link) &&
                     (Url.IsLocalUrl(link) ||
                      (Uri.TryCreate(link, UriKind.Absolute, out var absoluteLink) &&
@@ -28,18 +66,22 @@
                     @if (isSafeLink)
                     {
                         <a href="@link" rel="sponsored noopener noreferrer">
-                            @if (!string.IsNullOrWhiteSpace(advertisement.ImageUrl))
+                            @if (imageUrl is not null)
                             {
-                                <img src="@Url.Content(advertisement.ImageUrl)" alt="@advertisement.ImageAlt" loading="lazy" />
+                                <img src="@imageUrl" alt="@advertisement.ImageAlt" loading="lazy"
+                                     width="@imageDimensions?.Width" height="@imageDimensions?.Height"
+                                     fetchpriority="@(isLcpAdvertisementImage ? "high" : null)" />
                             }
                             <span>@(string.IsNullOrWhiteSpace(advertisement.ImageAlt) ? "مشاهده‌ی آگهی" : advertisement.ImageAlt)</span>
                         </a>
                     }
                     else
                     {
-                        @if (!string.IsNullOrWhiteSpace(advertisement.ImageUrl))
+                        @if (imageUrl is not null)
                         {
-                            <img src="@Url.Content(advertisement.ImageUrl)" alt="@advertisement.ImageAlt" loading="lazy" />
+                            <img src="@imageUrl" alt="@advertisement.ImageAlt" loading="lazy"
+                                 width="@imageDimensions?.Width" height="@imageDimensions?.Height"
+                                 fetchpriority="@(isLcpAdvertisementImage ? "high" : null)" />
                         }
                         <span>@(string.IsNullOrWhiteSpace(advertisement.ImageAlt) ? "آگهی عمومی" : advertisement.ImageAlt)</span>
                     }
@@ -55,6 +97,9 @@
             @foreach (var advertisement in Model.Advertisements)
             {
                 var link = advertisement.Link;
+                var imageUrl = string.IsNullOrWhiteSpace(advertisement.ImageUrl)
+                    ? null
+                    : Url.Content(advertisement.ImageUrl);
                 var isSafeLink = !string.IsNullOrWhiteSpace(link) &&
                     (Url.IsLocalUrl(link) ||
                      (Uri.TryCreate(link, UriKind.Absolute, out var absoluteLink) &&
@@ -64,18 +109,18 @@
                     @if (isSafeLink)
                     {
                         <a href="@link" rel="sponsored noopener noreferrer">
-                            @if (!string.IsNullOrWhiteSpace(advertisement.ImageUrl))
+                            @if (imageUrl is not null)
                             {
-                                <img src="@Url.Content(advertisement.ImageUrl)" alt="@advertisement.ImageAlt" loading="lazy" />
+                                <img src="@imageUrl" alt="@advertisement.ImageAlt" loading="lazy" />
                             }
                             <span>@(string.IsNullOrWhiteSpace(advertisement.ImageAlt) ? "مشاهده‌ی معرفی حمایت‌شده" : advertisement.ImageAlt)</span>
                         </a>
                     }
                     else
                     {
-                        @if (!string.IsNullOrWhiteSpace(advertisement.ImageUrl))
+                        @if (imageUrl is not null)
                         {
-                            <img src="@Url.Content(advertisement.ImageUrl)" alt="@advertisement.ImageAlt" loading="lazy" />
+                            <img src="@imageUrl" alt="@advertisement.ImageAlt" loading="lazy" />
                         }
                         <span>@(string.IsNullOrWhiteSpace(advertisement.ImageAlt) ? "معرفی حمایت‌شده" : advertisement.ImageAlt)</span>
                     }

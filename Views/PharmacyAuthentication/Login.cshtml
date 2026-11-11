@@ -1,0 +1,47 @@
+@model darooyab_rewrite.ViewModels.PharmacyLoginViewModel
+
+<section class="container py-4 py-lg-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-9 col-lg-7 col-xl-6">
+            <div class="card shadow-sm">
+                <div class="card-body p-4 p-lg-5">
+                    <h1 class="h4 mb-2">ورود مدیر داروخانه</h1>
+                    <p class="text-body-secondary mb-4">با همان شماره‌ی همراه و کلمه‌ی عبوری که پیش‌تر برای ورود استفاده می‌کردید وارد شوید.</p>
+
+                    <form asp-controller="PharmacyAuthentication"
+                          asp-action="Login"
+                          method="post">
+                        <input asp-for="ReturnUrl" type="hidden" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="UserName" class="form-label">نام کاربری / شماره‌ی همراه</label>
+                            <input asp-for="UserName"
+                                   class="form-control"
+                                   autocomplete="username"
+                                   inputmode="tel"
+                                   dir="ltr"
+                                   maxlength="32" />
+                            <span asp-validation-for="UserName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label">کلمه‌ی عبور</label>
+                            <input asp-for="Password"
+                                   class="form-control"
+                                   type="password"
+                                   autocomplete="current-password"
+                                   dir="auto"
+                                   maxlength="256" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <partial name="_CaptchaChallengeFields" />
+
+                        <button type="submit" class="btn btn-primary w-100 mt-3">ورود</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

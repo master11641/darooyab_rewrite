@@ -1,0 +1,233 @@
+@model PharmacyRequestPageViewModel
+@{
+    ViewData["Title"] = "ثبت موجودی داروخانه (کمبودهای دارویی)";
+    var statusMessage = TempData["PharmacyRequestMessage"] as string;
+}
+
+<div class="admin-page pharmacy-requests">
+    <nav class="admin-breadcrumb" aria-label="مسیر صفحه">
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">داشبورد</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">ثبت موجودی داروخانه</span>
+    </nav>
+
+    <section class="admin-panel-card pharmacy-request-intro" aria-labelledby="pharmacy-request-title">
+        <div>
+            <span class="admin-eyebrow">سامانه کمبودهای دارویی</span>
+            <h2 id="pharmacy-request-title">@(Model.IsEditMode ? "ویرایش اعلام موجودی" : "ثبت موجودی داروخانه")</h2>
+            <p>با ثبت این درخواست، دارو برای مدت انتخاب‌شده در سامانه کمبودهای دارویی نمایش داده می‌شود.</p>
+        </div>
+        <span class="pharmacy-request-owner">
+            <small>داروخانه</small>
+            <strong>@ViewData["PharmacyName"]</strong>
+        </span>
+    </section>
+
+    @if (!string.IsNullOrWhiteSpace(statusMessage))
+    {
+        <div class="pharmacy-request-alert pharmacy-request-alert-success" role="status">@statusMessage</div>
+    }
+
+    <div asp-validation-summary="ModelOnly" class="pharmacy-request-alert pharmacy-request-alert-error" role="alert"></div>
+
+    <section class="admin-panel-card pharmacy-request-form-card" aria-labelledby="request-form-title">
+        <div class="pharmacy-request-section-heading">
+            <div>
+                <span class="admin-eyebrow">اطلاعات درخواست</span>
+                <h2 id="request-form-title">@(Model.IsEditMode ? "ویرایش اطلاعات" : "درخواست جدید")</h2>
+            </div>
+        </div>
+
+        <form method="post"
+              action="/PharmacyRequest/AddOrEdit"
+              data-pharmacy-request-form
+              data-brand-details-url="/PharmacyRequest/BrandDetails">
+            @Html.AntiForgeryToken()
+            <input asp-for="Form.Id" type="hidden" />
+
+            <div class="pharmacy-request-field">
+                <label for="brand-search">نام برند دارو</label>
+                <input id="brand-search"
+                       type="search"
+                       class="pharmacy-request-input"
+                       autocomplete="off"
+                       role="combobox"
+                       aria-autocomplete="list"
+                       aria-expanded="false"
+                       aria-controls="brand-search-results"
+                       data-search-url="/PharmacyRequest/SearchBrands"
+                       placeholder="برای جستجوی برند، حداقل دو نویسه وارد کنید" />
+                <ul id="brand-search-results"
+                    class="pharmacy-request-search-results"
+                    role="listbox"
+                    aria-label="نتایج جستجوی برند"
+                    hidden></ul>
+                <div class="pharmacy-request-live" data-search-status role="status" aria-live="polite"></div>
+                <span asp-validation-for="Form.SelectedIrcs" class="pharmacy-request-validation"></span>
+                <div class="pharmacy-request-selected" data-selected-brands aria-label="برندهای انتخاب‌شده">
+                    @foreach (var brand in Model.SelectedBrands)
+                    {
+                        <span class="pharmacy-request-chip" data-irc="@brand.Irc">
+                            <span>@brand.Name</span>
+                            <button type="button" data-remove-brand aria-label="حذف @brand.Name">×</button>
+                        </span>
+                    }
+                </div>
+                <div data-selected-irc-inputs>
+                    @foreach (var irc in Model.Form.SelectedIrcs)
+                    {
+                        <input type="hidden" name="Form.SelectedIrcs" value="@irc" />
+                    }
+                </div>
+            </div>
+
+            <div data-brand-details-container aria-live="polite">
+                @if (Model.BrandDetails is not null)
+                {
+                    <partial name="_BrandDetails" model="Model.BrandDetails" />
+                }
+            </div>
+
+            <div class="pharmacy-request-fields-grid">
+                <div class="pharmacy-request-field">
+                    <label asp-for="Form.DurationDays">مدت نمایش در سامانه کمبودهای دارویی</label>
+                    <div class="pharmacy-request-inline-field">
+                        <select asp-for="Form.DurationDays" class="pharmacy-request-input">
+                            @foreach (var days in Model.AvailablePeriods)
+                            {
+                                <option value="@days">@days روز</option>
+                            }
+                        </select>
+                        <span class="pharmacy-request-hint">بدون نیاز به پرداخت</span>
+                    </div>
+                    <span asp-validation-for="Form.DurationDays" class="pharmacy-request-validation"></span>
+                </div>
+
+                <div class="pharmacy-request-field">
+                    <label asp-for="Form.CountLimitCategoryId">محدودیت تعداد ارجاع</label>
+                    <select asp-for="Form.CountLimitCategoryId" class="pharmacy-request-input">
+                        <option value="">انتخاب کنید</option>
+                        @foreach (var option in Model.CountLimitOptions)
+                        {
+                            <option value="@option.Id">@option.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Form.CountLimitCategoryId" class="pharmacy-request-validation"></span>
+                </div>
+            </div>
+
+            <fieldset class="pharmacy-request-field pharmacy-request-visibility">
+                <legend>قابل مشاهده برای</legend>
+                <div class="pharmacy-request-checkboxes">
+                    @foreach (var option in Model.VisibilityOptions)
+                    {
+                        var isChecked = Model.Form.VisibilityCategoryIds.Contains(option.Id);
+                        <label class="pharmacy-request-check">
+                            <input type="checkbox"
+                                   name="Form.VisibilityCategoryIds"
+                                   value="@option.Id"
+                                   checked="@isChecked" />
+                            <span>@option.Name</span>
+                        </label>
+                    }
+                </div>
+                <span asp-validation-for="Form.VisibilityCategoryIds" class="pharmacy-request-validation"></span>
+            </fieldset>
+
+            <div class="pharmacy-request-field">
+                <label asp-for="Form.Description">توضیحات (اختیاری)</label>
+                <textarea asp-for="Form.Description"
+                          class="pharmacy-request-input pharmacy-request-textarea"
+                          rows="3"
+                          maxlength="1000"></textarea>
+                <span asp-validation-for="Form.Description" class="pharmacy-request-validation"></span>
+            </div>
+
+            <div class="pharmacy-request-actions">
+                <button class="admin-secondary-button pharmacy-request-submit"
+                        type="submit"
+                        data-submit-label="@(Model.IsEditMode ? "ذخیره تغییرات" : "ثبت موجودی")">
+                    @(Model.IsEditMode ? "ذخیره تغییرات" : "ثبت موجودی")
+                </button>
+                @if (Model.IsEditMode)
+                {
+                    <a class="pharmacy-request-cancel" href="/PharmacyRequest/AddOrEdit">انصراف از ویرایش</a>
+                }
+            </div>
+        </form>
+    </section>
+
+    <section class="admin-panel-card pharmacy-request-list-card" aria-labelledby="request-list-title">
+        <div class="pharmacy-request-section-heading">
+            <div>
+                <span class="admin-eyebrow">درخواست‌های ثبت‌شده</span>
+                <h2 id="request-list-title">مدیریت موجودی‌ها</h2>
+            </div>
+            <form method="get" action="/PharmacyRequest/AddOrEdit" class="pharmacy-request-list-search">
+                <label class="visually-hidden" for="request-search">جستجوی برندهای ثبت‌شده</label>
+                <input id="request-search"
+                       name="searchString"
+                       value="@Model.SearchString"
+                       class="pharmacy-request-input"
+                       type="search"
+                       placeholder="جستجو در برندهای ثبت‌شده" />
+                <button class="admin-secondary-button" type="submit">جستجو</button>
+            </form>
+        </div>
+
+        @if (Model.Requests.Count == 0)
+        {
+            <div class="pharmacy-request-empty" role="status">
+                <strong>درخواستی برای نمایش وجود ندارد.</strong>
+                <p>برای شروع، یک برند را جستجو و درخواست موجودی ثبت کنید.</p>
+            </div>
+        }
+        else
+        {
+            <div class="pharmacy-request-list">
+                @foreach (var request in Model.Requests)
+                {
+                    <article class="pharmacy-request-item">
+                        <div class="pharmacy-request-item-copy">
+                            <h3>@request.DrugName</h3>
+                            <dl>
+                                <div><dt>تاریخ ثبت/ویرایش</dt><dd>@request.RegisteredAtDisplay</dd></div>
+                                <div><dt>پایان نمایش</dt><dd>@request.ExpiresAtDisplay</dd></div>
+                                <div><dt>مدت باقیمانده</dt><dd>@request.RemainingDays روز</dd></div>
+                                <div><dt>محدودیت تعداد</dt><dd>@request.CountLimit</dd></div>
+                            </dl>
+                        </div>
+                        <div class="pharmacy-request-item-actions">
+                            <a class="pharmacy-request-link" href="/PharmacyRequest/AddOrEdit/@request.Id">ویرایش</a>
+                            <form method="post"
+                                  action="/PharmacyRequest/Delete/@request.Id"
+                                  data-confirm="درخواست این برند حذف شود؟">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="searchString" value="@Model.SearchString" />
+                                <input type="hidden" name="page" value="@Model.Page" />
+                                <button class="pharmacy-request-delete" type="submit">حذف</button>
+                            </form>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="pharmacy-request-pagination" aria-label="صفحه‌بندی درخواست‌ها">
+                @if (Model.Page > 1)
+                {
+                    <a href="/PharmacyRequest/AddOrEdit?page=@(Model.Page - 1)&amp;searchString=@Uri.EscapeDataString(Model.SearchString ?? string.Empty)">صفحه قبل</a>
+                }
+                <span>صفحه @Model.Page از @Model.TotalPages</span>
+                @if (Model.Page < Model.TotalPages)
+                {
+                    <a href="/PharmacyRequest/AddOrEdit?page=@(Model.Page + 1)&amp;searchString=@Uri.EscapeDataString(Model.SearchString ?? string.Empty)">صفحه بعد</a>
+                }
+            </nav>
+        }
+    </section>
+</div>
+
+<script src="~/js/pharmacy-requests.js" asp-append-version="true" defer></script>

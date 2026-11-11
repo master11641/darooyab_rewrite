@@ -1,0 +1,18 @@
+@baseUrl = http://localhost:5264
+
+### Generate a CAPTCHA challenge (the response sets an HttpOnly client-binding cookie)
+POST {{baseUrl}}/api/captcha/generate
+Content-Type: application/json
+Accept: application/json
+
+{}
+
+### Validate and consume a CAPTCHA challenge
+### Copy challengeId from Generate and provide the answer entered by the user.
+POST {{baseUrl}}/api/captcha/validate
+Content-Type: application/json
+
+{
+  "challengeId": "replace-with-generated-challenge-id",
+  "answer": "AB234"
+}

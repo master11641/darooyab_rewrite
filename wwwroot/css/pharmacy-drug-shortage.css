@@ -1,0 +1,613 @@
+.pharmacy-shortage {
+    display: grid;
+    gap: 1.15rem;
+}
+
+.shortage-intro,
+.shortage-section-heading,
+.shortage-item,
+.shortage-item-actions,
+.shortage-form-actions,
+.shortage-modal-header,
+.shortage-offer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.shortage-intro h2,
+.shortage-section-heading h2 {
+    margin: .25rem 0;
+    color: var(--admin-text, #173b4a);
+}
+
+.shortage-intro p {
+    max-width: 46rem;
+    margin: .5rem 0 0;
+    color: var(--admin-muted, #61747d);
+    line-height: 1.9;
+}
+
+.shortage-owner {
+    display: grid;
+    gap: .3rem;
+    min-width: 10rem;
+    padding: .8rem 1rem;
+    border: 1px solid var(--admin-border, #dce5e8);
+    border-radius: 1rem;
+    background: var(--admin-primary-soft, #f5f9fa);
+}
+
+.shortage-owner small,
+.shortage-item-date,
+.shortage-count,
+.shortage-offer-location {
+    color: var(--admin-muted, #61747d);
+    font-size: .86rem;
+}
+
+.shortage-alert {
+    border-radius: .85rem;
+    padding: .8rem 1rem;
+}
+
+.shortage-alert:empty {
+    display: none;
+}
+
+.shortage-alert-success {
+    color: #155d42;
+    border: 1px solid #a9dbc4;
+    background: #edf9f2;
+}
+
+.shortage-alert-error {
+    color: #8c3131;
+    border: 1px solid #edc0c0;
+    background: #fff3f3;
+}
+
+.shortage-form-card,
+.shortage-list-card {
+    padding: clamp(1rem, 2.5vw, 1.6rem);
+}
+
+.shortage-section-heading {
+    margin-bottom: 1.25rem;
+}
+
+.shortage-search-type {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem 1.25rem;
+    margin: 0 0 1.2rem;
+    padding: 0;
+    border: 0;
+}
+
+.shortage-search-type legend {
+    width: 100%;
+    margin-bottom: .7rem;
+    color: var(--admin-text, #173b4a);
+    font-weight: 700;
+}
+
+.shortage-search-type label {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    min-height: 2.75rem;
+    cursor: pointer;
+}
+
+.shortage-search-type input {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--admin-primary, #136d78);
+}
+
+.shortage-drug-picker {
+    position: relative;
+    max-width: 52rem;
+}
+
+.shortage-drug-picker > label,
+.shortage-filter-field > label {
+    display: block;
+    margin-bottom: .45rem;
+    font-weight: 700;
+}
+
+.shortage-input {
+    width: 100%;
+    min-height: 2.9rem;
+    padding: .65rem .8rem;
+    border: 1px solid var(--admin-border, #d4e0e3);
+    border-radius: .75rem;
+    color: var(--admin-text, #173b4a);
+    background: var(--admin-surface, #fff);
+}
+
+.shortage-input:focus,
+.shortage-primary-button:focus-visible,
+.shortage-secondary-button:focus-visible,
+.shortage-edit-button:focus-visible,
+.shortage-result-button:focus-visible,
+.shortage-delete-button:focus-visible,
+.shortage-search-option:focus-visible,
+.shortage-modal-close:focus-visible,
+.shortage-pagination a:focus-visible,
+.shortage-offer a:focus-visible {
+    outline: 3px solid #79cbd1;
+    outline-offset: 2px;
+}
+
+.shortage-search-results {
+    position: absolute;
+    z-index: 20;
+    inset-inline: 0;
+    top: calc(100% + .25rem);
+    max-height: 17rem;
+    overflow-y: auto;
+    margin: 0;
+    padding: .35rem;
+    border: 1px solid var(--admin-border, #d4e0e3);
+    border-radius: .8rem;
+    background: var(--admin-surface, #fff);
+    box-shadow: 0 12px 30px rgb(23 59 74 / 14%);
+    list-style: none;
+}
+
+.shortage-search-results[hidden],
+.shortage-results-modal[hidden],
+[data-result-panel][hidden] {
+    display: none !important;
+}
+
+.shortage-search-option {
+    width: 100%;
+    padding: .7rem .75rem;
+    border: 0;
+    border-radius: .55rem;
+    color: var(--admin-text, #173b4a);
+    text-align: right;
+    background: transparent;
+    cursor: pointer;
+}
+
+.shortage-search-option:hover {
+    background: var(--admin-primary-soft, #f1f7f8);
+}
+
+.shortage-live,
+.shortage-validation,
+.shortage-modal-feedback {
+    min-height: 1.4rem;
+    margin-top: .35rem;
+    color: var(--admin-muted, #61747d);
+    font-size: .88rem;
+}
+
+.shortage-validation {
+    display: block;
+    color: #a13333;
+}
+
+.shortage-drug-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .65rem;
+    max-width: 100%;
+    margin-top: .4rem;
+    padding: .45rem .7rem;
+    border: 1px solid #b8dadd;
+    border-radius: 2rem;
+    color: #165b63;
+    background: #eef9f9;
+}
+
+.shortage-drug-chip button {
+    padding: .2rem .45rem;
+    border: 0;
+    border-radius: 1rem;
+    color: #8c3131;
+    background: transparent;
+    cursor: pointer;
+}
+
+.shortage-form-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin-top: 1.25rem;
+}
+
+.shortage-primary-button,
+.shortage-secondary-button,
+.shortage-edit-button,
+.shortage-result-button,
+.shortage-delete-button,
+.shortage-pagination a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    min-height: 2.7rem;
+    padding: .55rem .9rem;
+    border: 1px solid transparent;
+    border-radius: .7rem;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.shortage-primary-button {
+    color: #fff;
+    background: #116c78;
+}
+
+.shortage-primary-button:hover {
+    background: #0c5963;
+}
+
+.shortage-primary-button svg,
+.shortage-modal-close svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.shortage-secondary-button,
+.shortage-edit-button {
+    border-color: var(--admin-border, #d4e0e3);
+    color: var(--admin-text, #173b4a);
+    background: var(--admin-surface, #fff);
+}
+
+.shortage-list {
+    display: grid;
+    gap: .75rem;
+}
+
+.shortage-item {
+    flex-wrap: wrap;
+    padding: 1rem;
+    border: 1px solid var(--admin-border, #dce5e8);
+    border-radius: 1rem;
+    background: var(--admin-surface, #fff);
+}
+
+.shortage-item-main {
+    min-width: min(100%, 16rem);
+    flex: 1 1 18rem;
+}
+
+.shortage-item-main h3 {
+    margin: .25rem 0 0;
+    overflow-wrap: anywhere;
+    color: var(--admin-text, #173b4a);
+    font-size: 1.05rem;
+}
+
+.shortage-item-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.shortage-item-actions form {
+    margin: 0;
+}
+
+.shortage-result-button {
+    color: #fff;
+    background: #267c56;
+}
+
+.shortage-result-button:hover {
+    background: #1c6847;
+}
+
+.shortage-delete-button {
+    border-color: #e7bdbd;
+    color: #982f2f;
+    background: #fff6f6;
+}
+
+.shortage-item-feedback {
+    flex-basis: 100%;
+    color: #a13333;
+}
+
+.shortage-item-feedback[hidden] {
+    display: none;
+}
+
+.shortage-empty {
+    padding: 1.25rem;
+    border: 1px dashed var(--admin-border, #cbd9dc);
+    border-radius: .9rem;
+    color: var(--admin-text, #173b4a);
+    background: var(--admin-primary-soft, #f7fafb);
+}
+
+.shortage-empty p {
+    margin: .4rem 0 0;
+    color: var(--admin-muted, #61747d);
+    line-height: 1.8;
+}
+
+.shortage-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.2rem;
+}
+
+.shortage-pagination a {
+    border-color: var(--admin-border, #d4e0e3);
+    color: var(--admin-primary, #136d78);
+}
+
+.shortage-results-modal {
+    position: fixed;
+    z-index: 3000;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    color: var(--admin-text, #173b4a);
+    background: var(--admin-canvas, #f4f8f9);
+}
+
+body.shortage-modal-open {
+    overflow: hidden;
+}
+
+.shortage-modal-header {
+    position: sticky;
+    z-index: 2;
+    top: 0;
+    justify-content: flex-start;
+    padding: .8rem clamp(1rem, 4vw, 2.5rem);
+    border-bottom: 1px solid var(--admin-border, #dce5e8);
+    background: var(--admin-surface, #fff);
+}
+
+.shortage-modal-header h2 {
+    margin: .2rem 0;
+    overflow-wrap: anywhere;
+    font-size: 1.15rem;
+}
+
+.shortage-modal-close {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid var(--admin-border, #d4e0e3);
+    border-radius: .75rem;
+    color: var(--admin-text, #173b4a);
+    background: var(--admin-surface, #fff);
+    cursor: pointer;
+}
+
+.shortage-modal-body {
+    width: min(100%, 90rem);
+    margin-inline: auto;
+    padding: clamp(.85rem, 3vw, 1.75rem);
+}
+
+.shortage-result-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .8rem;
+    max-width: 48rem;
+    margin-bottom: 1.1rem;
+}
+
+.shortage-result-tabs {
+    display: flex;
+    gap: .4rem;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--admin-border, #dce5e8);
+}
+
+.shortage-result-tabs button {
+    min-height: 2.8rem;
+    flex: 0 0 auto;
+    padding: .55rem .9rem;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    color: var(--admin-muted, #61747d);
+    font: inherit;
+    background: transparent;
+    cursor: pointer;
+}
+
+.shortage-result-tabs button[aria-selected="true"] {
+    border-bottom-color: #16717b;
+    color: #145e68;
+    font-weight: 700;
+}
+
+.shortage-result-tabs button:focus-visible {
+    outline: 3px solid #79cbd1;
+    outline-offset: -3px;
+}
+
+.shortage-offers {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .8rem;
+}
+
+.shortage-offer {
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid var(--admin-border, #dce5e8);
+    border-radius: 1rem;
+    background: var(--admin-surface, #fff);
+}
+
+.shortage-offer-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.shortage-offer-pharmacy {
+    font-weight: 800;
+}
+
+.shortage-offer-location {
+    text-align: left;
+}
+
+.shortage-offer h3 {
+    margin: .8rem 0;
+    overflow-wrap: anywhere;
+    color: #145e68;
+}
+
+.shortage-offer-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .65rem;
+    margin: 0;
+}
+
+.shortage-offer-details div {
+    min-width: 0;
+    padding: .55rem;
+    border-radius: .6rem;
+    background: var(--admin-primary-soft, #f5f9fa);
+}
+
+.shortage-offer-details .shortage-offer-wide {
+    grid-column: 1 / -1;
+}
+
+.shortage-offer-details dt {
+    margin-bottom: .2rem;
+    color: var(--admin-muted, #61747d);
+    font-size: .82rem;
+}
+
+.shortage-offer-details dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.shortage-offer a {
+    color: #145e68;
+    text-decoration: underline;
+    text-underline-offset: .15em;
+}
+
+.shortage-matching-drugs {
+    margin-top: .8rem;
+    padding-top: .75rem;
+    border-top: 1px solid var(--admin-border, #dce5e8);
+}
+
+.shortage-matching-drugs ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin: .5rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.shortage-matching-drugs li {
+    max-width: 100%;
+    padding: .3rem .6rem;
+    border-radius: 2rem;
+    overflow-wrap: anywhere;
+    color: #155d42;
+    background: #edf9f2;
+}
+
+.admin-panel[data-theme="dark"] .shortage-alert-success {
+    border-color: #315d4a;
+    color: #b7e7cd;
+    background: #1b332a;
+}
+
+.admin-panel[data-theme="dark"] .shortage-alert-error {
+    border-color: #6a3b42;
+    color: #f0c3c6;
+    background: #352329;
+}
+
+.admin-panel[data-theme="dark"] .shortage-owner,
+.admin-panel[data-theme="dark"] .shortage-empty,
+.admin-panel[data-theme="dark"] .shortage-search-option:hover,
+.admin-panel[data-theme="dark"] .shortage-offer-details div {
+    border-color: var(--admin-border);
+    color: var(--admin-text);
+    background: var(--admin-primary-soft);
+}
+
+.admin-panel[data-theme="dark"] .shortage-drug-chip,
+.admin-panel[data-theme="dark"] .shortage-matching-drugs li {
+    border-color: #315d4a;
+    color: #b7e7cd;
+    background: #1b332a;
+}
+
+.shortage-modal-feedback {
+    color: #9c3434;
+}
+
+@media (max-width: 767px) {
+    .shortage-intro,
+    .shortage-item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .shortage-owner {
+        width: 100%;
+    }
+
+    .shortage-item-actions {
+        width: 100%;
+    }
+
+    .shortage-offers {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .shortage-result-filters,
+    .shortage-offer-details {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .shortage-offer-details .shortage-offer-wide {
+        grid-column: auto;
+    }
+
+    .shortage-item-actions > *,
+    .shortage-item-actions form,
+    .shortage-item-actions form button {
+        flex: 1 1 auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pharmacy-shortage *,
+    .shortage-results-modal * {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}

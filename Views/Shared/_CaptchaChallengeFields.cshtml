@@ -1,0 +1,88 @@
+@{
+    var captchaEnabled = ViewData["CaptchaEnabled"] as bool? ?? true;
+}
+
+@if (captchaEnabled)
+{
+    <div class="public-feedback-captcha">
+        <label for="CaptchaAnswer">کد امنیتی</label>
+        <div class="public-feedback-captcha-controls">
+            <img class="public-feedback-captcha-image"
+                 alt="تصویر کد امنیتی"
+                 width="180"
+                 height="64" />
+            <button class="public-feedback-captcha-refresh"
+                    type="button"
+                    aria-label="دریافت تصویر کد امنیتی تازه">
+                کد تازه
+            </button>
+        </div>
+        <input type="hidden" name="CaptchaChallengeId" />
+        <input id="CaptchaAnswer"
+               name="CaptchaAnswer"
+               type="text"
+               autocomplete="off"
+               autocapitalize="characters"
+               spellcheck="false"
+               maxlength="8"
+               required />
+        <span class="public-feedback-captcha-status" role="status" aria-live="polite"></span>
+    </div>
+    <script>
+        (() => {
+            const form = document.currentScript.previousElementSibling.closest("form");
+            if (!form) {
+                return;
+            }
+
+            const image = form.querySelector(".public-feedback-captcha-image");
+            const challengeId = form.querySelector("[name='CaptchaChallengeId']");
+            const answer = form.querySelector("[name='CaptchaAnswer']");
+            const refresh = form.querySelector(".public-feedback-captcha-refresh");
+            const status = form.querySelector(".public-feedback-captcha-status");
+
+            const loadChallenge = async () => {
+                refresh.disabled = true;
+                challengeId.value = "";
+                answer.value = "";
+                image.removeAttribute("src");
+                status.textContent = "در حال دریافت کد امنیتی…";
+
+                try {
+                    const response = await fetch("/api/captcha/generate", {
+                        method: "POST",
+                        headers: {
+                            "Accept": "application/json",
+                            "Content-Type": "application/json"
+                        },
+                        body: "{}",
+                        cache: "no-store",
+                        credentials: "same-origin"
+                    });
+                    if (!response.ok) {
+                        throw new Error("CAPTCHA generation failed.");
+                    }
+
+                    const challenge = await response.json();
+                    challengeId.value = challenge.challengeId;
+                    image.src = `data:${challenge.contentType};base64,${challenge.imageBase64}`;
+                    status.textContent = "کد تصویر را وارد کنید؛ برای تغییر کد، دکمه را بزنید.";
+                } catch {
+                    status.textContent = "دریافت کد امنیتی ممکن نشد؛ کمی بعد دوباره تلاش کنید.";
+                } finally {
+                    refresh.disabled = false;
+                }
+            };
+
+            refresh.addEventListener("click", loadChallenge);
+            form.addEventListener("submit", event => {
+                if (!challengeId.value || !answer.value.trim()) {
+                    event.preventDefault();
+                    status.textContent = "ابتدا کد امنیتی را دریافت و وارد کنید.";
+                    answer.focus();
+                }
+            });
+            loadChallenge();
+        })();
+    </script>
+}

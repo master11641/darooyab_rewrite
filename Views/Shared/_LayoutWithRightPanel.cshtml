@@ -5,6 +5,10 @@
 
 @RenderBody()
 
+@section Styles {
+    @await RenderSectionAsync("Styles", required: false)
+}
+
 @section Scripts {
     @await RenderSectionAsync("Scripts", required: false)
 }

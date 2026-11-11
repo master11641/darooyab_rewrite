@@ -1,0 +1,145 @@
+@model PharmacyExchangePageViewModel
+@using System.Globalization
+
+@if (Model.Requests.Count == 0)
+{
+    <div class="pharmacy-request-empty" role="status">
+        <strong>درخواستی برای نمایش وجود ندارد.</strong>
+        <p>مازادهای فعال این داروخانه پس از ثبت در این فهرست نمایش داده می‌شوند.</p>
+    </div>
+}
+else
+{
+    <div class="pharmacy-exchange-list">
+        @foreach (var request in Model.Requests)
+        {
+            <article class="pharmacy-exchange-item">
+                <div class="pharmacy-exchange-item-heading">
+                    <div>
+                        <span class="pharmacy-exchange-code">کد تبادل: @request.ExchangeRandomCode</span>
+                        <h3>@request.DrugName</h3>
+                    </div>
+                    <span class="pharmacy-exchange-category">@request.ExchangeLimitLabel</span>
+                </div>
+                <dl>
+                    <div>
+                        <dt>تعداد مازاد</dt>
+                        <dd>
+                            @if (request.DrugCount is > 0)
+                            {
+                                @request.DrugCount.Value.ToString("N0", CultureInfo.InvariantCulture)
+                                @if (!string.IsNullOrWhiteSpace(request.DrugUnitLabel))
+                                {
+                                    <text> @request.DrugUnitLabel</text>
+                                }
+                            }
+                            else
+                            {
+                                <text>ثبت نشده</text>
+                            }
+                        </dd>
+                    </div>
+                    <div>
+                        <dt>تبادل‌شده</dt>
+                        <dd>
+                            @request.ExchangedCount.ToString("N0", CultureInfo.InvariantCulture)
+                            @if (!string.IsNullOrWhiteSpace(request.DrugUnitLabel))
+                            {
+                                <text> @request.DrugUnitLabel</text>
+                            }
+                        </dd>
+                    </div>
+                    <div>
+                        <dt>باقی‌مانده</dt>
+                        <dd>
+                            @if (request.RemainingCount.HasValue)
+                            {
+                                @request.RemainingCount.Value.ToString("N0", CultureInfo.InvariantCulture)
+                                @if (!string.IsNullOrWhiteSpace(request.DrugUnitLabel))
+                                {
+                                    <text> @request.DrugUnitLabel</text>
+                                }
+                            }
+                            else
+                            {
+                                <text>نامشخص</text>
+                            }
+                        </dd>
+                    </div>
+                    <div><dt>انقضا</dt><dd>@request.DrugExpireDateDisplay</dd></div>
+                    <div><dt>تاریخ ثبت/ویرایش</dt><dd>@request.RegistrationDateDisplay</dd></div>
+                    @if (request.UnitPrice.HasValue)
+                    {
+                        <div><dt>قیمت واحد</dt><dd>@request.UnitPrice.Value.ToString("N0", CultureInfo.InvariantCulture) ریال</dd></div>
+                    }
+                    @if (request.SellToColleague && request.ColleaguePrice.HasValue)
+                    {
+                        <div><dt>قیمت همکار</dt><dd>@request.ColleaguePrice.Value.ToString("N0", CultureInfo.InvariantCulture) ریال</dd></div>
+                    }
+                    @if (request.DiscountPercentage.HasValue)
+                    {
+                        <div><dt>تخفیف</dt><dd>@request.DiscountPercentage٪</dd></div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(request.ExchangeFacilityLabel))
+                    {
+                        <div><dt>تسهیلات تبادل</dt><dd>@request.ExchangeFacilityLabel</dd></div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(request.PatchNumber))
+                    {
+                        <div><dt>شماره بچ</dt><dd>@request.PatchNumber</dd></div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(request.PurchaseInvoiceNumber))
+                    {
+                        <div><dt>شماره فاکتور</dt><dd>@request.PurchaseInvoiceNumber</dd></div>
+                    }
+                </dl>
+                <div class="pharmacy-exchange-item-actions">
+                    <a class="pharmacy-request-link pharmacy-exchange-edit"
+                       href="/PharmacyRequest/TabadolManage?id=@request.Id">
+                        <span aria-hidden="true">✎</span>
+                        <span>ویرایش تاریخ انقضا</span>
+                    </a>
+                    @if (request.ExchangedCount > 0)
+                    {
+                        <form method="post"
+                              action="/PharmacyRequest/TabadolManage/@request.Id/Finish"
+                              data-confirm="این مازاد خاتمه یابد؟ درخواست پس از خاتمه برای تبادل جدید نمایش داده نمی‌شود.">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="searchString" value="@Model.SearchString" />
+                            <input type="hidden" name="page" value="@Model.Page" />
+                            <button class="pharmacy-exchange-finish" type="submit">خاتمه مازاد</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form method="post"
+                              action="/PharmacyRequest/TabadolManage/@request.Id/Delete"
+                              data-confirm="این مازاد حذف شود؟">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="searchString" value="@Model.SearchString" />
+                            <input type="hidden" name="page" value="@Model.Page" />
+                            <button class="pharmacy-request-delete" type="submit">حذف</button>
+                        </form>
+                    }
+                </div>
+            </article>
+        }
+    </div>
+}
+
+@if (Model.TotalPages > 1)
+{
+    <nav class="pharmacy-request-pagination" aria-label="صفحه‌بندی مازادهای فعال">
+        @if (Model.Page > 1)
+        {
+            <a href="/PharmacyRequest/TabadolManage/List?page=@(Model.Page - 1)&amp;searchString=@Uri.EscapeDataString(Model.SearchString ?? string.Empty)"
+               data-exchange-list-page>صفحه قبل</a>
+        }
+        <span>صفحه @Model.Page از @Model.TotalPages</span>
+        @if (Model.Page < Model.TotalPages)
+        {
+            <a href="/PharmacyRequest/TabadolManage/List?page=@(Model.Page + 1)&amp;searchString=@Uri.EscapeDataString(Model.SearchString ?? string.Empty)"
+               data-exchange-list-page>صفحه بعد</a>
+        }
+    </nav>
+}

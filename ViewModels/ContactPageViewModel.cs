@@ -25,6 +25,12 @@ public sealed record ContactMessageInput
     [StringLength(50)]
     public string? Email { get; init; }
 
+    [StringLength(8, MinimumLength = 4)]
+    public string? CaptchaAnswer { get; init; }
+
+    [StringLength(43, MinimumLength = 43)]
+    public string? CaptchaChallengeId { get; init; }
+
     [Required(ErrorMessage = "متن پیام را وارد کنید.")]
     public string Message { get; init; } = string.Empty;
 

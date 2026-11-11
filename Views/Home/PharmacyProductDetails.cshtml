@@ -19,6 +19,10 @@
         : null;
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/pharmacy-product-detail.css" asp-append-version="true" />
+}
+
 <main class="pharmacy-detail container pharmacy-product-detail" aria-labelledby="pharmacy-product-title">
     <nav aria-label="مسیر صفحه">
         <ol class="breadcrumb">
@@ -29,7 +33,7 @@
         </ol>
     </nav>
 
-    <header class="pharmacy-product-hero">
+    <header class="pharmacy-product-hero site-hero site-hero--pharmacy-product">
         @if (Model.ProductImages.Count > 0)
         {
             <div class="pharmacy-product-image">

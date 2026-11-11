@@ -2,10 +2,11 @@
 @{
     Layout = "_LayoutWithRightPanel";
     var activities = Model.Activities;
+    var captchaEnabled = ViewData["CaptchaEnabled"] as bool? ?? true;
 }
 
 <article class="contact-editorial" aria-labelledby="contact-title">
-    <header class="contact-editorial-hero">
+    <header class="contact-editorial-hero site-hero site-hero--contact">
         <div class="contact-editorial-index" aria-hidden="true">
             <span>DY</span>
             <span>ارتباط مستقیم</span>
@@ -107,7 +108,7 @@
         }
         else
         {
-            <form class="contact-message-form" method="post" action="/Contactus">
+            <form class="contact-message-form" method="post" action="/Contactus" id="contact-message-form">
                 @Html.AntiForgeryToken()
                 <div asp-validation-summary="ModelOnly" class="contact-validation-summary" role="alert"></div>
                 <div class="contact-form-trap" aria-hidden="true">
@@ -156,6 +157,33 @@
                         <textarea asp-for="Input.Message" rows="5" maxlength="4000"></textarea>
                         <span asp-validation-for="Input.Message" class="contact-field-error"></span>
                     </div>
+                    @if (captchaEnabled)
+                    {
+                        <div class="contact-field contact-field-captcha">
+                            <label asp-for="Input.CaptchaAnswer">کد امنیتی</label>
+                            <div class="contact-captcha-controls">
+                                <img id="contact-captcha-image"
+                                     class="contact-captcha-image"
+                                     alt="تصویر کد امنیتی"
+                                     width="180"
+                                     height="64" />
+                                <button class="contact-captcha-refresh"
+                                        type="button"
+                                        id="contact-captcha-refresh"
+                                        aria-label="دریافت تصویر کد امنیتی تازه">
+                                    کد تازه
+                                </button>
+                            </div>
+                            <input asp-for="Input.CaptchaChallengeId" type="hidden" />
+                            <input asp-for="Input.CaptchaAnswer"
+                                   autocomplete="off"
+                                   autocapitalize="characters"
+                                   spellcheck="false"
+                                   maxlength="8" />
+                            <span asp-validation-for="Input.CaptchaAnswer" class="contact-field-error"></span>
+                            <span id="contact-captcha-status" role="status" aria-live="polite"></span>
+                        </div>
+                    }
                 </div>
 
                 <div class="contact-form-footer">
@@ -166,3 +194,67 @@
         }
     </section>
 </article>
+
+@section Scripts {
+    @if (captchaEnabled)
+    {
+        <script>
+        (() => {
+            const form = document.getElementById("contact-message-form");
+            const image = document.getElementById("contact-captcha-image");
+            const challengeId = document.getElementById("Input_CaptchaChallengeId");
+            const answer = document.getElementById("Input_CaptchaAnswer");
+            const refresh = document.getElementById("contact-captcha-refresh");
+            const status = document.getElementById("contact-captcha-status");
+
+            if (!form || !image || !challengeId || !answer || !refresh || !status) {
+                return;
+            }
+
+            const loadChallenge = async () => {
+                refresh.disabled = true;
+                status.textContent = "در حال دریافت کد امنیتی…";
+                challengeId.value = "";
+                answer.value = "";
+                image.removeAttribute("src");
+
+                try {
+                    const response = await fetch("/api/captcha/generate", {
+                        method: "POST",
+                        headers: {
+                            "Accept": "application/json",
+                            "Content-Type": "application/json"
+                        },
+                        body: "{}",
+                        cache: "no-store",
+                        credentials: "same-origin"
+                    });
+                    if (!response.ok) {
+                        throw new Error("CAPTCHA generation failed.");
+                    }
+
+                    const challenge = await response.json();
+                    challengeId.value = challenge.challengeId;
+                    image.src = `data:${challenge.contentType};base64,${challenge.imageBase64}`;
+                    status.textContent = "کد تصویر را وارد کنید. برای دریافت کد تازه، دکمه را بزنید.";
+                } catch {
+                    status.textContent = "دریافت کد امنیتی ممکن نشد؛ کمی بعد دوباره تلاش کنید.";
+                } finally {
+                    refresh.disabled = false;
+                }
+            };
+
+            refresh.addEventListener("click", loadChallenge);
+            form.addEventListener("submit", event => {
+                if (!challengeId.value || !answer.value.trim()) {
+                    event.preventDefault();
+                    status.textContent = "ابتدا کد امنیتی را دریافت و وارد کنید.";
+                    answer.focus();
+                }
+            });
+
+            loadChallenge();
+        })();
+        </script>
+    }
+}

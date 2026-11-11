@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("darooyab_rewrite")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+41ab302e0da54bdadcbbf7cf829c2f0d7e1a54bc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+16ea4640a31fef0f00fec4bb2b4ddd9876c1de15")]
 [assembly: System.Reflection.AssemblyProductAttribute("darooyab_rewrite")]
 [assembly: System.Reflection.AssemblyTitleAttribute("darooyab_rewrite")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

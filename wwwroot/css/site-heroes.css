@@ -1,0 +1,165 @@
+.site-hero {
+  position: relative;
+  isolation: isolate;
+}
+
+.site-hero--glass {
+  overflow: hidden;
+  padding: clamp(1.25rem, 3.5vw, 2rem);
+  border: 1px solid rgba(8, 124, 120, .16);
+  border-radius: 1rem;
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(255, 255, 255, .9), transparent 42%),
+    linear-gradient(135deg, rgba(251, 254, 254, .82), rgba(240, 248, 247, .72) 58%, rgba(245, 248, 252, .82));
+  box-shadow: 0 12px 30px rgba(27, 68, 79, .07);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.site-hero:not(.site-hero--brand-info)::before {
+  position: absolute;
+  z-index: 0;
+  inset-block-start: var(--site-hero-ring-top, 50%);
+  inset-inline-start: var(--site-hero-ring-start, -3rem);
+  width: var(--site-hero-ring-size, clamp(13rem, 27vw, 22rem));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    transparent 0 38%,
+    var(--site-hero-ring-color, rgba(8, 124, 120, .075)) 38.4% 39%,
+    transparent 39.4% 54%,
+    var(--site-hero-ring-color, rgba(8, 124, 120, .075)) 54.4% 55%,
+    transparent 55.4% 72%,
+    var(--site-hero-ring-color, rgba(8, 124, 120, .075)) 72.4% 73%,
+    transparent 73.4%);
+  content: "";
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.site-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.site-hero > .contact-editorial-index,
+.site-hero > .about-hero-index {
+  position: absolute;
+}
+
+.site-hero--pharmacy-detail {
+  --site-hero-ring-size: clamp(12rem, 24vw, 20rem);
+  --site-hero-ring-start: -3.25rem;
+  --site-hero-ring-color: rgba(8, 124, 120, .07);
+}
+
+.site-hero--pharmacy-product {
+  --site-hero-ring-size: clamp(14rem, 28vw, 23rem);
+  --site-hero-ring-start: 64%;
+  --site-hero-ring-color: rgba(8, 124, 120, .085);
+}
+
+.site-hero--drug-directory,
+.site-hero--drug-info {
+  --site-hero-ring-size: clamp(12rem, 23vw, 19rem);
+  --site-hero-ring-start: 68%;
+  --site-hero-ring-top: 54%;
+  --site-hero-ring-color: rgba(8, 124, 120, .055);
+}
+
+.site-hero--brand-info::after {
+  position: absolute;
+  z-index: 0;
+  inset-block-start: -5.5rem;
+  inset-inline-start: -5.5rem;
+  width: clamp(13rem, 20vw, 17rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    transparent 0 38%,
+    rgba(8, 124, 120, .04) 38.5% 40%,
+    transparent 40.5% 54%,
+    rgba(8, 124, 120, .04) 54.5% 56%,
+    transparent 56.5% 72%,
+    rgba(8, 124, 120, .04) 72.5% 74%,
+    transparent 74.5%);
+  content: "";
+  pointer-events: none;
+}
+
+.site-hero--doctor-directory,
+.site-hero--doctor-profile,
+.site-hero--companies,
+.site-hero--company-products {
+  --site-hero-ring-size: clamp(12rem, 22vw, 18rem);
+  --site-hero-ring-start: -3rem;
+  --site-hero-ring-top: 45%;
+  --site-hero-ring-color: rgba(8, 124, 120, .06);
+}
+
+.site-hero--contact,
+.site-hero--about {
+  --site-hero-ring-size: clamp(13rem, 26vw, 22rem);
+  --site-hero-ring-start: 70%;
+  --site-hero-ring-top: 52%;
+  --site-hero-ring-color: rgba(232, 246, 241, .07);
+}
+
+.site-hero--pharmacies,
+.site-hero--availability,
+.site-hero--drug-groups,
+.site-hero--drug-group-details,
+.site-hero--new-drugs,
+.site-hero--news,
+.site-hero--search,
+.site-hero--inner {
+  --site-hero-ring-size: clamp(11rem, 20vw, 17rem);
+  --site-hero-ring-start: 72%;
+  --site-hero-ring-top: 48%;
+  --site-hero-ring-color: rgba(8, 124, 120, .055);
+}
+
+@media (max-width: 575.98px) {
+  .site-hero--glass {
+    padding: 1.15rem 1rem;
+  }
+
+  .site-hero {
+    --site-hero-ring-size: 13rem;
+  }
+
+  .site-hero--pharmacy-detail {
+    --site-hero-ring-start: -3.5rem;
+  }
+
+  .site-hero--pharmacy-product {
+    --site-hero-ring-start: 62%;
+  }
+
+  .site-hero--drug-directory,
+  .site-hero--drug-info,
+  .site-hero--pharmacies,
+  .site-hero--availability,
+  .site-hero--drug-groups,
+  .site-hero--drug-group-details,
+  .site-hero--new-drugs,
+  .site-hero--news,
+  .site-hero--search,
+  .site-hero--inner {
+    --site-hero-ring-start: 62%;
+  }
+
+  .site-hero--brand-info::after {
+    inset-block-start: -4rem;
+    inset-inline-start: -4rem;
+    width: 12rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-hero::before {
+    transform: translateY(-50%);
+  }
+}

@@ -1,0 +1,194 @@
+.pharmacy-product-detail .pharmacy-product-hero {
+  min-height: 190px;
+  overflow: hidden;
+  gap: clamp(1rem, 3vw, 1.75rem);
+  padding: clamp(1.25rem, 3.5vw, 2rem);
+  border-color: #d3e8e1;
+  background-color: #f3faf7;
+  background-image:
+    radial-gradient(ellipse at 92% 8%, rgba(8, 124, 120, .11), transparent 38%),
+    linear-gradient(125deg, #f0faf6, #fff 58%, #fffaf3);
+  box-shadow: 0 12px 30px rgba(8, 82, 76, .055);
+}
+
+.pharmacy-product-detail .pharmacy-product-image {
+  border-color: #dce8e4;
+  border-radius: 18px;
+  box-shadow: 0 8px 22px rgba(23, 43, 77, .07);
+}
+
+.pharmacy-product-detail .pharmacy-product-heading {
+  position: relative;
+  z-index: 1;
+}
+
+.pharmacy-product-detail .pharmacy-product-heading h1 {
+  margin-block: .35rem .5rem;
+  line-height: 1.55;
+}
+
+.pharmacy-product-detail .pharmacy-product-heading > p {
+  line-height: 1.8;
+}
+
+.pharmacy-product-detail .pharmacy-product-brand-link {
+  min-height: 44px;
+  width: fit-content;
+  margin-top: .75rem;
+  padding: .35rem .8rem;
+  border: 1px solid #cfe5df;
+  border-radius: 999px;
+  color: var(--primary-dark);
+  background: rgba(255, 255, 255, .82);
+  transition: border-color .18s ease, background-color .18s ease;
+}
+
+.pharmacy-product-detail .pharmacy-product-brand-link:hover {
+  border-color: #a9d2c9;
+  background: #fff;
+}
+
+.pharmacy-product-detail .pharmacy-detail-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(.85rem, 2vw, 1.15rem);
+}
+
+.pharmacy-product-detail .pharmacy-detail-grid > .pharmacy-detail-card {
+  padding: clamp(.9rem, 2vw, 1.25rem);
+}
+
+.pharmacy-product-detail .pharmacy-product-status {
+  border-top-color: var(--primary);
+  background: linear-gradient(145deg, #fff 62%, #f3faf7);
+}
+
+.pharmacy-product-detail .pharmacy-product-status .pharmacy-detail-card-heading {
+  border-inline-start-color: var(--primary);
+  background: linear-gradient(110deg, #fff, #edf8f4);
+}
+
+.pharmacy-product-detail .pharmacy-product-status-badge {
+  align-items: flex-start;
+  margin-block: .25rem .65rem;
+  padding: .75rem .85rem;
+  border: 1px solid #d5ebe2;
+  border-radius: 13px;
+  background: #f1faf6;
+  line-height: 1.8;
+}
+
+.pharmacy-product-detail .pharmacy-product-status > .ranking-badge {
+  margin-block: .35rem .65rem;
+  padding: .45rem .7rem;
+  border: 1px solid #dcebe5;
+  border-radius: 13px;
+  background: #fff;
+}
+
+.pharmacy-product-detail .pharmacy-product-status > p {
+  margin-block: .4rem .8rem;
+  padding-block-start: .65rem;
+  border-top: 1px solid #e8efeb;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.pharmacy-product-detail .pharmacy-product-notice {
+  border-radius: 13px;
+  line-height: 1.85;
+}
+
+.pharmacy-product-detail .pharmacy-detail-grid > .pharmacy-detail-card:nth-child(2) {
+  border-top-color: var(--accent-warm);
+  background: linear-gradient(145deg, #fff 62%, #fffaf3);
+}
+
+.pharmacy-product-detail .pharmacy-detail-grid > .pharmacy-detail-card:nth-child(2) .pharmacy-detail-card-heading {
+  border-inline-start-color: var(--accent-warm);
+  background: linear-gradient(110deg, #fff, #fff8ef);
+}
+
+.pharmacy-product-detail .pharmacy-detail-facts > div:first-child {
+  grid-column: 1 / -1;
+}
+
+.pharmacy-product-detail .pharmacy-detail-gallery,
+.pharmacy-product-detail .pharmacy-gallery-carousel {
+  border-color: #e1ebe7;
+  border-radius: 15px;
+  background: #f7fbf9;
+}
+
+.pharmacy-product-detail .other-pharmacy-card {
+  border-color: #e2ebe6;
+  border-inline-start: 3px solid rgba(8, 124, 120, .42);
+  background: linear-gradient(110deg, #fff, #f7fbf9);
+}
+
+.pharmacy-product-detail .other-pharmacy-card-contact > span:first-child {
+  max-width: 100%;
+  padding: .35rem .6rem;
+  border: 1px solid #f0dfc2;
+  border-radius: 9px;
+  color: #76562b;
+  background: #fff8ed;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.pharmacy-product-detail .other-pharmacy-card-contact a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding-inline: .5rem;
+  border-radius: 9px;
+  background: #eef8f5;
+}
+
+.public-page-shell:has(.pharmacy-product-detail) .public-right-panel {
+  gap: .85rem;
+}
+
+.public-page-shell:has(.pharmacy-product-detail) .right-panel-card {
+  padding: 1.05rem;
+  border-radius: 18px;
+  box-shadow: 0 9px 24px rgba(32, 54, 80, .045);
+}
+
+.public-page-shell:has(.pharmacy-product-detail) .right-panel-title {
+  margin-bottom: .2rem;
+  padding-bottom: .7rem;
+}
+
+.public-page-shell:has(.pharmacy-product-detail) .right-panel-item {
+  padding: .6rem;
+  border-bottom: 1px solid #eef2f1;
+  border-radius: 10px;
+}
+
+.public-page-shell:has(.pharmacy-product-detail) .right-panel-item:last-child {
+  border-bottom: 0;
+}
+
+@media (max-width: 767.98px) {
+  .pharmacy-product-detail .pharmacy-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .pharmacy-product-detail .pharmacy-product-hero {
+    min-height: 0;
+    background-position: left center, center;
+  }
+
+  .pharmacy-product-detail .pharmacy-detail-grid > .pharmacy-detail-card {
+    padding: .9rem;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .pharmacy-product-detail .pharmacy-detail-facts > div:not(:first-child) {
+    grid-column: 1 / -1;
+  }
+}

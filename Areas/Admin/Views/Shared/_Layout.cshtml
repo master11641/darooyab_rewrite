@@ -1,0 +1,105 @@
+@inject IAuthenticationService AuthenticationService
+@inject IPharmacyWalletService PharmacyWalletService
+@using System.Globalization
+@using darooyab_rewrite.Services.Authentication.Pharmacy
+@using darooyab_rewrite.Services.PharmacyRequests
+@{
+    var currentUser = AuthenticationService.GetCurrentUser();
+    var pageTitle = ViewData["Title"] as string ?? "داشبورد";
+    var pharmacyName = ViewData["PharmacyName"] as string ?? "مدیر داروخانه";
+    long? walletBalanceToman = null;
+    if (currentUser?.UserType == PharmacyAuthenticationDefaults.UserType &&
+        int.TryParse(currentUser.UserId, NumberStyles.None, CultureInfo.InvariantCulture, out var pharmacyAccountId))
+    {
+        walletBalanceToman = Math.Max(
+            0,
+            await PharmacyWalletService.GetBalanceInRialAsync(pharmacyAccountId)) / 10;
+    }
+}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="color-scheme" content="light" />
+    <title>@pageTitle | پنل مدیریت دارویاب</title>
+    <link rel="stylesheet" href="~/css/admin-panel.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="admin-body">
+    <div class="admin-panel" data-theme="light">
+        <button class="admin-sidebar-backdrop"
+                type="button"
+                data-sidebar-close
+                aria-label="بستن منو"
+                tabindex="-1"></button>
+        <aside class="admin-sidebar" id="admin-sidebar" aria-label="منوی مدیریت">
+            <partial name="_Sidebar" />
+        </aside>
+        <div class="admin-shell">
+            <header class="admin-header">
+                <button class="admin-icon-button admin-menu-toggle"
+                        type="button"
+                        data-sidebar-toggle
+                        aria-controls="admin-sidebar"
+                        aria-expanded="false"
+                        aria-label="باز کردن منو">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
+                <div class="admin-header-title">
+                    <span class="admin-eyebrow">پنل مدیریت داروخانه</span>
+                    <h1>@pageTitle</h1>
+                </div>
+                <div class="admin-header-account">
+                    @if (walletBalanceToman.HasValue)
+                    {
+                        <a class="admin-wallet-balance"
+                           href="/Wallet"
+                           aria-label="موجودی قابل استفاده کیف پول: @walletBalanceToman.Value.ToString("N0", CultureInfo.InvariantCulture) تومان">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H19a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a3 3 0 0 1-3-3V6.5Zm0 1.5h15a2 2 0 0 1 2 2v5H17a3 3 0 0 1 0-6h4M17 12h.01" /></svg>
+                            <span>
+                                <small>موجودی کیف پول</small>
+                                <strong>@walletBalanceToman.Value.ToString("N0", CultureInfo.InvariantCulture) تومان</strong>
+                            </span>
+                        </a>
+                    }
+                    <button class="admin-icon-button admin-theme-toggle"
+                            type="button"
+                            data-theme-toggle
+                            aria-label="تغییر به تم تیره"
+                            aria-pressed="false"
+                            title="تغییر به تم تیره">
+                        <svg class="admin-theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5 8.5 8.5 0 1 0 20.5 15.5Z" /></svg>
+                        <svg class="admin-theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" /></svg>
+                    </button>
+                    <span class="admin-avatar" aria-hidden="true">@(currentUser?.UserName.FirstOrDefault())</span>
+                    <span class="admin-account-copy">
+                        <strong>@pharmacyName</strong>
+                        <small>مدیر داروخانه</small>
+                    </span>
+                    <button class="admin-icon-button admin-notification-button"
+                            type="button"
+                            disabled
+                            title="سامانه‌ی اعلان‌ها هنوز فعال نیست"
+                            aria-label="سامانه‌ی اعلان‌ها هنوز فعال نیست">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4" /></svg>
+                    </button>
+                    <form asp-area="" asp-controller="PharmacyAuthentication" asp-action="Logout" method="post">
+                        <button class="admin-logout-button" type="submit">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5m5 5H3m9-9h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" /></svg>
+                            <span>خروج</span>
+                        </button>
+                    </form>
+                </div>
+            </header>
+            <main class="admin-main" id="main-content" tabindex="-1">
+                @RenderBody()
+            </main>
+            <partial name="_Footer" />
+        </div>
+    </div>
+    @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/js/admin-panel.js" asp-append-version="true" defer></script>
+</body>
+</html>

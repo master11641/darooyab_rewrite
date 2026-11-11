@@ -1,0 +1,112 @@
+@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "داشبورد";
+}
+
+<div class="admin-page">
+    <nav class="admin-breadcrumb" aria-label="مسیر صفحه">
+        <span>مدیریت</span>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">داشبورد</span>
+    </nav>
+
+    <section class="admin-welcome" aria-labelledby="welcome-title">
+        <div class="admin-welcome-copy">
+            <span class="admin-eyebrow">فضای کاری داروخانه</span>
+            <h2 id="welcome-title">خوش آمدید</h2>
+            <p>وضعیت و امکانات مدیریتی داروخانه‌ی شما از این صفحه در دسترس خواهد بود.</p>
+        </div>
+        <div class="admin-pharmacy-card">
+            <span class="admin-pharmacy-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 10h.01M15 10h.01M9 14h.01M15 14h.01M10 21v-4h4v4" /></svg>
+            </span>
+            <span class="admin-pharmacy-copy">
+                <small>داروخانه‌ی شما</small>
+                <strong>@Model.PharmacyName</strong>
+            </span>
+        </div>
+    </section>
+
+    <section class="admin-section" aria-labelledby="overview-title">
+        <div class="admin-section-heading">
+            <div>
+                <span class="admin-eyebrow">نمای کلی</span>
+                <h2 id="overview-title">خلاصه‌ی وضعیت</h2>
+            </div>
+            <span class="admin-data-label">
+                <span class="admin-status-dot" aria-hidden="true"></span>
+                اطلاعات حساب
+            </span>
+        </div>
+        <div class="admin-overview-grid">
+            <article class="admin-stat-card">
+                <span class="admin-stat-icon admin-stat-icon-blue" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 10h.01M15 10h.01M9 14h.01M15 14h.01" /></svg>
+                </span>
+                <span class="admin-stat-copy">
+                    <small>نام داروخانه</small>
+                    <strong class="admin-stat-name">@Model.PharmacyName</strong>
+                    <span>از اطلاعات ثبت‌شده‌ی حساب</span>
+                </span>
+            </article>
+            <article class="admin-stat-card admin-stat-card-muted">
+                <span class="admin-stat-icon admin-stat-icon-teal" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.4 8 8 9 4.6-1 8-4 8-9V7l-8-4Zm-3 9 2 2 4-4" /></svg>
+                </span>
+                <span class="admin-stat-copy">
+                    <small>وضعیت فعالیت</small>
+                    <strong>در دسترس نیست</strong>
+                    <span>این داده هنوز به داشبورد متصل نشده است.</span>
+                </span>
+            </article>
+            <article class="admin-stat-card admin-stat-card-muted">
+                <span class="admin-stat-icon admin-stat-icon-violet" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 15l3-4 3 2 5-7" /></svg>
+                </span>
+                <span class="admin-stat-copy">
+                    <small>گزارش عملکرد</small>
+                    <strong>هنوز موجود نیست</strong>
+                    <span>برای نمایش آمار، منبع داده‌ی معتبر لازم است.</span>
+                </span>
+            </article>
+        </div>
+    </section>
+
+    <section class="admin-activity-grid" aria-label="فعالیت‌ها و رویدادهای اخیر">
+        <article class="admin-panel-card">
+            <div class="admin-section-heading">
+                <div>
+                    <span class="admin-eyebrow">فعالیت</span>
+                    <h2>فعالیت‌های اخیر</h2>
+                </div>
+            </div>
+            <div class="admin-empty-state">
+                <span class="admin-empty-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+                </span>
+                <strong>هنوز فعالیتی برای نمایش وجود ندارد</strong>
+                <p>فعالیت‌ها پس از اتصال منبع داده در این بخش نمایش داده می‌شوند.</p>
+            </div>
+        </article>
+        <aside class="admin-panel-card admin-account-card">
+            <span class="admin-eyebrow">حساب کاربری</span>
+            <h2>اطلاعات ورود</h2>
+            <dl class="admin-account-details">
+                <div>
+                    <dt>نام کاربری</dt>
+                    <dd dir="ltr">@Model.UserName</dd>
+                </div>
+                <div>
+                    <dt>نوع حساب</dt>
+                    <dd>مدیر داروخانه</dd>
+                </div>
+            </dl>
+            <form asp-area="" asp-controller="PharmacyAuthentication" asp-action="Logout" method="post">
+                <button class="admin-secondary-button" type="submit">
+                    خروج امن از حساب
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5m5 5H3m9-9h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" /></svg>
+                </button>
+            </form>
+        </aside>
+    </section>
+</div>

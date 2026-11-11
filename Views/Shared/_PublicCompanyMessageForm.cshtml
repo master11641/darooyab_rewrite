@@ -1,0 +1,58 @@
+@model darooyab_rewrite.ViewModels.CompanyProductsPageViewModel
+@{
+    var feedbackStatus = TempData["PublicFeedbackStatus"] as string;
+    var feedbackMessage = feedbackStatus switch
+    {
+        "success" => "پیام شما ثبت شد.",
+        "captcha" => "کد امنیتی معتبر نیست یا منقضی شده است. کد تازه را دریافت کنید.",
+        "invalid" => "اطلاعات واردشده معتبر نیست؛ لطفاً فرم را بررسی و دوباره ارسال کنید.",
+        "unavailable" => "ثبت پیام فعلاً ممکن نیست؛ کمی بعد دوباره تلاش کنید.",
+        _ => null
+    };
+}
+
+<section class="public-feedback-form-section" aria-labelledby="company-message-title">
+    <h2 id="company-message-title">ارتباط مستقیم با شرکت @Model.CompanyName</h2>
+    @if (feedbackMessage is not null)
+    {
+        <div class="public-feedback-status public-feedback-status-@feedbackStatus"
+             role="@(feedbackStatus == "success" ? "status" : "alert")">
+            @feedbackMessage
+        </div>
+    }
+    <form method="post"
+          action="/companies/contact"
+          class="public-feedback-form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="CompanyId" value="@Model.CompanyId" />
+        <input type="hidden" name="ReturnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+        <div class="public-feedback-honeypot" aria-hidden="true">
+            <label for="CompanyMessageWebsite">وب‌سایت</label>
+            <input id="CompanyMessageWebsite" name="Website" tabindex="-1" autocomplete="off" />
+        </div>
+        <div class="public-feedback-fields">
+            <div>
+                <label for="CompanyMessageName">نام و نام خانوادگی <span>اختیاری</span></label>
+                <input id="CompanyMessageName" name="Name" maxlength="255" />
+            </div>
+            <div>
+                <label for="CompanyMessagePhone">شماره تماس <span>اختیاری</span></label>
+                <input id="CompanyMessagePhone" name="Phone" type="tel" maxlength="50" autocomplete="tel" />
+            </div>
+            <div class="public-feedback-content">
+                <label for="CompanyMessageContent">متن پیام</label>
+                <textarea id="CompanyMessageContent"
+                          name="Content"
+                          rows="5"
+                          maxlength="4000"
+                          minlength="3"
+                          required></textarea>
+            </div>
+            @{
+                ViewData["CaptchaEnabled"] = ViewData["CaptchaEnabled"] as bool? ?? true;
+            }
+            <partial name="_CaptchaChallengeFields" />
+        </div>
+        <button class="public-feedback-submit" type="submit">ثبت پیام</button>
+    </form>
+</section>

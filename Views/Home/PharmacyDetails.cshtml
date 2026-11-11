@@ -3,6 +3,10 @@
     Layout = "_LayoutWithRightPanel";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/pharmacy-detail.css" asp-append-version="true" />
+}
+
 <main class="pharmacy-detail container" aria-labelledby="pharmacy-detail-title">
     <nav aria-label="مسیر صفحه">
         <ol class="breadcrumb">
@@ -12,7 +16,7 @@
         </ol>
     </nav>
 
-    <header class="pharmacy-detail-hero">
+    <header class="pharmacy-detail-hero site-hero site-hero--pharmacy-detail">
         <div class="pharmacy-detail-symbol" aria-hidden="true">✚</div>
         <div class="pharmacy-detail-heading">
             <span class="section-kicker">اطلاعات داروخانه</span>

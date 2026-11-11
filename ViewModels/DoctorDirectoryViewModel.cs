@@ -48,4 +48,6 @@ public sealed record DoctorProfileViewModel(
     string? SystemNumber,
     string? City,
     string? Province,
-    IReadOnlyList<DoctorDirectoryAddress> Addresses);
+    IReadOnlyList<DoctorDirectoryAddress> Addresses,
+    IReadOnlyList<DrugComment>? Comments = null,
+    int? LegacyAccountId = null);

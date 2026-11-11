@@ -64,6 +64,10 @@
               "target": "Package",
               "version": "[10.0.14, )"
             },
+            "StackExchange.Redis": {
+              "target": "Package",
+              "version": "[3.4.31, )"
+            },
             "System.Security.Cryptography.Pkcs": {
               "target": "Package",
               "version": "[10.0.14, )"

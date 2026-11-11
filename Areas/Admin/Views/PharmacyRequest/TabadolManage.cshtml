@@ -1,0 +1,258 @@
+@model PharmacyExchangePageViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "مازاد بر نیاز جهت تبادل";
+    var statusMessage = TempData["PharmacyExchangeMessage"] as string;
+}
+
+<div class="admin-page pharmacy-requests pharmacy-exchange">
+    <nav class="admin-breadcrumb" aria-label="مسیر صفحه">
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">داشبورد</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">مازاد بر نیاز جهت تبادل</span>
+    </nav>
+
+    <section class="admin-panel-card pharmacy-request-intro" aria-labelledby="pharmacy-exchange-title">
+        <div>
+            <span class="admin-eyebrow">مدیریت مازاد دارویی</span>
+            <h2 id="pharmacy-exchange-title">@(Model.IsEditMode ? "ویرایش مازاد دارویی" : "ثبت مازاد بر نیاز جهت تبادل")</h2>
+            <p>اطلاعات مازاد برای تبادل بین داروخانه‌ها ثبت می‌شود. فقط درخواست‌های متعلق به حساب شما در این صفحه قابل مدیریت هستند.</p>
+        </div>
+        <span class="pharmacy-request-owner">
+            <small>داروخانه</small>
+            <strong>@ViewData["PharmacyName"]</strong>
+        </span>
+    </section>
+
+    @if (!string.IsNullOrWhiteSpace(statusMessage))
+    {
+        <div class="pharmacy-request-alert pharmacy-request-alert-success" role="status">@statusMessage</div>
+    }
+
+    <div asp-validation-summary="ModelOnly" class="pharmacy-request-alert pharmacy-request-alert-error" role="alert"></div>
+    @if (Model.EditRequestNotFound)
+    {
+        <div class="pharmacy-request-alert pharmacy-request-alert-error" role="alert">
+            درخواست برای ویرایش در دسترس نیست یا قبلاً بسته شده است.
+        </div>
+    }
+
+    <section class="admin-panel-card pharmacy-exchange-form-card" aria-labelledby="exchange-form-title">
+        <div class="pharmacy-request-section-heading">
+            <div>
+                <span class="admin-eyebrow">اطلاعات تبادل</span>
+                <h2 id="exchange-form-title">@(Model.IsEditMode ? "جزئیات مازاد" : "درخواست جدید")</h2>
+            </div>
+        </div>
+
+        <form method="post"
+              action="@(Model.IsEditMode ? $"/PharmacyRequest/TabadolManage/{Model.Form.Id}/Expiry" : "/PharmacyRequest/TabadolManage")"
+              data-expiry-only="@(Model.IsEditMode ? "true" : "false")"
+              data-exchange-form>
+            @Html.AntiForgeryToken()
+            <input asp-for="Form.Id" type="hidden" />
+
+            <fieldset class="pharmacy-exchange-edit-hidden"
+                      hidden="@Model.IsEditMode"
+                      disabled="@Model.IsEditMode">
+                <div class="pharmacy-exchange-field">
+                    <label for="exchange-brand-search">نام برند دارو</label>
+                    <input id="exchange-brand-search"
+                           type="search"
+                           class="pharmacy-request-input"
+                           autocomplete="off"
+                           role="combobox"
+                           aria-autocomplete="list"
+                           aria-expanded="false"
+                           aria-controls="exchange-brand-results"
+                           data-search-url="/PharmacyRequest/SearchBrands"
+                           placeholder="برای جستجوی برند، حداقل دو نویسه وارد کنید"
+                           @(Model.IsEditMode ? "disabled" : null) />
+                    <ul id="exchange-brand-results"
+                        class="pharmacy-exchange-search-results"
+                        role="listbox"
+                        aria-label="نتایج جستجوی برند"
+                        hidden></ul>
+                    <div data-search-status class="pharmacy-request-live" role="status" aria-live="polite"></div>
+                    <span asp-validation-for="Form.SelectedIrcs" class="pharmacy-request-validation"></span>
+                    <div class="pharmacy-exchange-selected" data-selected-brands aria-label="برندهای انتخاب‌شده">
+                        @foreach (var brand in Model.SelectedBrands)
+                        {
+                            <span class="pharmacy-request-chip" data-irc="@brand.Irc">
+                                <span>@brand.Name</span>
+                                @if (!Model.IsEditMode)
+                                {
+                                    <button type="button" data-remove-brand aria-label="حذف @brand.Name">×</button>
+                                }
+                            </span>
+                        }
+                    </div>
+                    <div data-selected-irc-inputs>
+                        @foreach (var irc in Model.Form.SelectedIrcs)
+                        {
+                            <input type="hidden" name="Form.SelectedIrcs" value="@irc" />
+                        }
+                    </div>
+                    <p class="pharmacy-exchange-hint">برای ثبت چند برند، هر برند را جداگانه جستجو و انتخاب کنید؛ حداکثر ۲۵ برند مجاز است.</p>
+                </div>
+
+                <fieldset class="pharmacy-exchange-type">
+                    <legend>نوع مازاد</legend>
+                    <div class="pharmacy-exchange-radio-group">
+                        <label>
+                            <input type="radio" name="Form.ExchangeLimitNum" value="1" required
+                                   checked="@(Model.Form.ExchangeLimitNum == "1")" />
+                            <span>ویژه، کمیاب یا لوکس</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="Form.ExchangeLimitNum" value="2" required
+                                   checked="@(Model.Form.ExchangeLimitNum == "2")" />
+                            <span>معمولی</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="Form.ExchangeLimitNum" value="3" required
+                                   checked="@(Model.Form.ExchangeLimitNum == "3")" />
+                            <span>تاریخ نزدیک</span>
+                        </label>
+                    </div>
+                    <span asp-validation-for="Form.ExchangeLimitNum" class="pharmacy-request-validation"></span>
+                </fieldset>
+            </fieldset>
+
+            <div class="pharmacy-exchange-fields">
+                <div class="pharmacy-exchange-field">
+                    <label asp-for="Form.DrugExpireMonth">ماه انقضا</label>
+                    <select asp-for="Form.DrugExpireMonth" class="pharmacy-request-input" required>
+                        @for (var month = 1; month <= 12; month++)
+                        {
+                            <option value="@month">@month.ToString("00", CultureInfo.InvariantCulture)</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Form.DrugExpireMonth" class="pharmacy-request-validation"></span>
+                </div>
+                <div class="pharmacy-exchange-field">
+                    <label asp-for="Form.DrugExpireYear">سال انقضا</label>
+                    <select asp-for="Form.DrugExpireYear" class="pharmacy-request-input" required>
+                        @for (var year = Model.CurrentYear; year <= Model.CurrentYear + 11; year++)
+                        {
+                            <option value="@year">@year</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Form.DrugExpireYear" class="pharmacy-request-validation"></span>
+                </div>
+                <fieldset class="pharmacy-exchange-fields pharmacy-exchange-edit-hidden"
+                          hidden
+                          disabled>
+                    <div class="pharmacy-exchange-field">
+                        <label asp-for="Form.DrugCount">تعداد مازاد</label>
+                        <input asp-for="Form.DrugCount" class="pharmacy-request-input" type="number" min="1" step="1" inputmode="numeric" required />
+                        <span asp-validation-for="Form.DrugCount" class="pharmacy-request-validation"></span>
+                    </div>
+                    <div class="pharmacy-exchange-field">
+                        <label asp-for="Form.DrugUnitNum">واحد</label>
+                        <select asp-for="Form.DrugUnitNum" class="pharmacy-request-input" required>
+                            <option value="">انتخاب کنید</option>
+                            <option value="1">عدد</option>
+                            <option value="2">بسته</option>
+                        </select>
+                        <span asp-validation-for="Form.DrugUnitNum" class="pharmacy-request-validation"></span>
+                    </div>
+                    <div class="pharmacy-exchange-field">
+                        <label asp-for="Form.UnitPrice">قیمت واحد (ریال، اختیاری)</label>
+                        <input asp-for="Form.UnitPrice" class="pharmacy-request-input" type="number" min="0" step="any" inputmode="decimal" />
+                        <span asp-validation-for="Form.UnitPrice" class="pharmacy-request-validation"></span>
+                    </div>
+                    <div class="pharmacy-exchange-field">
+                        <label asp-for="Form.ExchangeFacility">تسهیلات تبادل</label>
+                        <select asp-for="Form.ExchangeFacility" class="pharmacy-request-input">
+                            <option value="3">شرایط عادی</option>
+                            <option value="0">فروش نقدی</option>
+                            <option value="1">تبادل با داروی مصرفی</option>
+                            <option value="2">پذیرش شرایط خاص</option>
+                        </select>
+                    </div>
+                    <div class="pharmacy-exchange-field">
+                        <label asp-for="Form.DiscountPercentage">درصد تخفیف</label>
+                        <select asp-for="Form.DiscountPercentage" class="pharmacy-request-input">
+                            @for (var discount = 0; discount <= 90; discount += 5)
+                            {
+                                <option value="@discount">@discount٪</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Form.DiscountPercentage" class="pharmacy-request-validation"></span>
+                    </div>
+                    <div class="pharmacy-exchange-field">
+                        <label asp-for="Form.PatchNumber">شماره بچ (اختیاری)</label>
+                        <input asp-for="Form.PatchNumber" class="pharmacy-request-input" maxlength="50" />
+                        <span asp-validation-for="Form.PatchNumber" class="pharmacy-request-validation"></span>
+                    </div>
+                    <div class="pharmacy-exchange-field">
+                        <label asp-for="Form.PurchaseInvoiceNumber">شماره فاکتور (اختیاری)</label>
+                        <input asp-for="Form.PurchaseInvoiceNumber" class="pharmacy-request-input" maxlength="50" />
+                        <span asp-validation-for="Form.PurchaseInvoiceNumber" class="pharmacy-request-validation"></span>
+                    </div>
+                    <label class="pharmacy-exchange-colleague">
+                        <input asp-for="Form.SellToColleague" type="checkbox" data-sell-to-colleague />
+                        <span>فروش نقدی به همکار</span>
+                    </label>
+                    <div class="pharmacy-exchange-field" data-colleague-price-field>
+                        <label asp-for="Form.ColleaguePrice">قیمت فروش به همکار (ریال)</label>
+                        <input asp-for="Form.ColleaguePrice" class="pharmacy-request-input" type="number" min="0" step="any" inputmode="decimal" />
+                        <span asp-validation-for="Form.ColleaguePrice" class="pharmacy-request-validation"></span>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="pharmacy-request-actions">
+                <button class="pharmacy-request-submit admin-secondary-button"
+                        type="submit"
+                        data-submit-label="@(Model.IsEditMode ? "ذخیره تاریخ انقضا" : "ثبت مازاد")">
+                    @(Model.IsEditMode ? "ذخیره تاریخ انقضا" : "ثبت مازاد")
+                </button>
+                @if (Model.IsEditMode)
+                {
+                    <a class="pharmacy-request-cancel" href="/PharmacyRequest/TabadolManage">انصراف از ویرایش</a>
+                }
+                else
+                {
+                    <span class="pharmacy-exchange-hint">ثبت و ویرایش فقط روی درخواست فعال همین داروخانه انجام می‌شود.</span>
+                }
+            </div>
+            @if (Model.IsEditMode)
+            {
+                <p class="pharmacy-exchange-hint">در این مرحله فقط ماه و سال انقضا ویرایش می‌شود؛ سایر اطلاعات بدون تغییر حفظ می‌شوند.</p>
+            }
+        </form>
+    </section>
+
+    <section class="admin-panel-card pharmacy-exchange-list-card" aria-labelledby="exchange-list-title">
+        <div class="pharmacy-request-section-heading">
+            <div>
+                <span class="admin-eyebrow">مازادهای فعال شما</span>
+                <h2 id="exchange-list-title">فهرست درخواست‌های تبادل</h2>
+            </div>
+            <form method="get"
+                  action="/PharmacyRequest/TabadolManage/List"
+                  class="pharmacy-request-list-search"
+                  data-exchange-search-form>
+                <label class="visually-hidden" for="exchange-search">جستجوی برند</label>
+                <input id="exchange-search"
+                       name="searchString"
+                       type="search"
+                       class="pharmacy-request-input"
+                       value="@Model.SearchString"
+                       placeholder="جستجو بر اساس نام برند" />
+                <button class="admin-secondary-button" type="submit">جستجو</button>
+            </form>
+        </div>
+        <p class="pharmacy-exchange-loading" data-list-loading hidden>در حال بارگذاری فهرست…</p>
+        <div id="exchange-list-container"
+             data-list-url="/PharmacyRequest/TabadolManage/List"
+             aria-live="polite">
+            <partial name="_TabadolManageList" model="Model" />
+        </div>
+        <p class="visually-hidden" id="exchange-list-status" role="status" aria-live="polite"></p>
+    </section>
+</div>
+
+<script src="~/js/pharmacy-exchange.js" asp-append-version="true" defer></script>

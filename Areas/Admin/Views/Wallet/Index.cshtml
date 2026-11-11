@@ -1,0 +1,158 @@
+@model PharmacyWalletPageViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "کیف پول";
+    var message = ViewData["WalletMessage"] as string;
+    var messageType = ViewData["WalletMessageType"] as string;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pharmacy-wallet.css" asp-append-version="true" />
+}
+
+<div class="admin-page pharmacy-wallet">
+    <nav class="admin-breadcrumb" aria-label="مسیر صفحه">
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">داشبورد</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">کیف پول</span>
+    </nav>
+
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="wallet-alert @(messageType == "success" ? "wallet-alert-success" : "wallet-alert-error")"
+             role="@(messageType == "success" ? "status" : "alert")">
+            @message
+        </div>
+    }
+
+    <section class="wallet-summary" aria-label="خلاصه کیف پول">
+        <article class="admin-panel-card wallet-summary-card">
+            <span>مجموع شارژهای تأییدشده</span>
+            <strong>@Model.PaidAmountToman.ToString("N0", CultureInfo.InvariantCulture) <small>تومان</small></strong>
+        </article>
+        <article class="admin-panel-card wallet-summary-card">
+            <span>مجموع هزینه‌ها</span>
+            <strong>@Model.SpentAmountToman.ToString("N0", CultureInfo.InvariantCulture) <small>تومان</small></strong>
+        </article>
+        <article class="admin-panel-card wallet-summary-card wallet-summary-balance">
+            <span>مانده قابل استفاده</span>
+            <strong>@Model.BalanceToman.ToString("N0", CultureInfo.InvariantCulture) <small>تومان</small></strong>
+        </article>
+    </section>
+
+    <section class="admin-panel-card wallet-charge-card" aria-labelledby="wallet-charge-title">
+        <div class="wallet-section-heading">
+            <div>
+                <span class="admin-eyebrow">افزایش اعتبار</span>
+                <h2 id="wallet-charge-title">شارژ کیف پول</h2>
+            </div>
+        </div>
+        @if (Model.CanCharge)
+        {
+            <form method="post" action="/Wallet/Charge" class="wallet-charge-form">
+                @Html.AntiForgeryToken()
+                <div class="wallet-charge-field">
+                    <label for="AmountToman">مبلغ شارژ (تومان)</label>
+                    <input id="AmountToman"
+                           name="AmountToman"
+                           type="number"
+                           min="1100"
+                           max="20000000"
+                           step="1"
+                           inputmode="numeric"
+                           autocomplete="off"
+                           required
+                           aria-describedby="wallet-charge-hint" />
+                    <span id="wallet-charge-hint">حداقل ۱,۱۰۰ و حداکثر ۲۰,۰۰۰,۰۰۰ تومان</span>
+                </div>
+                <button class="wallet-primary-button" type="submit">
+                    ادامه به درگاه پرداخت
+                </button>
+            </form>
+        }
+        else
+        {
+            <div class="wallet-config-notice" role="status">
+                شارژ آنلاین در این محیط هنوز پیکربندی نشده است. تاریخچه و مانده‌ی کیف پول همچنان قابل مشاهده‌اند.
+            </div>
+        }
+    </section>
+
+    <section class="admin-panel-card wallet-history-card" aria-labelledby="wallet-history-title">
+        <div class="wallet-section-heading">
+            <div>
+                <span class="admin-eyebrow">گردش حساب</span>
+                <h2 id="wallet-history-title">تراکنش‌های کیف پول</h2>
+            </div>
+            <span class="wallet-page-indicator">صفحه @Model.Page از @Model.TotalPages</span>
+        </div>
+
+        @if (Model.Transactions.Count == 0)
+        {
+            <div class="wallet-empty" role="status">
+                <strong>تراکنشی برای نمایش وجود ندارد.</strong>
+                <p>پس از ثبت یا تأیید شارژ، ریزتراکنش‌ها در این بخش نمایش داده می‌شوند.</p>
+            </div>
+        }
+        else
+        {
+            <div class="wallet-transaction-list">
+                @foreach (var transaction in Model.Transactions)
+                {
+                    <article class="wallet-transaction">
+                        <div class="wallet-transaction-main">
+                            <strong>@transaction.TransactionType</strong>
+                            <span>@transaction.RegisteredAtDisplay</span>
+                        </div>
+                        <div class="wallet-transaction-amount">
+                            <span>مبلغ</span>
+                            <strong>@transaction.AmountToman.ToString("N0", CultureInfo.InvariantCulture) تومان</strong>
+                        </div>
+                        <div class="wallet-transaction-state">
+                            <span class="@(transaction.Status == "پرداخت موفق" ? "wallet-status-success" : "wallet-status-pending")">
+                                @transaction.Status
+                            </span>
+                            @if (!string.IsNullOrWhiteSpace(transaction.ReferenceId))
+                            {
+                                <small>کد رهگیری: @transaction.ReferenceId</small>
+                            }
+                            @if (transaction.PaidAt.HasValue)
+                            {
+                                <small>زمان تأیید: @transaction.PaidAtDisplay</small>
+                            }
+                        </div>
+                        <div class="wallet-transaction-action">
+                            @if (transaction.CanVerify)
+                            {
+                                <form method="post" action="/Wallet/Verify/@transaction.Id">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="page" value="@Model.Page" />
+                                    <button class="wallet-secondary-button" type="submit">بررسی وضعیت پرداخت</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span aria-hidden="true">—</span>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="wallet-pagination" aria-label="صفحه‌بندی تراکنش‌ها">
+                @if (Model.Page > 1)
+                {
+                    <a href="/Wallet?page=@(Model.Page - 1)" rel="prev">صفحه قبل</a>
+                }
+                <span aria-current="page">@Model.Page</span>
+                @if (Model.Page < Model.TotalPages)
+                {
+                    <a href="/Wallet?page=@(Model.Page + 1)" rel="next">صفحه بعد</a>
+                }
+            </nav>
+        }
+    </section>
+</div>

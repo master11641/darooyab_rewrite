@@ -31,7 +31,7 @@
         </ol>
     </nav>
 
-    <header class="company-products-heading">
+    <header class="company-products-heading site-hero site-hero--glass site-hero--company-products">
         <span class="section-kicker">@directoryTitle</span>
         @if (Model.DataUnavailable)
         {
@@ -249,5 +249,10 @@
                 </div>
             }
         </section>
+
+        @if (Model.CanReceiveMessages && Model.CompanyId.HasValue)
+        {
+            <partial name="_PublicCompanyMessageForm" model="Model" />
+        }
     }
 </section>

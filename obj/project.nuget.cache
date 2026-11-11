@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "z4YYQQgpBrI=",
+  "dgSpecHash": "t/glCM67PYE=",
   "success": true,
   "projectFilePath": "D:\\Projects\\Dotnet\\darooyab_new\\darooyab_rewrite\\darooyab_rewrite.csproj",
   "expectedPackageFiles": [
@@ -29,9 +29,12 @@
     "C:\\Users\\Kiansoft\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\7.7.1\\microsoft.identitymodel.protocols.openidconnect.7.7.1.nupkg.sha512",
     "C:\\Users\\Kiansoft\\.nuget\\packages\\microsoft.identitymodel.tokens\\7.7.1\\microsoft.identitymodel.tokens.7.7.1.nupkg.sha512",
     "C:\\Users\\Kiansoft\\.nuget\\packages\\microsoft.sqlserver.server\\1.0.0\\microsoft.sqlserver.server.1.0.0.nupkg.sha512",
+    "C:\\Users\\Kiansoft\\.nuget\\packages\\respite\\3.4.31\\respite.3.4.31.nupkg.sha512",
+    "C:\\Users\\Kiansoft\\.nuget\\packages\\stackexchange.redis\\3.4.31\\stackexchange.redis.3.4.31.nupkg.sha512",
     "C:\\Users\\Kiansoft\\.nuget\\packages\\system.clientmodel\\1.8.0\\system.clientmodel.1.8.0.nupkg.sha512",
     "C:\\Users\\Kiansoft\\.nuget\\packages\\system.configuration.configurationmanager\\9.0.11\\system.configuration.configurationmanager.9.0.11.nupkg.sha512",
     "C:\\Users\\Kiansoft\\.nuget\\packages\\system.identitymodel.tokens.jwt\\7.7.1\\system.identitymodel.tokens.jwt.7.7.1.nupkg.sha512",
+    "C:\\Users\\Kiansoft\\.nuget\\packages\\system.io.hashing\\10.0.13\\system.io.hashing.10.0.13.nupkg.sha512",
     "C:\\Users\\Kiansoft\\.nuget\\packages\\system.memory.data\\8.0.1\\system.memory.data.8.0.1.nupkg.sha512",
     "C:\\Users\\Kiansoft\\.nuget\\packages\\system.security.cryptography.pkcs\\10.0.14\\system.security.cryptography.pkcs.10.0.14.nupkg.sha512",
     "C:\\Users\\Kiansoft\\.nuget\\packages\\system.security.cryptography.protecteddata\\9.0.11\\system.security.cryptography.protecteddata.9.0.11.nupkg.sha512"

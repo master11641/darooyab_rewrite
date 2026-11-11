@@ -1,0 +1,62 @@
+@model darooyab_rewrite.ViewModels.PublicCommentFormViewModel
+@{
+    var feedbackStatus = TempData["PublicFeedbackStatus"] as string;
+    var feedbackMessage = feedbackStatus switch
+    {
+        "success" => "دیدگاه شما ثبت شد و پس از بررسی نمایش داده می‌شود.",
+        "captcha" => "کد امنیتی معتبر نیست یا منقضی شده است. کد تازه را دریافت کنید.",
+        "invalid" => "اطلاعات واردشده معتبر نیست؛ لطفاً فرم را بررسی و دوباره ارسال کنید.",
+        "unavailable" => "ثبت دیدگاه فعلاً ممکن نیست؛ کمی بعد دوباره تلاش کنید.",
+        _ => null
+    };
+}
+
+<section class="public-feedback-form-section" aria-labelledby="public-comment-form-title">
+    <h3 id="public-comment-form-title">ثبت دیدگاه درباره‌ی @Model.Subject</h3>
+    <p>دیدگاه پس از بررسی و تأیید منتشر می‌شود. از درج اطلاعات شخصی یا اطلاعات پزشکی حساس خودداری کنید.</p>
+    @if (feedbackMessage is not null)
+    {
+        <div class="public-feedback-status public-feedback-status-@feedbackStatus"
+             role="@(feedbackStatus == "success" ? "status" : "alert")">
+            @feedbackMessage
+        </div>
+    }
+    <form method="post" action="/comments/submit" class="public-feedback-form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="TargetType" value="@Model.TargetType" />
+        <input type="hidden" name="TargetId" value="@Model.TargetId" />
+        <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+        <div class="public-feedback-honeypot" aria-hidden="true">
+            <label for="PublicCommentWebsite">وب‌سایت</label>
+            <input id="PublicCommentWebsite" name="Website" tabindex="-1" autocomplete="off" />
+        </div>
+        <div class="public-feedback-fields">
+            <div>
+                <label for="PublicCommentName">نام و نام خانوادگی</label>
+                <input id="PublicCommentName" name="Name" maxlength="50" minlength="3" required />
+            </div>
+            <div>
+                <label for="PublicCommentEmail">رایانامه <span>اختیاری</span></label>
+                <input id="PublicCommentEmail" name="Email" type="email" maxlength="100" autocomplete="email" />
+            </div>
+            <div>
+                <label for="PublicCommentPhone">شماره تماس <span>اختیاری</span></label>
+                <input id="PublicCommentPhone" name="Phone" type="tel" maxlength="50" autocomplete="tel" />
+            </div>
+            <div class="public-feedback-content">
+                <label for="PublicCommentContent">متن دیدگاه</label>
+                <textarea id="PublicCommentContent"
+                          name="Content"
+                          rows="5"
+                          maxlength="4000"
+                          minlength="3"
+                          required></textarea>
+            </div>
+            @{
+                ViewData["CaptchaEnabled"] = Model.CaptchaEnabled;
+            }
+            <partial name="_CaptchaChallengeFields" />
+        </div>
+        <button class="public-feedback-submit" type="submit">ارسال برای بررسی</button>
+    </form>
+</section>

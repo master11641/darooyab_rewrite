@@ -15,6 +15,8 @@ using Microsoft.Extensions.Logging;
 using darooyab_rewrite.Extensions;
 using darooyab_rewrite.Routing;
 using darooyab_rewrite.Security;
+using darooyab_rewrite.Services.Captcha;
+using darooyab_rewrite.Services.Comments;
 using darooyab_rewrite.Utilities;
 using darooyab_rewrite.ViewModels;
 using darooyab.Models.DTOs;
@@ -25,6 +27,8 @@ public class HomeController : Controller
 {
     private readonly darooConContext _context;
     private readonly ILogger<HomeController> _logger;
+    private readonly ICaptchaService _captchaService;
+    private readonly IPublicCommentService _publicCommentService;
 
     private static readonly IReadOnlyDictionary<string, SiteSectionViewModel> Sections =
         new Dictionary<string, SiteSectionViewModel>(StringComparer.OrdinalIgnoreCase)
@@ -46,10 +50,16 @@ public class HomeController : Controller
                 "▤")
         };
 
-    public HomeController(darooConContext context, ILogger<HomeController> logger)
+    public HomeController(
+        darooConContext context,
+        ILogger<HomeController> logger,
+        ICaptchaService captchaService,
+        IPublicCommentService publicCommentService)
     {
         _context = context;
         _logger = logger;
+        _captchaService = captchaService;
+        _publicCommentService = publicCommentService;
     }
 
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -96,6 +106,70 @@ public class HomeController : Controller
         }
 
         return View(new HomePageViewModel(latestNews, newsUnavailable));
+    }
+
+    [HttpGet("/App", Name = "App")]
+    public async Task<IActionResult> App(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var page = await _context.TblNews
+                .AsNoTracking()
+                .Where(item =>
+                    item.TblNewsId == 14 &&
+                    item.TblNewsTypeIsPage &&
+                    item.TblNewsIsActive &&
+                    item.TblNewsDoConfirmByManager != false)
+                .Select(item => new
+                {
+                    item.TblNewsTitle,
+                    item.TblNewsSubTitle,
+                    item.TblNewsShortDescription,
+                    item.TblNewsLongDescription
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (page is null)
+            {
+                return NotFound();
+            }
+
+            var sanitizer = new HtmlSanitizer();
+            var legacyContent = string.IsNullOrWhiteSpace(page.TblNewsLongDescription)
+                ? page.TblNewsShortDescription ?? string.Empty
+                : page.TblNewsLongDescription;
+            var contentHtml = sanitizer.Sanitize(PrepareLegacyAppContent(legacyContent));
+            var description = Regex.Replace(
+                WebUtility.HtmlDecode(page.TblNewsSubTitle ?? string.Empty),
+                @"\s+",
+                " ").Trim();
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                description = "معرفی اپلیکیشن دارویاب.";
+            }
+
+            SetAppMetadata(page.TblNewsTitle, page.TblNewsSubTitle, description);
+            return View(new AppPageViewModel(
+                page.TblNewsTitle,
+                page.TblNewsSubTitle,
+                contentHtml));
+        }
+        catch (SqlException exception)
+        {
+            _logger.LogError(
+                "Could not load the legacy app page from SQL Server. SQL error number: {SqlErrorNumber}.",
+                exception.Number);
+            Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            SetAppMetadata(
+                "اپلیکیشن دارویاب",
+                null,
+                "محتوای معرفی اپلیکیشن دارویاب در حال حاضر در دسترس نیست.");
+            return View(new AppPageViewModel(
+                "اپلیکیشن دارویاب",
+                null,
+                string.Empty,
+                DataUnavailable: true));
+        }
     }
 
     [HttpGet("/Contactus", Name = "ContactUs")]
@@ -147,6 +221,39 @@ public class HomeController : Controller
     {
         SetContactMetadata();
 
+        CaptchaValidationResult captchaResult;
+        try
+        {
+            captchaResult = await _captchaService.ValidateAsync(
+                input.CaptchaChallengeId,
+                input.CaptchaAnswer,
+                CaptchaClientCookie.GetOrCreate(HttpContext),
+                HttpContext.Connection.RemoteIpAddress?.ToString(),
+                cancellationToken);
+        }
+        catch (CaptchaStoreUnavailableException exception)
+        {
+            _logger.LogError(exception, "The CAPTCHA challenge store is unavailable.");
+            Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            IReadOnlyList<ContactActivityOption> unavailableActivities = [];
+            try
+            {
+                unavailableActivities = await LoadContactActivitiesAsync(cancellationToken);
+            }
+            catch (SqlException sqlException)
+            {
+                _logger.LogError(
+                    "Could not load contact activity categories after CAPTCHA store failure. SQL error number: {SqlErrorNumber}.",
+                    sqlException.Number);
+            }
+
+            return View("Contactus", new ContactPageViewModel(
+                unavailableActivities,
+                input,
+                DataUnavailable: unavailableActivities.Count == 0,
+                SubmissionUnavailable: true));
+        }
+
         IReadOnlyList<ContactActivityOption> activities;
         try
         {
@@ -163,6 +270,14 @@ public class HomeController : Controller
                 input,
                 DataUnavailable: true,
                 SubmissionUnavailable: true));
+        }
+
+        if (!captchaResult.IsValid)
+        {
+            ModelState.AddModelError(
+                "Input.CaptchaAnswer",
+                "کد امنیتی معتبر نیست یا منقضی شده است. کد تازه را دریافت کنید.");
+            return View("Contactus", new ContactPageViewModel(activities, input));
         }
 
         if (!string.IsNullOrWhiteSpace(input.Website))
@@ -222,6 +337,87 @@ public class HomeController : Controller
         return RedirectToRoute("ContactUs");
     }
 
+    private void SetAppMetadata(string title, string? subtitle, string description)
+    {
+        var pageTitle = string.IsNullOrWhiteSpace(subtitle)
+            ? title
+            : $"{title} | {subtitle}";
+        const string canonicalUrl = "https://www.darooyab.ir/App";
+        ViewData["Title"] = pageTitle;
+        ViewData["MetaDescription"] = description;
+        ViewData["CanonicalUrl"] = canonicalUrl;
+        ViewData["OpenGraphTitle"] = pageTitle;
+        ViewData["OpenGraphDescription"] = description;
+        ViewData["OpenGraphUrl"] = canonicalUrl;
+        ViewData["OpenGraphType"] = "website";
+    }
+
+    private static string PrepareLegacyAppContent(string content)
+    {
+        const string imageTagPattern = @"<img\b[^>]*>";
+        const string imageAltPattern = @"\balt\s*=\s*(['""])(.*?)\1";
+
+        var contentWithAccessibleLinks = Regex.Replace(
+            content,
+            @"<a\b(?<attributes>[^>]*)>(?<content>.*?)</a>",
+            match =>
+            {
+                var linkContent = match.Groups["content"].Value;
+                if (!Regex.IsMatch(linkContent, @"<img\b", RegexOptions.IgnoreCase))
+                {
+                    return match.Value;
+                }
+
+                var altMatch = Regex.Match(linkContent, imageAltPattern, RegexOptions.IgnoreCase);
+                var label = altMatch.Success
+                    ? WebUtility.HtmlDecode(altMatch.Groups[2].Value).Trim()
+                    : string.Empty;
+                if (string.IsNullOrWhiteSpace(label))
+                {
+                    var hrefMatch = Regex.Match(
+                        match.Groups["attributes"].Value,
+                        @"\bhref\s*=\s*(['""])(.*?)\1",
+                        RegexOptions.IgnoreCase);
+                    var href = hrefMatch.Success
+                        ? WebUtility.HtmlDecode(hrefMatch.Groups[2].Value)
+                        : string.Empty;
+                    label = href.Contains("Darooyab32.apk", StringComparison.OrdinalIgnoreCase)
+                        ? "دریافت نسخه‌ی ۳۲ بیتی اندروید"
+                        : href.Contains("cafebazaar.ir", StringComparison.OrdinalIgnoreCase)
+                            ? "دریافت از کافه‌بازار"
+                            : href.Contains("myket.ir", StringComparison.OrdinalIgnoreCase)
+                                ? "دریافت از مایکت"
+                                : href.Contains("app.darooyab.ir", StringComparison.OrdinalIgnoreCase)
+                                    ? "استفاده از نسخه‌ی وب اپلیکیشن"
+                                    : "دریافت اپلیکیشن دارویاب";
+                }
+
+                var remainingContent = Regex.Replace(
+                    linkContent,
+                    imageTagPattern,
+                    string.Empty,
+                    RegexOptions.IgnoreCase).Trim();
+                var imageLabel = $"<span class=\"app-page-image-label\">{WebUtility.HtmlEncode(label)}</span>";
+                return $"<a{match.Groups["attributes"].Value}>{remainingContent}{imageLabel}</a>";
+            },
+            RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+        return Regex.Replace(
+            contentWithAccessibleLinks,
+            imageTagPattern,
+            match =>
+            {
+                var altMatch = Regex.Match(match.Value, imageAltPattern, RegexOptions.IgnoreCase);
+                var label = altMatch.Success
+                    ? WebUtility.HtmlDecode(altMatch.Groups[2].Value).Trim()
+                    : string.Empty;
+                return string.IsNullOrWhiteSpace(label)
+                    ? string.Empty
+                    : $"<span class=\"app-page-image-label\">{WebUtility.HtmlEncode(label)}</span>";
+            },
+            RegexOptions.IgnoreCase);
+    }
+
     private async Task<IReadOnlyList<ContactActivityOption>> LoadContactActivitiesAsync(
         CancellationToken cancellationToken) =>
         await _context.Categories
@@ -234,6 +430,7 @@ public class HomeController : Controller
 
     private void SetContactMetadata()
     {
+        ViewData["CaptchaEnabled"] = _captchaService.IsEnabled;
         const string title =
             "اطلاعات تماس دارویاب|تلفن دارویاب|ارتباط با دارویاب|تلفن اطلاعات دارویی|شرکت دانش بنیان اکسیر دانش آسیا";
         const string description =
@@ -1739,6 +1936,7 @@ public class HomeController : Controller
         ViewData["CanonicalUrl"] = canonicalUrl;
         ViewData["OpenGraphUrl"] = canonicalUrl;
         ViewData["OpenGraphType"] = "website";
+        ViewData["CaptchaEnabled"] = _captchaService.IsEnabled;
 
         try
         {
@@ -1872,7 +2070,9 @@ public class HomeController : Controller
                 company.CountryName,
                 directoryPath,
                 organization,
-                products));
+                products,
+                CanReceiveMessages:
+                    directoryPath == "Pharmaceuticalcompanies" && company.CountryId == 1));
         }
         catch (SqlException exception)
         {
@@ -1900,6 +2100,7 @@ public class HomeController : Controller
     [HttpGet("/profile/{id:int}", Name = "DoctorProfile")]
     public async Task<IActionResult> DoctorProfile(int id, CancellationToken cancellationToken)
     {
+        ViewData["CaptchaEnabled"] = _captchaService.IsEnabled;
         try
         {
             var doctor = await _context.DarooyabUsers
@@ -1982,6 +2183,27 @@ public class HomeController : Controller
                     address.Longitude))
                 .ToListAsync(cancellationToken);
 
+            int? legacyAccountId = null;
+            IReadOnlyList<DrugComment> doctorComments = [];
+            if (!string.IsNullOrWhiteSpace(doctor.MedicalSystemNumber))
+            {
+                var matchingLegacyAccountIds = await _context.WebSiteUserAccounts
+                    .AsNoTracking()
+                    .Where(account => account.NezamCode == doctor.MedicalSystemNumber)
+                    .OrderBy(account => account.Id)
+                    .Select(account => account.Id)
+                    .Take(2)
+                    .ToListAsync(cancellationToken);
+                if (matchingLegacyAccountIds.Count == 1)
+                {
+                    legacyAccountId = matchingLegacyAccountIds[0];
+                    doctorComments = await _publicCommentService.GetApprovedCommentsAsync(
+                        "doctor",
+                        legacyAccountId.Value,
+                        cancellationToken);
+                }
+            }
+
             var profile = new DoctorProfileViewModel(
                 doctor.Id,
                 doctor.Name,
@@ -1997,7 +2219,9 @@ public class HomeController : Controller
                 doctor.MedicalSystemNumber,
                 doctor.City,
                 doctor.Province,
-                addresses);
+                addresses,
+                doctorComments,
+                legacyAccountId);
 
             var isMidwife = profile.ActivityId is 9 or 11;
             var pageTitle = isMidwife
@@ -2942,6 +3166,7 @@ public class HomeController : Controller
         string? BrandEngName,
         CancellationToken cancellationToken)
     {
+        ViewData["CaptchaEnabled"] = _captchaService.IsEnabled;
         if (!IRC.HasValue || IRC.Value <= 0)
         {
             return NotFound();
@@ -3163,41 +3388,10 @@ public class HomeController : Controller
                         .Select(url => new BrandGalleryImage(url!, persianName))
                         .ToArray());
 
-            var commentRows = await _context.Comments
-                .AsNoTracking()
-                .Where(item => item.IsAproved == true && item.IrcFk == IRC.Value)
-                .OrderByDescending(item => item.Id)
-                .Take(100)
-                .Select(item => new
-                {
-                    item.Id,
-                    item.ParentId,
-                    NameFamily = item.NameFamily ?? string.Empty,
-                    CommentText = item.CommentText ?? string.Empty,
-                    item.InsertDateTime
-                })
-                .ToListAsync(cancellationToken);
-            var repliesByParent = commentRows
-                .Where(item => item.ParentId.HasValue)
-                .GroupBy(item => item.ParentId!.Value)
-                .ToDictionary(
-                    group => group.Key,
-                    group => (IReadOnlyList<DrugCommentReply>)group
-                        .OrderBy(item => item.Id)
-                        .Select(item => new DrugCommentReply(
-                            string.IsNullOrWhiteSpace(item.NameFamily) ? "دارویاب" : item.NameFamily,
-                            item.CommentText,
-                            item.InsertDateTime))
-                        .ToArray());
-            var comments = commentRows
-                .Where(item => !item.ParentId.HasValue)
-                .Take(20)
-                .Select(item => new DrugComment(
-                    string.IsNullOrWhiteSpace(item.NameFamily) ? "کاربر" : item.NameFamily,
-                    item.CommentText,
-                    item.InsertDateTime,
-                    repliesByParent.TryGetValue(item.Id, out var replies) ? replies : []))
-                .ToArray();
+            var comments = await _publicCommentService.GetApprovedCommentsAsync(
+                "brand",
+                IRC.Value,
+                cancellationToken);
 
             var model = new BrandInfoPageViewModel
             {
@@ -3294,6 +3488,7 @@ public class HomeController : Controller
         string? EngGenericName,
         CancellationToken cancellationToken = default)
     {
+        ViewData["CaptchaEnabled"] = _captchaService.IsEnabled;
         if (!DrugId.HasValue || DrugId.Value <= 0)
         {
             return NotFound();
@@ -3383,41 +3578,10 @@ public class HomeController : Controller
                 DrugId.Value,
                 genericInfo.AhfsId,
                 cancellationToken);
-            var commentRows = await _context.Comments
-                .AsNoTracking()
-                .Where(item => item.IsAproved == true && item.DrugIdFk == DrugId.Value)
-                .OrderByDescending(item => item.Id)
-                .Take(100)
-                .Select(item => new
-                {
-                    item.Id,
-                    item.ParentId,
-                    NameFamily = item.NameFamily ?? string.Empty,
-                    CommentText = item.CommentText ?? string.Empty,
-                    item.InsertDateTime
-                })
-                .ToListAsync(cancellationToken);
-            var repliesByParent = commentRows
-                .Where(item => item.ParentId.HasValue)
-                .GroupBy(item => item.ParentId!.Value)
-                .ToDictionary(
-                    group => group.Key,
-                    group => (IReadOnlyList<DrugCommentReply>)group
-                        .OrderBy(item => item.Id)
-                        .Select(item => new DrugCommentReply(
-                            item.NameFamily ?? "دارویاب",
-                            item.CommentText,
-                            item.InsertDateTime))
-                        .ToArray());
-            var comments = commentRows
-                .Where(item => !item.ParentId.HasValue)
-                .Take(20)
-                .Select(item => new DrugComment(
-                    item.NameFamily ?? "کاربر",
-                    item.CommentText,
-                    item.InsertDateTime,
-                    repliesByParent.TryGetValue(item.Id, out var replies) ? replies : []))
-                .ToArray();
+            var comments = await _publicCommentService.GetApprovedCommentsAsync(
+                "generic",
+                DrugId.Value,
+                cancellationToken);
 
             var informationSections = new[]
             {

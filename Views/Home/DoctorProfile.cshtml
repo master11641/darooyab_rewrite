@@ -10,6 +10,14 @@
     var displayName = string.IsNullOrWhiteSpace(profileType)
         ? $"{Model.Name} {Model.Family}"
         : $"{profileType} {Model.Name} {Model.Family}";
+    var commentForm = Model.LegacyAccountId.HasValue
+        ? new darooyab_rewrite.ViewModels.PublicCommentFormViewModel(
+            "doctor",
+            Model.LegacyAccountId.Value,
+            displayName,
+            string.Concat(Context.Request.PathBase, Context.Request.Path, Context.Request.QueryString),
+            ViewData["CaptchaEnabled"] as bool? ?? true)
+        : null;
 }
 
 <section class="doctor-profile" aria-labelledby="doctor-profile-title">
@@ -21,7 +29,7 @@
         </ol>
     </nav>
 
-    <header class="doctor-profile-hero">
+    <header class="doctor-profile-hero site-hero site-hero--doctor-profile">
         <div class="doctor-profile-identity">
             @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
             {
@@ -153,6 +161,52 @@
             }
         </section>
     </div>
+
+    <section class="doctor-profile-panel doctor-profile-comments" aria-labelledby="doctor-comments-title">
+        <h2 id="doctor-comments-title">دیدگاه‌ها و پرسش‌ها</h2>
+        @if (Model.LegacyAccountId.HasValue)
+        {
+            @if (Model.Comments is { Count: > 0 })
+            {
+                <div class="drug-comments-list">
+                    @foreach (var comment in Model.Comments)
+                    {
+                        <article class="drug-comment">
+                            <header>
+                                <strong>@comment.Name</strong>
+                                <time datetime="@comment.CreatedAt.ToString("O")">
+                                    @darooyab_rewrite.Utilities.PersianDateFormatter.Format(comment.CreatedAt)
+                                </time>
+                            </header>
+                            <p>@comment.Content</p>
+                            @foreach (var reply in comment.Replies)
+                            {
+                                <div class="drug-comment-reply">
+                                    <strong>@reply.Name</strong>
+                                    <time datetime="@reply.CreatedAt.ToString("O")">
+                                        @darooyab_rewrite.Utilities.PersianDateFormatter.Format(reply.CreatedAt)
+                                    </time>
+                                    <p>@reply.Content</p>
+                                </div>
+                            }
+                        </article>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="doctor-profile-empty">هنوز دیدگاه تأییدشده‌ای برای این متخصص ثبت نشده است.</p>
+            }
+
+            <partial name="_PublicCommentForm" model="commentForm" />
+        }
+        else
+        {
+            <p class="doctor-profile-empty">
+                ثبت و نمایش دیدگاه برای این پروفایل در حال حاضر در دسترس نیست.
+            </p>
+        }
+    </section>
 </section>
 
 @section Scripts {

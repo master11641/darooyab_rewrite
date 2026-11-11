@@ -48,7 +48,7 @@
         </ol>
     </nav>
 
-    <header class="pharmacy-directory-heading">
+    <header class="pharmacy-directory-heading site-hero site-hero--glass site-hero--availability">
         <span class="section-kicker">یافتن دارو در داروخانه</span>
         <h1 id="availability-title">
             داروخانه‌هایی که
@@ -56,20 +56,20 @@
             {
                 @if (!string.IsNullOrWhiteSpace(Model.BrandUrl))
                 {
-                    <a href="@Model.BrandUrl">@Model.DrugName</a>
+                    <a class="availability-drug-name" href="@Model.BrandUrl">@Model.DrugName</a>
                 }
                 else
                 {
-                    @Model.DrugName
+                    <span class="availability-drug-name">@Model.DrugName</span>
                 }
             }
             else if (!string.IsNullOrWhiteSpace(Model.GenericUrl))
             {
-                <a href="@Model.GenericUrl">@Model.DrugName</a>
+                <a class="availability-drug-name" href="@Model.GenericUrl">@Model.DrugName</a>
             }
             else
             {
-                @Model.DrugName
+                <span class="availability-drug-name">@Model.DrugName</span>
             }
             را موجود دارند
         </h1>

@@ -36,12 +36,12 @@
   --font-family: "Vazirmatn", sans-serif;
   --font-size-body: 1rem;
   --font-size-caption: .8125rem;
-  --font-size-h1: clamp(2rem, 3.8vw, 3rem);
-  --font-size-h2: clamp(1.5rem, 2.4vw, 1.9rem);
-  --font-size-h3: clamp(1.25rem, 1.8vw, 1.4rem);
-  --font-size-h4: 1.2rem;
-  --font-size-h5: 1.1rem;
-  --font-size-h6: 1rem;
+  --font-size-h1: clamp(1.65rem, 2.5vw, 2.25rem);
+  --font-size-h2: clamp(1.4rem, 2vw, 1.75rem);
+  --font-size-h3: clamp(1.2rem, 1.6vw, 1.4rem);
+  --font-size-h4: 1.125rem;
+  --font-size-h5: 1rem;
+  --font-size-h6: .9375rem;
   --line-height-body: 1.9;
   --line-height-heading: 1.65;
   --bs-body-font-family: var(--font-family);
@@ -2962,6 +2962,7 @@ body {
 }
 
 .drug-info-header {
+  overflow: hidden;
   padding: clamp(1.2rem, 3vw, 2rem);
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -3457,6 +3458,178 @@ body {
   background: var(--canvas);
 }
 
+.public-feedback-form-section {
+  min-width: 0;
+  margin-top: 1.25rem;
+  padding: clamp(1rem, 3vw, 1.4rem);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.public-feedback-form-section h2,
+.public-feedback-form-section h3 {
+  margin: 0 0 .65rem;
+  color: var(--ink);
+}
+
+.public-feedback-form-section > p {
+  color: var(--muted);
+}
+
+.public-feedback-form,
+.public-feedback-fields {
+  display: grid;
+  gap: .9rem;
+}
+
+.public-feedback-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.public-feedback-form label {
+  display: block;
+  margin-bottom: .35rem;
+  font-weight: 650;
+}
+
+.public-feedback-form label span {
+  color: var(--muted);
+  font-size: var(--font-size-caption);
+  font-weight: 400;
+}
+
+.public-feedback-form input:not([type="hidden"]),
+.public-feedback-form textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: .65rem .75rem;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.public-feedback-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.public-feedback-content,
+.public-feedback-captcha {
+  grid-column: 1 / -1;
+}
+
+.public-feedback-honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.public-feedback-captcha-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .6rem;
+  margin-bottom: .5rem;
+}
+
+.public-feedback-captcha-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.public-feedback-captcha-refresh,
+.public-feedback-submit {
+  min-height: 44px;
+  padding: .55rem .9rem;
+  border: 1px solid #176a70;
+  border-radius: 9px;
+  background: #176a70;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.public-feedback-captcha-refresh:disabled {
+  cursor: wait;
+  opacity: .7;
+}
+
+.public-feedback-captcha-status {
+  display: block;
+  min-height: 1.5em;
+  margin-top: .35rem;
+  color: var(--muted);
+  font-size: var(--font-size-caption);
+}
+
+.public-feedback-form :focus-visible,
+.public-feedback-submit:focus-visible,
+.public-feedback-captcha-refresh:focus-visible {
+  outline: 3px solid #247a82;
+  outline-offset: 2px;
+}
+
+.public-feedback-status {
+  margin: .75rem 0;
+  padding: .75rem;
+  border-radius: 9px;
+  overflow-wrap: anywhere;
+}
+
+.public-feedback-status-success {
+  background: #e8f4ec;
+  color: #205b35;
+}
+
+.public-feedback-status-captcha,
+.public-feedback-status-invalid,
+.public-feedback-status-unavailable {
+  background: #fff3e7;
+  color: #704111;
+}
+
+.public-feedback-submit {
+  justify-self: start;
+}
+
+.public-feedback-submit:hover,
+.public-feedback-captcha-refresh:hover {
+  background: #10575c;
+}
+
+.public-feedback-form :disabled {
+  cursor: not-allowed;
+}
+
+.doctor-profile-comments {
+  margin-top: 1rem;
+}
+
+@media (max-width: 575.98px) {
+  .public-feedback-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .public-feedback-content,
+  .public-feedback-captcha {
+    grid-column: auto;
+  }
+
+  .public-feedback-submit {
+    width: 100%;
+  }
+}
+
 @media (max-width: 991.98px) {
   .public-right-panel {
     position: static;
@@ -3520,6 +3693,7 @@ body {
 .brand-info-header {
   position: relative;
   isolation: isolate;
+  overflow: hidden;
   padding: clamp(1.5rem, 5vw, 2.75rem) clamp(1rem, 4vw, 2rem);
   border-color: #d7ebe8;
   background:
@@ -4874,8 +5048,20 @@ body {
 }
 
 .pharmacy-directory-heading h1 {
-  margin: .25rem 0;
+  max-width: 34ch;
+  margin: .35rem 0;
   font-size: var(--font-size-h1);
+  font-weight: 750;
+  line-height: 1.65;
+  text-wrap: balance;
+}
+
+.pharmacy-directory-heading .availability-drug-name {
+  color: var(--primary-dark);
+  font-weight: 850;
+  text-decoration-color: rgba(8, 124, 120, .35);
+  text-decoration-thickness: .09em;
+  text-underline-offset: .15em;
 }
 
 .pharmacy-results-heading h2 {
@@ -4887,6 +5073,7 @@ body {
 .pharmacy-directory-heading p {
   margin: .4rem 0 0;
   color: var(--muted);
+  line-height: 1.85;
 }
 
 .pharmacy-filter-panel,
@@ -5882,13 +6069,65 @@ body {
   color: var(--muted);
 }
 
+.drug-availability-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.drug-availability-section h2 {
+  margin: .25rem 0;
+}
+
+.drug-availability-section p {
+  margin: .35rem 0 0;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.drug-availability-actions {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: .65rem;
+}
+
+.brand-info-page .drug-availability-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.drug-availability-actions .btn {
+  min-width: 0;
+  white-space: normal;
+}
+
 @media (max-width: 575.98px) {
   .drug-content-toc ol {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .drug-referrals-heading > .btn {
+  .drug-availability-section {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .drug-referrals-heading .drug-availability-actions {
+    flex-basis: 100%;
+  }
+
+  .drug-referrals-heading .drug-availability-actions,
+  .drug-availability-actions {
+    flex-direction: column;
+  }
+
+  .drug-availability-actions .btn {
     width: 100%;
+  }
+
+  .brand-info-page .drug-availability-actions .btn {
+    height: 100%;
   }
 }
 
@@ -6098,7 +6337,7 @@ body {
 .contact-editorial-copy h1 {
   margin: 1.2rem 0 1rem;
   color: #fff;
-  font-size: clamp(2.15rem, 5.2vw, 4rem);
+  font-size: var(--font-size-h1);
   font-weight: 750;
   line-height: 1.45;
 }
@@ -6198,7 +6437,7 @@ body {
 .contact-section-heading h2 {
   margin: .55rem 0 .4rem;
   color: var(--contact-ink);
-  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-size: var(--font-size-h2);
   font-weight: 750;
 }
 
@@ -6351,6 +6590,7 @@ body {
 .contact-field input:focus-visible,
 .contact-field select:focus-visible,
 .contact-field textarea:focus-visible,
+.contact-captcha-refresh:focus-visible,
 .contact-submit:focus-visible,
 .contact-editorial a:focus-visible {
   outline: 3px solid rgba(8, 124, 120, .5);
@@ -6359,6 +6599,46 @@ body {
 
 .contact-field-message {
   grid-column: 1 / -1;
+}
+
+.contact-field-captcha {
+  min-width: 0;
+}
+
+.contact-captcha-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  align-items: center;
+}
+
+.contact-captcha-image {
+  display: block;
+  width: min(100%, 180px);
+  height: auto;
+  border: 1px solid #cbd7d2;
+  background: #f7fafc;
+}
+
+.contact-captcha-refresh {
+  min-height: 2.75rem;
+  padding: .55rem .9rem;
+  border: 1px solid #087c78;
+  border-radius: 2px;
+  color: #075d5a;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.contact-captcha-refresh:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.contact-captcha-refresh:focus-visible {
+  outline: 3px solid rgba(8, 124, 120, .5);
+  outline-offset: 3px;
 }
 
 .contact-field-error {
@@ -6466,7 +6746,7 @@ body {
   }
 
   .contact-editorial-copy h1 {
-    font-size: clamp(2rem, 10vw, 3rem);
+    font-size: var(--font-size-h1);
   }
 
   .contact-direct-line {
@@ -6574,7 +6854,7 @@ body {
   z-index: 1;
   margin: 1.25rem 0 .85rem;
   color: #fff;
-  font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+  font-size: var(--font-size-h1);
   font-weight: 750;
   line-height: 1.45;
 }
@@ -6614,7 +6894,7 @@ body {
 .about-destinations-heading h2 {
   margin: 0 0 .8rem;
   color: var(--about-ink);
-  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  font-size: var(--font-size-h2);
   font-weight: 750;
 }
 
@@ -6743,7 +7023,7 @@ body {
   }
 
   .about-hero h1 {
-    font-size: clamp(2rem, 9.5vw, 3rem);
+    font-size: var(--font-size-h1);
   }
 
   .about-destination {

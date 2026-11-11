@@ -1,0 +1,6 @@
+.pharmacy-detail:not(.pharmacy-product-detail) .pharmacy-detail-hero {
+  min-height: 160px;
+  overflow: hidden;
+  border-color: #d3e8e1;
+  box-shadow: 0 12px 30px rgba(8, 82, 76, .055);
+}

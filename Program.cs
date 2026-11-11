@@ -1,20 +1,86 @@
 #nullable enable
 
 using darooyab.Models;
+using darooyab_rewrite.Middleware;
+using darooyab_rewrite.Services.Authentication;
+using darooyab_rewrite.Services.Authentication.Pharmacy;
+using darooyab_rewrite.Services.Captcha;
+using darooyab_rewrite.Services.Comments;
+using darooyab_rewrite.Services.PharmacyRequests;
+using darooyab_rewrite.Services.PharmacyDrugShortages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+var captchaOptions = builder.Configuration.GetSection("Captcha").Get<CaptchaOptions>() ?? new CaptchaOptions();
+var authenticationOptions = builder.Configuration
+    .GetSection(AuthenticationCoreOptions.SectionName)
+    .Get<AuthenticationCoreOptions>() ?? new AuthenticationCoreOptions();
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddCaptcha(builder.Configuration);
+builder.Services.AddAuthenticationCore(builder.Configuration, builder.Environment);
+builder.Services.AddPharmacyAuthenticationProvider();
+builder.Services.AddScoped<IPharmacyRequestService, PharmacyRequestService>();
+builder.Services.AddScoped<IPharmacyDrugShortageService, PharmacyDrugShortageService>();
+builder.Services.AddScoped<IPharmacyExchangeService, PharmacyExchangeService>();
+builder.Services.Configure<ZarinPalOptions>(
+    builder.Configuration.GetSection(ZarinPalOptions.SectionName));
+builder.Services.AddHttpClient<IPharmacyWalletService, PharmacyWalletService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+builder.Services.AddScoped<IPublicCommentService, PublicCommentService>();
+builder.Services.AddScoped<IPublicCompanyMessageService, PublicCompanyMessageService>();
 builder.Services.AddRateLimiter(options =>
 {
+    options.AddPolicy("captcha-api", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = captchaOptions.MaxApiRequestsPerIp,
+                Window = captchaOptions.ApiRateLimitWindow,
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
     options.AddPolicy("contact-submission", context =>
         RateLimitPartition.GetFixedWindowLimiter(
             context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(10),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+    options.AddPolicy("public-feedback", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = captchaOptions.MaxPublicFeedbackRequestsPerIp,
+                Window = captchaOptions.PublicFeedbackRateLimitWindow,
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+    options.AddPolicy("pharmacy-login", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = authenticationOptions.MaxLoginAttemptsPerIp,
+                Window = authenticationOptions.LoginRateLimitWindow,
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+    options.AddPolicy("wallet-payment", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 4,
                 Window = TimeSpan.FromMinutes(10),
                 QueueLimit = 0,
                 AutoReplenishment = true
@@ -34,6 +100,8 @@ builder.Services.AddDbContext<darooConContext>(options =>
 
 var app = builder.Build();
 
+app.UseMiddleware<CaptchaNoStoreMiddleware>();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -47,6 +115,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseRouting();
 app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapStaticAssets();
 
@@ -132,6 +202,10 @@ app.MapControllerRoute(
         controller = "Home",
         action = "AvailabilityGeneric"
     });
+
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",
