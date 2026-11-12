@@ -1,0 +1,72 @@
+@model PharmacyBrandSuggestionViewModel
+@{
+    ViewData["Title"] = "کمک به تکمیل برندها";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pharmacy-brand-suggestion.css" asp-append-version="true" />
+}
+
+<div class="admin-page pharmacy-brand-suggestion" dir="rtl">
+    <nav class="admin-breadcrumb" aria-label="مسیر صفحه">
+        <a href="/PharmacyAdmin/Dashboard">داشبورد</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">کمک به تکمیل برندها</span>
+    </nav>
+
+    <section class="admin-panel-card brand-suggestion-intro" aria-labelledby="brand-suggestion-title">
+        <div>
+            <span class="admin-eyebrow">پیشنهاد اطلاعات دارویی</span>
+            <h2 id="brand-suggestion-title">کمک به تکمیل برندها</h2>
+            <p>
+                اگر برند موردنظر در دارویاب ثبت نشده است، نام فارسی آن را ارسال کنید تا برای بررسی به واحد مدیریت ارجاع شود.
+            </p>
+        </div>
+        <div class="brand-suggestion-owner">
+            <small>داروخانه</small>
+            <strong>@ViewData["PharmacyName"]</strong>
+        </div>
+    </section>
+
+    <section class="admin-panel-card brand-suggestion-form-card" aria-labelledby="brand-suggestion-form-title">
+        <div class="brand-suggestion-section-heading">
+            <div>
+                <span class="admin-eyebrow">ارسال پیشنهاد</span>
+                <h2 id="brand-suggestion-form-title">نام فارسی برند</h2>
+            </div>
+        </div>
+
+        <form method="post"
+              action="/Brand/SubmitBrandNameInTblContactus"
+              data-brand-suggestion-form>
+            @Html.AntiForgeryToken()
+            <div class="brand-suggestion-field">
+                <label asp-for="PersianBrandName"></label>
+                <input asp-for="PersianBrandName"
+                       class="brand-suggestion-input"
+                       autocomplete="off"
+                       required
+                       aria-describedby="brand-suggestion-help brand-suggestion-validation" />
+                <span id="brand-suggestion-help" class="brand-suggestion-help">
+                    پیشنهاد شما ثبت می‌شود و به‌معنی اضافه‌شدن یا تأیید خودکار برند نیست.
+                </span>
+                <span id="brand-suggestion-validation"
+                      asp-validation-for="PersianBrandName"
+                      class="brand-suggestion-validation"></span>
+            </div>
+
+            <div class="brand-suggestion-message"
+                 data-brand-suggestion-message
+                 role="status"
+                 aria-live="polite"></div>
+            <button class="brand-suggestion-submit" type="submit" data-submit-button>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h5m-9 7 6-6" /></svg>
+                <span>ارسال برای بررسی</span>
+            </button>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <script src="~/js/pharmacy-brand-suggestion.js" asp-append-version="true" defer></script>
+}

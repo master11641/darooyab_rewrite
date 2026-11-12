@@ -16,6 +16,7 @@ public sealed class PharmacyWalletService(
     ILogger<PharmacyWalletService> logger) : IPharmacyWalletService
 {
     private const int PageSize = 20;
+    private const int PurchasedRankingsPageSize = 5;
     private const long MinimumTopUpToman = 1_100;
     private const long MaximumTopUpToman = 20_000_000;
     private const string RequestPaymentEndpoint = "https://api.zarinpal.com/pg/v4/payment/request.json";
@@ -97,6 +98,56 @@ public sealed class PharmacyWalletService(
             Page = currentPage,
             TotalPages = totalPages,
             CanCharge = IsPaymentConfigured(optionsValue)
+        };
+    }
+
+    public async Task<PharmacyPurchasedRankingsPageViewModel> GetPurchasedRankingsPageAsync(
+        int pharmacyAccountId,
+        int page = 1,
+        CancellationToken cancellationToken = default)
+    {
+        var rankingQuery = context.RankingTransactions
+            .AsNoTracking()
+            .Where(item => item.PharmacyAccountId == pharmacyAccountId);
+        var count = await rankingQuery.CountAsync(cancellationToken);
+        var totalPages = Math.Max(
+            1,
+            (int)Math.Ceiling(count / (double)PurchasedRankingsPageSize));
+        var currentPage = Math.Clamp(page, 1, totalPages);
+        var rows = await rankingQuery
+            .OrderByDescending(item => item.Id)
+            .Skip((currentPage - 1) * PurchasedRankingsPageSize)
+            .Take(PurchasedRankingsPageSize)
+            .Select(item => new
+            {
+                item.Irc,
+                item.StartDate,
+                item.EndDate,
+                item.DurationInDays,
+                item.RankNumber,
+                item.Amount,
+                item.ModifyDescription,
+                DrugName = context.DrugsNames
+                    .Where(drug => drug.Irc == item.Irc && drug.DrugNameLanguage == false)
+                    .Select(drug => drug.DrugName)
+                    .FirstOrDefault()
+            })
+            .ToListAsync(cancellationToken);
+
+        return new PharmacyPurchasedRankingsPageViewModel
+        {
+            Rankings = rows
+                .Select(item => new PharmacyPurchasedRankingItem(
+                    item.DrugName ?? "نامشخص",
+                    FormatLegacyPersianDate(item.StartDate),
+                    item.DurationInDays,
+                    FormatLegacyPersianExpiry(item.EndDate),
+                    item.RankNumber,
+                    item.Amount / 10L,
+                    item.ModifyDescription))
+                .ToArray(),
+            Page = currentPage,
+            TotalPages = totalPages
         };
     }
 
@@ -360,6 +411,19 @@ public sealed class PharmacyWalletService(
         !string.IsNullOrWhiteSpace(configuration.MerchantId) &&
         Uri.TryCreate(configuration.CallbackUrl, UriKind.Absolute, out var callbackUri) &&
         callbackUri.Scheme == Uri.UriSchemeHttps;
+
+    private static string FormatLegacyPersianDate(DateTime value)
+    {
+        var calendar = new PersianCalendar();
+        return $"{calendar.GetYear(value)}/{calendar.GetMonth(value)}/{calendar.GetDayOfMonth(value)}";
+    }
+
+    private static string FormatLegacyPersianExpiry(DateTime value)
+    {
+        var calendar = new PersianCalendar();
+        return $"{calendar.GetYear(value)}/{calendar.GetMonth(value):00}/{calendar.GetDayOfMonth(value):00}" +
+               $"[{calendar.GetHour(value):00}:{calendar.GetMinute(value):00}:{calendar.GetSecond(value):00}]";
+    }
 
     private static async Task<JsonDocument> ReadJsonAsync(
         HttpResponseMessage response,

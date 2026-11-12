@@ -1,16 +1,49 @@
 @model darooyab_rewrite.ViewModels.PharmacyLoginViewModel
 
-<section class="container py-4 py-lg-5">
-    <div class="row justify-content-center">
-        <div class="col-12 col-md-9 col-lg-7 col-xl-6">
-            <div class="card shadow-sm">
-                <div class="card-body p-4 p-lg-5">
-                    <h1 class="h4 mb-2">ورود مدیر داروخانه</h1>
-                    <p class="text-body-secondary mb-4">با همان شماره‌ی همراه و کلمه‌ی عبوری که پیش‌تر برای ورود استفاده می‌کردید وارد شوید.</p>
+@{
+    ViewData["Title"] = "ورود مدیر داروخانه";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pharmacy-login.css" asp-append-version="true" />
+}
+
+<section class="pharmacy-login-page">
+    <nav class="pharmacy-login-breadcrumb" aria-label="مسیر صفحه">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index">خانه</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">ورود داروخانه</li>
+        </ol>
+    </nav>
+
+    <header class="pharmacy-login-hero site-hero site-hero--glass site-hero--inner">
+        <div class="pharmacy-login-hero-copy">
+            <span class="pharmacy-login-kicker">پنل اختصاصی داروخانه</span>
+            <h1>ورود مدیر داروخانه</h1>
+            <p>برای دسترسی به خدمات و مدیریت حساب داروخانه، با اطلاعات ورود خود وارد شوید.</p>
+        </div>
+        <div class="pharmacy-login-emblem" aria-hidden="true">
+            <span>✚</span>
+            <small>دارویاب</small>
+        </div>
+    </header>
+
+    <div class="row pharmacy-login-row">
+        <div class="col-12">
+            <div class="card pharmacy-login-card">
+                <div class="card-body pharmacy-login-card-body">
+                    <div class="pharmacy-login-card-heading">
+                        <span class="pharmacy-login-kicker">ورود امن</span>
+                        <h2>اطلاعات حساب خود را وارد کنید</h2>
+                        <p>از همان شماره‌ی همراه و کلمه‌ی عبوری که پیش‌تر استفاده می‌کردید، استفاده کنید.</p>
+                    </div>
 
                     <form asp-controller="PharmacyAuthentication"
                           asp-action="Login"
-                          method="post">
+                          method="post"
+                          class="pharmacy-login-form">
                         <input asp-for="ReturnUrl" type="hidden" />
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
@@ -38,7 +71,7 @@
 
                         <partial name="_CaptchaChallengeFields" />
 
-                        <button type="submit" class="btn btn-primary w-100 mt-3">ورود</button>
+                        <button type="submit" class="btn btn-primary w-100 mt-3 pharmacy-login-submit">ورود به پنل</button>
                     </form>
                 </div>
             </div>

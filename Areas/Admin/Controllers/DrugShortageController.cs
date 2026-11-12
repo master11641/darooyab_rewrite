@@ -19,6 +19,30 @@ public sealed class DrugShortageController(
     IAuthenticationService authenticationService,
     IPharmacyDrugShortageService drugShortageService) : Controller
 {
+    [HttpGet("otherPhNearDateDrugShortageList")]
+    public async Task<IActionResult> OtherPhNearDateDrugShortageList(
+        int provId = 0,
+        int cityId = 0,
+        int page = 1,
+        CancellationToken cancellationToken = default)
+    {
+        var pharmacyAccountId = await GetCurrentPharmacyAccountIdAsync(cancellationToken);
+        if (!pharmacyAccountId.HasValue)
+        {
+            await authenticationService.LogoutAsync();
+            return Challenge();
+        }
+
+        var model = await drugShortageService.GetNearDatePageAsync(
+            pharmacyAccountId.Value,
+            provId,
+            cityId,
+            page,
+            cancellationToken);
+        await SetPharmacyNameAsync(pharmacyAccountId.Value, cancellationToken);
+        return View(model);
+    }
+
     [HttpGet("AddOrEdit")]
     public async Task<IActionResult> AddOrEdit(
         int? id,

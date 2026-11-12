@@ -1,0 +1,170 @@
+.pharmacy-brand-suggestion {
+    display: grid;
+    min-width: 0;
+    gap: 1.15rem;
+}
+
+.brand-suggestion-intro,
+.brand-suggestion-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.brand-suggestion-intro,
+.brand-suggestion-form-card {
+    min-width: 0;
+    padding: clamp(1rem, 2.5vw, 1.6rem);
+}
+
+.brand-suggestion-intro h2,
+.brand-suggestion-section-heading h2 {
+    margin: .25rem 0;
+    color: var(--admin-text, #192b40);
+}
+
+.brand-suggestion-intro p {
+    max-width: 48rem;
+    margin: .5rem 0 0;
+    color: var(--admin-muted, #68788c);
+}
+
+.brand-suggestion-owner {
+    display: grid;
+    min-width: 10rem;
+    gap: .25rem;
+    padding: .8rem 1rem;
+    border: 1px solid var(--admin-border, #e2e8ef);
+    border-radius: 1rem;
+    background: var(--admin-primary-soft, #e8f3f5);
+}
+
+.brand-suggestion-owner small,
+.brand-suggestion-help {
+    color: var(--admin-muted, #68788c);
+    font-size: .88rem;
+}
+
+.brand-suggestion-owner strong,
+.brand-suggestion-message {
+    overflow-wrap: anywhere;
+}
+
+.brand-suggestion-section-heading {
+    margin-bottom: 1rem;
+}
+
+.brand-suggestion-field {
+    max-width: 44rem;
+}
+
+.brand-suggestion-field label {
+    display: block;
+    margin-bottom: .45rem;
+    font-weight: 700;
+}
+
+.brand-suggestion-input {
+    display: block;
+    width: 100%;
+    min-height: 3rem;
+    padding: .6rem .8rem;
+    border: 1px solid var(--admin-border, #e2e8ef);
+    border-radius: .75rem;
+    color: var(--admin-text, #192b40);
+    background: var(--admin-surface, #fff);
+}
+
+.brand-suggestion-input:focus-visible,
+.brand-suggestion-submit:focus-visible {
+    outline: 3px solid #78c6d6;
+    outline-offset: 3px;
+}
+
+.brand-suggestion-help,
+.brand-suggestion-validation {
+    display: block;
+    margin-top: .4rem;
+}
+
+.brand-suggestion-validation {
+    color: #a52e37;
+}
+
+.brand-suggestion-message {
+    min-height: 1.5rem;
+    margin: .8rem 0;
+}
+
+.brand-suggestion-message[data-state="success"],
+.brand-suggestion-message[data-state="error"] {
+    padding: .65rem .85rem;
+    border-radius: .7rem;
+}
+
+.brand-suggestion-message[data-state="success"] {
+    border: 1px solid #a9dbc4;
+    color: #155d42;
+    background: #edf9f2;
+}
+
+.brand-suggestion-message[data-state="error"] {
+    border: 1px solid #edc0c0;
+    color: #8c3131;
+    background: #fff3f3;
+}
+
+.brand-suggestion-submit {
+    display: inline-flex;
+    min-height: 2.8rem;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .55rem 1.1rem;
+    border: 1px solid var(--admin-primary, #216b80);
+    border-radius: .75rem;
+    color: #fff;
+    background: var(--admin-primary, #216b80);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.brand-suggestion-submit:disabled {
+    cursor: wait;
+    opacity: .7;
+}
+
+.brand-suggestion-submit svg {
+    width: 1.1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
+}
+
+@media (max-width: 600px) {
+    .brand-suggestion-intro {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .brand-suggestion-owner {
+        min-width: 0;
+    }
+
+    .brand-suggestion-submit {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pharmacy-brand-suggestion *,
+    .pharmacy-brand-suggestion *::before,
+    .pharmacy-brand-suggestion *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+    }
+}

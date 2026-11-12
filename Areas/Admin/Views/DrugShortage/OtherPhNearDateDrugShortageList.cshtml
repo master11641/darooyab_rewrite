@@ -1,0 +1,217 @@
+@using System.Globalization
+@using darooyab_rewrite.Utilities
+@model PharmacyNearDatePageViewModel
+@{
+    ViewData["Title"] = "اقلام تاریخ نزدیک سایرین";
+    var displayedPage = Model.TotalPages == 0 ? 0 : Model.Page;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pharmacy-near-date.css" asp-append-version="true" />
+}
+
+<div class="admin-page pharmacy-near-date" dir="rtl">
+    <nav class="admin-breadcrumb" aria-label="مسیر صفحه">
+        <a href="/PharmacyAdmin/Dashboard">داشبورد</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">اقلام تاریخ نزدیک سایرین</span>
+    </nav>
+
+    <section class="admin-panel-card near-date-intro" aria-labelledby="near-date-title">
+        <div>
+            <span class="admin-eyebrow">تبادل دارویی</span>
+            <h2 id="near-date-title">اقلام تاریخ نزدیک سایرین</h2>
+            <p>مازادهای بازِ تاریخ‌نزدیک داروخانه‌های دیگر را بر اساس استان یا شهر بررسی کنید.</p>
+        </div>
+        <div class="near-date-owner">
+            <small>داروخانه</small>
+            <strong>@ViewData["PharmacyName"]</strong>
+        </div>
+    </section>
+
+    @if (Model.InvalidLocationFilter)
+    {
+        <div class="near-date-alert" role="status">
+            فیلتر مکانی انتخاب‌شده معتبر نبود و به گزینه‌ی «همه» بازگردانده شد.
+        </div>
+    }
+
+    <section class="admin-panel-card near-date-filter-card" aria-labelledby="near-date-filter-title">
+        <div class="near-date-section-heading">
+            <div>
+                <span class="admin-eyebrow">محدوده‌ی جستجو</span>
+                <h2 id="near-date-filter-title">فیلتر استان و شهر</h2>
+            </div>
+        </div>
+
+        <form class="near-date-filters"
+              method="get"
+              action="/DrugShortage/otherPhNearDateDrugShortageList"
+              data-near-date-filter>
+            <div class="near-date-filter-field">
+                <label for="near-date-province">استان</label>
+                <select id="near-date-province" name="provId" data-province-select>
+                    <option value="0" selected="@(Model.SelectedProvinceId == 0)">همه استان‌ها</option>
+                    @foreach (var province in Model.Provinces)
+                    {
+                        <option value="@province.Id" selected="@(Model.SelectedProvinceId == province.Id)">
+                            @province.Name
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="near-date-filter-field">
+                <label for="near-date-city">شهر</label>
+                <select id="near-date-city"
+                        name="cityId"
+                        data-township-select
+                        disabled="@(Model.SelectedProvinceId == 0)">
+                    <option value="0" selected="@(Model.SelectedTownshipId == 0)">همه شهرها</option>
+                    @foreach (var township in Model.Townships)
+                    {
+                        <option value="@township.Id" selected="@(Model.SelectedTownshipId == township.Id)">
+                            @township.Name
+                        </option>
+                    }
+                </select>
+                <span class="near-date-filter-status" data-township-status role="status" aria-live="polite"></span>
+                <button class="near-date-retry-button" type="button" data-township-retry hidden>
+                    تلاش دوباره برای دریافت شهرها
+                </button>
+            </div>
+            <div class="near-date-filter-actions">
+                <button class="near-date-search-button" type="submit">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 5 5" /></svg>
+                    جستجو
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <section class="near-date-results" aria-labelledby="near-date-results-title">
+        <div class="near-date-section-heading">
+            <div>
+                <span class="admin-eyebrow">نتایج</span>
+                <h2 id="near-date-results-title">مازادهای تاریخ نزدیک</h2>
+            </div>
+            <span class="near-date-result-count">@Model.TotalCount.ToString("N0", CultureInfo.CurrentCulture) مورد</span>
+        </div>
+
+        @if (Model.Items.Count == 0)
+        {
+            <div class="admin-panel-card near-date-empty-state" role="status">
+                @if (Model.TotalCount == 0)
+                {
+                    <strong>موردی برای نمایش پیدا نشد</strong>
+                    <p>با تغییر استان یا شهر، دوباره جستجو کنید.</p>
+                }
+                else
+                {
+                    <strong>نتیجه‌ای برای این صفحه در دسترس نیست</strong>
+                    <p>برای ادامه، صفحه‌ی دیگری را انتخاب کنید یا فیلترها را تغییر دهید.</p>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="near-date-item-list">
+                @for (var index = 0; index < Model.Items.Count; index++)
+                {
+                    var item = Model.Items[index];
+                    var registeredAt = PersianDateFormatter.Format(item.RegisteredAt);
+                    var expiryDate = PersianDateFormatter.Format(item.DrugExpireDate);
+                    var unitPrice = item.UnitPrice?.ToString("N0", CultureInfo.CurrentCulture);
+                    if (expiryDate.Length >= 7)
+                    {
+                        expiryDate = expiryDate[..7];
+                    }
+
+                    <article class="admin-panel-card near-date-item" aria-labelledby="near-date-item-@item.Id">
+                        <div class="near-date-item-heading">
+                            <span class="near-date-row-number">@((Model.Page - 1) * 10 + index + 1)</span>
+                            <div class="near-date-pharmacy">
+                                <span class="near-date-field-label">داروخانه</span>
+                                <h3 id="near-date-item-@item.Id">@item.PharmacyName</h3>
+                            </div>
+                            <div class="near-date-registration">
+                                <span class="near-date-field-label">تاریخ ثبت</span>
+                                <strong>@registeredAt</strong>
+                                @if (!string.IsNullOrWhiteSpace(item.RegisteredRelativeTime))
+                                {
+                                    <small>[ @item.RegisteredRelativeTime ]</small>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="near-date-item-details">
+                            <div class="near-date-detail near-date-drug-name">
+                                <span class="near-date-field-label">نام برند</span>
+                                <strong dir="ltr">@item.DrugName</strong>
+                            </div>
+                            <div class="near-date-detail">
+                                <span class="near-date-field-label">تاریخ انقضا</span>
+                                <strong class="near-date-expiry">@(string.IsNullOrEmpty(expiryDate) ? "—" : expiryDate)</strong>
+                            </div>
+                            <div class="near-date-detail">
+                                <span class="near-date-field-label">تعداد باقیمانده</span>
+                                <strong>
+                                    @(item.RemainingCount?.ToString("N0", CultureInfo.CurrentCulture) ?? "—")
+                                    @if (!string.IsNullOrEmpty(item.UnitLabel))
+                                    {
+                                        <span>@item.UnitLabel</span>
+                                    }
+                                </strong>
+                            </div>
+                            <div class="near-date-detail">
+                                <span class="near-date-field-label">قیمت</span>
+                                <strong>
+                                    @(unitPrice ?? "—")
+                                </strong>
+                            </div>
+                        </div>
+
+                        <div class="near-date-contact">
+                            <span class="near-date-field-label">اطلاعات تماس</span>
+                            <div>
+                                <span>@item.ProvinceName</span>
+                                <span aria-hidden="true">—</span>
+                                <span>@item.TownshipName</span>
+                                @if (!string.IsNullOrWhiteSpace(item.Address))
+                                {
+                                    <span>@item.Address</span>
+                                }
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(item.Phone))
+                            {
+                                <p><span>تلفن:</span> <bdi dir="ltr">@item.Phone</bdi></p>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="near-date-pagination" aria-label="صفحه‌بندی نتایج">
+            <span>صفحه @displayedPage.ToString("N0", CultureInfo.CurrentCulture) از @Model.TotalPages.ToString("N0", CultureInfo.CurrentCulture)</span>
+            <div>
+                @if (Model.Page > 1)
+                {
+                    <a href="/DrugShortage/otherPhNearDateDrugShortageList?page=@(Model.Page - 1)&amp;provId=@Model.SelectedProvinceId&amp;cityId=@Model.SelectedTownshipId"
+                       rel="prev">صفحه‌ی قبل</a>
+                }
+                @if (Model.Page < Model.TotalPages)
+                {
+                    <a href="/DrugShortage/otherPhNearDateDrugShortageList?page=@(Model.Page + 1)&amp;provId=@Model.SelectedProvinceId&amp;cityId=@Model.SelectedTownshipId"
+                       rel="next">صفحه‌ی بعد</a>
+                }
+            </div>
+        </nav>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/pharmacy-near-date.js" asp-append-version="true" defer></script>
+}

@@ -246,6 +246,145 @@ public sealed class PharmacyDrugShortageService(darooConContext context) : IPhar
             : [];
     }
 
+    public async Task<PharmacyNearDatePageViewModel> GetNearDatePageAsync(
+        int pharmacyAccountId,
+        int provinceId,
+        int townshipId,
+        int page,
+        CancellationToken cancellationToken = default)
+    {
+        var provinces = await context.Categories
+            .AsNoTracking()
+            .Where(category => category.Type != null &&
+                               category.Type.ToLower() == ProvinceCategoryType &&
+                               category.Name != null)
+            .Select(category => new PharmacyDrugShortageOption(category.CatId, category.Name!))
+            .ToListAsync(cancellationToken);
+
+        var invalidLocationFilter = false;
+        if (provinceId < 0)
+        {
+            provinceId = 0;
+            invalidLocationFilter = true;
+        }
+
+        if (townshipId < 0)
+        {
+            townshipId = 0;
+            invalidLocationFilter = true;
+        }
+
+        if (provinceId > 0 && !provinces.Any(province => province.Id == provinceId))
+        {
+            provinceId = 0;
+            townshipId = 0;
+            invalidLocationFilter = true;
+        }
+
+        var townships = provinceId > 0
+            ? await GetTownshipsForProvinceAsync(provinceId, cancellationToken)
+            : [];
+        if (townshipId > 0 && !townships.Any(township => township.Id == townshipId))
+        {
+            townshipId = 0;
+            invalidLocationFilter = true;
+        }
+
+        var today = DateTime.Today;
+        var requestsQuery = context.PharmacyRequests
+            .AsNoTracking()
+            .Where(request =>
+                request.RequestTypeFromCategoryIdFkNavigation != null &&
+                request.RequestTypeFromCategoryIdFkNavigation.Type == ExcessCategoryType &&
+                request.PharmacyAccountIdFk.HasValue &&
+                request.PharmacyAccountIdFk.Value != pharmacyAccountId &&
+                request.ExchangeLimitNum == NearDateExchangeLimit &&
+                request.DrugExpireDate.HasValue &&
+                request.DrugExpireDate.Value >= today &&
+                request.StatusNum == OpenStatus);
+
+        if (townshipId > 0)
+        {
+            requestsQuery = requestsQuery.Where(request =>
+                request.PharmacyAccountIdFkNavigation!.PharmacyIdFkNavigation.CityIdFk == townshipId);
+        }
+        else if (provinceId > 0)
+        {
+            requestsQuery = requestsQuery.Where(request =>
+                request.PharmacyAccountIdFkNavigation!.PharmacyIdFkNavigation.ProvinceIdFk == provinceId);
+        }
+
+        var totalCount = await requestsQuery.CountAsync(cancellationToken);
+        var totalPages = (int)Math.Ceiling(totalCount / (double)PageSize);
+        var currentPage = totalPages == 0 ? 1 : Math.Clamp(page, 1, totalPages);
+
+        var rows = await (
+                from request in requestsQuery
+                join drug in context.DrugsNames.AsNoTracking()
+                    .Where(item => item.DrugNameLanguage == true)
+                    on request.Irc equals drug.Irc
+                orderby request.RegistrationDateTime descending
+                select new
+                {
+                    request.Id,
+                    DrugName = drug.DrugName,
+                    PharmacyName = request.PharmacyAccountIdFkNavigation!.PharmacyIdFkNavigation.Name,
+                    ProvinceName = request.PharmacyAccountIdFkNavigation!.PharmacyIdFkNavigation.ProvinceIdFkNavigation.Name,
+                    TownshipName = request.PharmacyAccountIdFkNavigation!.PharmacyIdFkNavigation.CityIdFkNavigation.Name,
+                    Address = request.PharmacyAccountIdFkNavigation!.PharmacyIdFkNavigation.Address,
+                    Phone = request.PharmacyAccountIdFkNavigation!.PharmacyIdFkNavigation.Phone,
+                    request.RegistrationDateTime,
+                    request.DrugExpireDate,
+                    RemainingCount = request.DrugCount.HasValue
+                        ? (int?)(request.DrugCount.Value -
+                          (context.PharmacyExchanges
+                              .Where(exchange => exchange.ExcessPhReqIdFk == request.Id)
+                              .Select(exchange => (int?)exchange.RequireCount)
+                              .Sum() ?? 0))
+                        : null,
+                    request.DrugUnitNum,
+                    request.UnitPrice
+                })
+                .Skip((currentPage - 1) * PageSize)
+                .Take(PageSize)
+                .ToListAsync(cancellationToken);
+
+        var items = rows
+            .Select(row => new PharmacyNearDateItem(
+                row.Id,
+                row.DrugName ?? string.Empty,
+                row.PharmacyName ?? string.Empty,
+                row.ProvinceName,
+                row.TownshipName,
+                row.Address,
+                row.Phone,
+                row.RegistrationDateTime,
+                FormatRelativeTime(row.RegistrationDateTime),
+                row.DrugExpireDate,
+                row.RemainingCount,
+                row.DrugUnitNum?.Trim() switch
+                {
+                    "1" => "عدد",
+                    "2" => "بسته",
+                    _ => string.Empty
+                },
+                row.UnitPrice))
+            .ToArray();
+
+        return new PharmacyNearDatePageViewModel
+        {
+            Provinces = provinces,
+            Townships = townships,
+            Items = items,
+            SelectedProvinceId = provinceId,
+            SelectedTownshipId = townshipId,
+            Page = currentPage,
+            TotalPages = totalPages,
+            TotalCount = totalCount,
+            InvalidLocationFilter = invalidLocationFilter
+        };
+    }
+
     public async Task<PharmacyDrugShortageSaveStatus> SaveAsync(
         int pharmacyAccountId,
         PharmacyDrugShortageFormViewModel form,

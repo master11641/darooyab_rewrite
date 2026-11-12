@@ -14,6 +14,7 @@ public sealed class PharmacyExchangeService(
     private const string ExcessDrugCategoryType = "excess_drugs";
     private const string OpenStatus = "1";
     private const string ClosedByPharmacyStatus = "2";
+    private const string FixedDrugUnitNum = "2";
     private const int PageSize = 30;
 
     public async Task<PharmacyExchangePageViewModel> GetPageAsync(
@@ -67,14 +68,14 @@ public sealed class PharmacyExchangeService(
                     SelectedIrcs = request.Irc.HasValue ? [request.Irc.Value] : [],
                     ExchangeLimitNum = request.ExchangeLimitNum,
                     DrugCount = request.DrugCount ?? 0,
-                    DrugUnitNum = request.DrugUnitNum,
+                    DrugUnitNum = FixedDrugUnitNum,
                     UnitPrice = request.UnitPrice,
                     DrugExpireMonth = expiration.Month,
                     DrugExpireYear = expiration.Year,
                     PatchNumber = request.PatchNumber,
                     PurchaseInvoiceNumber = request.PurchaseInvoiceNumber,
-                    SellToColleague = request.SellToColleague == true,
-                    ColleaguePrice = request.ColleaguePrice,
+                    SellToColleague = false,
+                    ColleaguePrice = null,
                     DiscountPercentage = request.DiscountPercentage,
                     ExchangeFacility = request.ExchangeFacility.HasValue
                         ? (byte)request.ExchangeFacility.Value
@@ -350,15 +351,15 @@ public sealed class PharmacyExchangeService(
             request.PharmacyAccountIdFk = pharmacyAccountId;
             request.ExchangeLimitNum = form.ExchangeLimitNum;
             request.DrugCount = form.DrugCount;
-            request.DrugUnitNum = form.DrugUnitNum;
+            request.DrugUnitNum = FixedDrugUnitNum;
             request.DrugShapFromDosageIdFk = null;
             request.DrugExpireDate = expiryDate;
             request.UnitPrice = form.UnitPrice;
             request.PatchNumber = NormalizeOptional(form.PatchNumber);
             request.PurchaseInvoiceNumber = NormalizeOptional(form.PurchaseInvoiceNumber);
             request.CompanyDistributorIdFk = null;
-            request.SellToColleague = form.SellToColleague;
-            request.ColleaguePrice = form.SellToColleague ? form.ColleaguePrice : null;
+            request.SellToColleague = false;
+            request.ColleaguePrice = null;
             request.DiscountPercentage = form.DiscountPercentage;
             request.ExchangeFacility = form.ExchangeFacility.HasValue
                 ? (ExchangeFacility)form.ExchangeFacility.Value
@@ -462,6 +463,9 @@ public sealed class PharmacyExchangeService(
             {
                 existingRequest.ExchangeLimitNum = form.ExchangeLimitNum;
                 existingRequest.DrugExpireDate = expiryDate;
+                existingRequest.DrugUnitNum = FixedDrugUnitNum;
+                existingRequest.SellToColleague = false;
+                existingRequest.ColleaguePrice = null;
                 existingRequest.RegistrationDateTime = now;
                 continue;
             }
@@ -474,7 +478,8 @@ public sealed class PharmacyExchangeService(
                 ExchangeRandomCode = RandomNumberGenerator.GetInt32(1000, 9999),
                 ExchangeLimitNum = form.ExchangeLimitNum,
                 DrugCount = 0,
-                DrugUnitNum = null,
+                DrugUnitNum = FixedDrugUnitNum,
+                SellToColleague = false,
                 DrugExpireDate = expiryDate,
                 RegistrationDateTime = now,
                 StatusNum = OpenStatus
@@ -518,6 +523,9 @@ public sealed class PharmacyExchangeService(
             expiryYear,
             expiryMonth,
             DateTime.DaysInMonth(expiryYear, expiryMonth));
+        request.DrugUnitNum = FixedDrugUnitNum;
+        request.SellToColleague = false;
+        request.ColleaguePrice = null;
         await context.SaveChangesAsync(cancellationToken);
         return PharmacyExchangeExpiryUpdateStatus.Succeeded;
     }
@@ -608,7 +616,6 @@ public sealed class PharmacyExchangeService(
                form.DrugExpireYear >= currentYear &&
                form.DrugExpireYear <= currentYear + 11 &&
                form.ExchangeLimitNum is "1" or "2" or "3" &&
-               form.DrugUnitNum is "1" or "2" &&
                (!form.UnitPrice.HasValue || double.IsFinite(form.UnitPrice.Value) && form.UnitPrice.Value >= 0) &&
                (!form.ColleaguePrice.HasValue ||
                 double.IsFinite(form.ColleaguePrice.Value) && form.ColleaguePrice.Value >= 0) &&

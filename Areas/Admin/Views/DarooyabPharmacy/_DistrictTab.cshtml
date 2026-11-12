@@ -1,0 +1,31 @@
+@model darooyab_rewrite.Areas.Admin.ViewModels.PharmacyDistrictTabViewModel
+
+<div class="pharmacy-management-section">
+    <h2>انتخاب منطقه داروخانه</h2>
+    @if (Model.Options.Count == 0)
+    {
+        <p class="pharmacy-management-empty">برای شهر داروخانه منطقه‌ی فعالی تعریف نشده است.</p>
+    }
+    else
+    {
+        <form method="post" action="/PharmacyCityDistricts/Index" data-district-form>
+            @Html.AntiForgeryToken()
+            <label class="pharmacy-management-label" for="DistrictId">منطقه‌ی محل داروخانه</label>
+            <select class="pharmacy-management-input"
+                    id="DistrictId"
+                    name="districtId"
+                    required>
+                <option value="">-- لطفاً منطقه را انتخاب کنید --</option>
+                @foreach (var option in Model.Options)
+                {
+                    <option value="@option.Id" selected="@option.Selected">@option.Name</option>
+                }
+            </select>
+            <div class="pharmacy-management-actions">
+                <button class="pharmacy-management-button" type="submit">ذخیره منطقه</button>
+                <button class="pharmacy-management-button is-secondary" type="button" data-clear-district>پاک کردن انتخاب</button>
+            </div>
+            <p class="pharmacy-management-help">انتخاب منطقه برای نمایش دقیق‌تر موقعیت داروخانه به کاربران است.</p>
+        </form>
+    }
+</div>

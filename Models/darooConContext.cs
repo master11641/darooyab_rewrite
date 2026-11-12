@@ -203,6 +203,8 @@ namespace darooyab.Models
         public virtual DbSet<PharmacySpecialty> PharmacySpecialties { get; set; }
         public virtual DbSet<PharmacySpecialtyMap> PharmacySpecialtyMaps { get; set; }
         public DbSet<DarooyabCityDistrict> DarooyabCityDistricts { get; set; }
+        public DbSet<InsuranceProvider> InsuranceProviders { get; set; }
+        public DbSet<PharmacyInsuranceContract> PharmacyInsuranceContracts { get; set; }
         public DbSet<DarooyabPrescriptionSMSMessage> DarooyabPrescriptionSMSMessages { get; set; }
         public virtual DbSet<DarooyabFavoritePharmacy> DarooyabFavoritePharmacies { get; set; }
         public virtual DbSet<Questionnaire> Questionnaires { get; set; }
@@ -2078,6 +2080,12 @@ namespace darooyab.Models
                 entity.Property(e => e.Phone)
                     .HasMaxLength(15)
                     .IsUnicode(false);
+
+                entity.Property(e => e.PharmacyManagerMobile).HasMaxLength(15);
+
+                entity.Property(e => e.InventoryManagerMobile).HasMaxLength(15);
+
+                entity.Property(e => e.PharmacyTechnicianMobile).HasMaxLength(15);
 
                 entity.Property(e => e.PostalCode)
                     .HasMaxLength(10)

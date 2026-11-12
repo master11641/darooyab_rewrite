@@ -281,6 +281,7 @@
         modal.setAttribute("aria-hidden", "false");
         document.body.classList.add("shortage-modal-open");
         modal.querySelector("[data-close-results]").focus();
+        loadOffers(activeTab);
     };
 
     const closeModal = () => {

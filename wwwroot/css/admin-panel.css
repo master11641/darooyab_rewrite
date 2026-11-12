@@ -642,6 +642,69 @@
     font-size: 10px;
 }
 
+.admin-metric-details {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 8px 0 2px;
+}
+
+.admin-metric-details > div {
+    min-width: 0;
+}
+
+.admin-metric-details dt {
+    color: var(--admin-muted);
+    font-size: 10px;
+}
+
+.admin-metric-details dd {
+    margin: 1px 0 0;
+    font-size: 12px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.admin-dashboard-stat-link,
+.admin-dashboard-quick-links a {
+    color: var(--admin-primary);
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.admin-dashboard-stat-link {
+    margin-top: 4px;
+}
+
+.admin-dashboard-stat-link:hover,
+.admin-dashboard-quick-links a:hover {
+    text-decoration: underline;
+}
+
+.admin-dashboard-stat-link:focus-visible,
+.admin-dashboard-quick-links a:focus-visible {
+    outline: 2px solid var(--admin-primary);
+    outline-offset: 3px;
+    border-radius: 3px;
+}
+
+.admin-dashboard-quick-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: 10px;
+}
+
+.admin-dashboard-quick-links a {
+    display: block;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid var(--admin-border);
+    border-radius: 10px;
+    overflow-wrap: anywhere;
+}
+
 .admin-activity-grid {
     display: grid;
     grid-template-columns: minmax(0, 1.65fr) minmax(250px, 0.85fr);

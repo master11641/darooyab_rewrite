@@ -17,3 +17,41 @@ document.addEventListener("error", (event) => {
     fallback.textContent = isArticleImage ? "تصویر مطلب در دسترس نیست" : "دارویاب";
     image.replaceWith(fallback);
 }, true);
+
+(() => {
+    const sections = Array.from(document.querySelectorAll(".home-slider-section ~ section"));
+    if (
+        sections.length === 0 ||
+        !("IntersectionObserver" in window) ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+        return;
+    }
+
+    const initiallyVisible = new Set(
+        sections.filter((section) => section.getBoundingClientRect().top < window.innerHeight)
+    );
+    const observer = new IntersectionObserver((entries, currentObserver) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) {
+                return;
+            }
+
+            entry.target.classList.add("is-visible");
+            currentObserver.unobserve(entry.target);
+        });
+    }, {
+        rootMargin: "0px 0px -8% 0px",
+        threshold: 0.1
+    });
+
+    sections.forEach((section) => {
+        section.classList.add("home-scroll-reveal");
+        if (initiallyVisible.has(section)) {
+            section.classList.add("is-visible");
+            return;
+        }
+
+        observer.observe(section);
+    });
+})();

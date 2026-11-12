@@ -110,7 +110,16 @@
               href="~/Content/AdvertisementImages/2bf4af54-9130-4dc4-a8e7-6cf70e72f834_banner(1).gif"
               as="image" type="image/gif" fetchpriority="high" media="(min-width: 992px)" />
     }
-    @if (isBrandPage)
+    @if (isHomePage)
+    {
+        <link rel="preload" href="@Url.Content("~/images/home/slider/Artboard-Abidi.jpg")"
+              as="image" fetchpriority="high" />
+    }
+    @if (isHomePage)
+    {
+        <link rel="stylesheet" href="~/css/home-page.css" asp-append-version="true" />
+    }
+    else if (isBrandPage)
     {
         <link rel="stylesheet" href="~/css/brand-info.css" asp-append-version="true" />
     }
@@ -126,6 +135,10 @@
         {
             <link rel="stylesheet" href="~/css/site-heroes.css" asp-append-version="true" />
         }
+    }
+    @if (!isHomePage)
+    {
+        <link rel="stylesheet" href="~/css/captcha.css" asp-append-version="true" />
     }
     @await RenderSectionAsync("Styles", required: false)
 </head>

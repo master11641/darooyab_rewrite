@@ -1,0 +1,73 @@
+@model darooyab_rewrite.Areas.Admin.ViewModels.PharmacySpecialtiesPageViewModel
+@{
+    ViewData["Title"] = "مدیریت اطلاعات داروخانه";
+    var activeTab = Model.ShowDistrictTab ? Model.ActiveTab : Math.Max(2, Model.ActiveTab);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pharmacy-management.css" asp-append-version="true" />
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          crossorigin="anonymous" />
+}
+
+<section class="pharmacy-management" data-pharmacy-management data-active-tab="@activeTab">
+    @if (TempData["PharmacyManagementSuccess"] is string successMessage)
+    {
+        <p class="pharmacy-management-alert is-success" role="status">@successMessage</p>
+    }
+    @if (TempData["PharmacyManagementError"] is string errorMessage)
+    {
+        <p class="pharmacy-management-alert is-error" role="alert">@errorMessage</p>
+    }
+
+    <p class="pharmacy-management-intro">
+        اطلاعات و امکانات نمایشی داروخانه‌ی <strong>@Model.PharmacyName</strong> را مدیریت کنید.
+    </p>
+
+    <div class="pharmacy-management-tabs" role="tablist" aria-label="بخش‌های مدیریت اطلاعات داروخانه">
+        @if (Model.ShowDistrictTab)
+        {
+            <button type="button"
+                    id="pharmacy-tab-1"
+                    class="pharmacy-management-tab"
+                    role="tab"
+                    aria-controls="pharmacy-panel-1"
+                    data-pharmacy-tab="1">انتخاب منطقه</button>
+        }
+        <button type="button" id="pharmacy-tab-2" class="pharmacy-management-tab" role="tab" aria-controls="pharmacy-panel-2" data-pharmacy-tab="2">گروه دارویی</button>
+        <button type="button" id="pharmacy-tab-3" class="pharmacy-management-tab" role="tab" aria-controls="pharmacy-panel-3" data-pharmacy-tab="3">لوکیشن داروخانه</button>
+        <button type="button" id="pharmacy-tab-4" class="pharmacy-management-tab" role="tab" aria-controls="pharmacy-panel-4" data-pharmacy-tab="4">تصویر داروخانه</button>
+        <button type="button" id="pharmacy-tab-5" class="pharmacy-management-tab" role="tab" aria-controls="pharmacy-panel-5" data-pharmacy-tab="5">اطلاعات تماس</button>
+        <button type="button" id="pharmacy-tab-6" class="pharmacy-management-tab" role="tab" aria-controls="pharmacy-panel-6" data-pharmacy-tab="6">بیمه‌های طرف قرارداد</button>
+    </div>
+
+    <div class="pharmacy-management-panels">
+        @if (Model.ShowDistrictTab)
+        {
+            <section id="pharmacy-panel-1" class="pharmacy-management-panel" role="tabpanel" aria-labelledby="pharmacy-tab-1" tabindex="0" data-pharmacy-panel="1">
+                <partial name="_DistrictTab" model="Model.District" />
+            </section>
+        }
+        <section id="pharmacy-panel-2" class="pharmacy-management-panel" role="tabpanel" aria-labelledby="pharmacy-tab-2" tabindex="0" data-pharmacy-panel="2">
+            <partial name="_SpecialtyTab" model="Model.Specialties" />
+        </section>
+        <section id="pharmacy-panel-3" class="pharmacy-management-panel" role="tabpanel" aria-labelledby="pharmacy-tab-3" tabindex="0" data-pharmacy-panel="3">
+            <partial name="_LocationTab" model="Model.Location" />
+        </section>
+        <section id="pharmacy-panel-4" class="pharmacy-management-panel" role="tabpanel" aria-labelledby="pharmacy-tab-4" tabindex="0" data-pharmacy-panel="4">
+            <partial name="_ImagesTab" model="Model.Images" />
+        </section>
+        <section id="pharmacy-panel-5" class="pharmacy-management-panel" role="tabpanel" aria-labelledby="pharmacy-tab-5" tabindex="0" data-pharmacy-panel="5">
+            <partial name="_ContactsTab" model="Model.Contacts" />
+        </section>
+        <section id="pharmacy-panel-6" class="pharmacy-management-panel" role="tabpanel" aria-labelledby="pharmacy-tab-6" tabindex="0" data-pharmacy-panel="6">
+            <partial name="_InsuranceTab" model="Model.Insurances" />
+        </section>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+    <script src="~/js/pharmacy-management.js" asp-append-version="true"></script>
+}

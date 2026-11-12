@@ -326,7 +326,7 @@ public sealed class PharmacyRequestService(
 
         var ownedRank = activeRanks.FirstOrDefault(rank => rank.PharmacyAccountId == pharmacyAccountId);
         var availableRank = ownedRank is null
-            ? Enumerable.Range(1, 10)
+            ? Enumerable.Range(1, PharmacyRankingPricing.MaximumRankNumber)
                 .FirstOrDefault(rank => activeRanks.All(active => active.RankNumber != rank))
             : 0;
 
@@ -421,7 +421,7 @@ public sealed class PharmacyRequestService(
             (form.BuyRanking &&
              (selectedIrcs.Length != 1 ||
               !form.PurchaseRankNumber.HasValue ||
-              form.PurchaseRankNumber is < 1 or > 10 ||
+             form.PurchaseRankNumber is < 1 or > PharmacyRankingPricing.MaximumRankNumber ||
               !form.PurchaseRankDays.HasValue ||
               form.PurchaseRankDays is < 1 or > 60)) ||
             form.DurationDays is < 1 or > 60 ||
@@ -539,7 +539,7 @@ public sealed class PharmacyRequestService(
                 return PharmacyRequestSaveStatus.RankAlreadyOwned;
             }
 
-            var nextAvailableRank = Enumerable.Range(1, 10)
+            var nextAvailableRank = Enumerable.Range(1, PharmacyRankingPricing.MaximumRankNumber)
                 .FirstOrDefault(rank => activeRanks.All(active => active.RankNumber != rank));
             if (nextAvailableRank == 0 ||
                 form.PurchaseRankNumber != nextAvailableRank)

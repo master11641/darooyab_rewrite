@@ -47,6 +47,31 @@ public sealed class WalletController(
         return View(model);
     }
 
+    [HttpGet("Rankings")]
+    public async Task<IActionResult> Rankings(
+        int page = 1,
+        CancellationToken cancellationToken = default)
+    {
+        var pharmacyAccountId = await GetCurrentPharmacyAccountIdAsync(cancellationToken);
+        if (!pharmacyAccountId.HasValue)
+        {
+            await authenticationService.LogoutAsync();
+            return Challenge();
+        }
+
+        ViewData["PharmacyName"] = await context.PharmacyAccounts
+            .AsNoTracking()
+            .Where(account => account.Id == pharmacyAccountId.Value)
+            .Select(account => account.PharmacyIdFkNavigation.Name)
+            .SingleAsync(cancellationToken);
+
+        var model = await walletService.GetPurchasedRankingsPageAsync(
+            pharmacyAccountId.Value,
+            page,
+            cancellationToken);
+        return View(model);
+    }
+
     [HttpPost("Charge")]
     [ValidateAntiForgeryToken]
     [EnableRateLimiting("wallet-payment")]

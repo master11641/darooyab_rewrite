@@ -29,9 +29,7 @@ public sealed class PharmacyExchangeFormViewModel
     [Range(1, int.MaxValue, ErrorMessage = "تعداد باید حداقل یک باشد.")]
     public int DrugCount { get; set; }
 
-    [Required(ErrorMessage = "واحد دارو را انتخاب کنید.")]
-    [RegularExpression("^[1-2]$", ErrorMessage = "واحد دارو معتبر نیست.")]
-    public string? DrugUnitNum { get; set; }
+    public string? DrugUnitNum { get; set; } = "2";
 
     [Range(0, double.MaxValue, ErrorMessage = "قیمت معتبر نیست.")]
     public double? UnitPrice { get; set; }

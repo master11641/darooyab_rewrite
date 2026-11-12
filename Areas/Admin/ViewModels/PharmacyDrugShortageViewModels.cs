@@ -17,6 +17,19 @@ public sealed class PharmacyDrugShortagePageViewModel
     public bool IsEditMode => Form.Id.HasValue;
 }
 
+public sealed class PharmacyNearDatePageViewModel
+{
+    public IReadOnlyList<PharmacyDrugShortageOption> Provinces { get; init; } = [];
+    public IReadOnlyList<PharmacyDrugShortageOption> Townships { get; init; } = [];
+    public IReadOnlyList<PharmacyNearDateItem> Items { get; init; } = [];
+    public int SelectedProvinceId { get; init; }
+    public int SelectedTownshipId { get; init; }
+    public int Page { get; init; } = 1;
+    public int TotalPages { get; init; }
+    public int TotalCount { get; init; }
+    public bool InvalidLocationFilter { get; init; }
+}
+
 public sealed class PharmacyDrugShortageFormViewModel
 {
     [Range(1, int.MaxValue, ErrorMessage = "شناسه درخواست معتبر نیست.")]
@@ -55,6 +68,21 @@ public sealed record PharmacyDrugShortageOffer(
     DateTime? DrugExpireDate,
     string RegisteredAtDisplay,
     IReadOnlyList<string> MyExcessDrugNames);
+
+public sealed record PharmacyNearDateItem(
+    int Id,
+    string DrugName,
+    string PharmacyName,
+    string? ProvinceName,
+    string? TownshipName,
+    string? Address,
+    string? Phone,
+    DateTime? RegisteredAt,
+    string RegisteredRelativeTime,
+    DateTime? DrugExpireDate,
+    int? RemainingCount,
+    string UnitLabel,
+    double? UnitPrice);
 
 public sealed class PharmacyDrugShortageSearchRequest
 {

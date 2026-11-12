@@ -1,0 +1,32 @@
+@model darooyab_rewrite.Areas.Admin.ViewModels.PharmacySpecialtyTabViewModel
+
+<div class="pharmacy-management-section">
+    <h2>انتخاب گروه دارویی</h2>
+    <p class="pharmacy-management-note">
+        حداکثر ۲ زمینه تخصصی برای ارجاع بهینه‌ی نسخه‌ها انتخاب کنید.
+    </p>
+    @if (Model.Options.Count == 0)
+    {
+        <p class="pharmacy-management-empty">در حال حاضر زمینه‌ی تخصصی فعالی برای انتخاب وجود ندارد.</p>
+    }
+    else
+    {
+        <form method="post" action="/DarooyabPharmacy/PharmacySpecialties" data-specialties-form>
+            @Html.AntiForgeryToken()
+            <div class="pharmacy-management-options" data-specialty-options>
+                @foreach (var option in Model.Options)
+                {
+                    <label class="pharmacy-management-option">
+                        <input type="checkbox"
+                               name="selectedSpecialtyIds"
+                               value="@option.Id"
+                               checked="@option.Selected" />
+                        <span>@option.Name</span>
+                    </label>
+                }
+            </div>
+            <p class="pharmacy-management-help" data-specialty-count aria-live="polite"></p>
+            <button class="pharmacy-management-button" type="submit">ذخیره زمینه‌های تخصصی</button>
+        </form>
+    }
+</div>

@@ -46,6 +46,7 @@ namespace darooyab.Models
         public DateTime? VerificationCodeSentAt { get; set; }
         public bool? IsPhoneNumberVerified { get; set; }
         public int? UserId { get; set; }
+        public bool? IsReviewed { get; set; }
         [ForeignKey("UserId")]
         public DarooyabUser DarooyabUser { get; set; }
         public ICollection<DarooyabPrescriptionSMSMessage> DarooyabPrescriptionSMSMessages { get; set; }

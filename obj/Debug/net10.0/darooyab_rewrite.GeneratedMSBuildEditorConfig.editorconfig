@@ -24,6 +24,38 @@ build_property._RazorSourceGeneratorDebug =
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
+[D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/Brand/SubmitBrandNameByPharmacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQnJhbmRcU3VibWl0QnJhbmROYW1lQnlQaGFybWFjeS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/DarooyabPharmacy/PharmacySpecialties.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRGFyb295YWJQaGFybWFjeVxQaGFybWFjeVNwZWNpYWx0aWVzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/DarooyabPharmacy/_ContactsTab.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRGFyb295YWJQaGFybWFjeVxfQ29udGFjdHNUYWIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/DarooyabPharmacy/_DistrictTab.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRGFyb295YWJQaGFybWFjeVxfRGlzdHJpY3RUYWIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/DarooyabPharmacy/_ImagesTab.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRGFyb295YWJQaGFybWFjeVxfSW1hZ2VzVGFiLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/DarooyabPharmacy/_InsuranceTab.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRGFyb295YWJQaGFybWFjeVxfSW5zdXJhbmNlVGFiLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/DarooyabPharmacy/_LocationTab.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRGFyb295YWJQaGFybWFjeVxfTG9jYXRpb25UYWIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/DarooyabPharmacy/_SpecialtyTab.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRGFyb295YWJQaGFybWFjeVxfU3BlY2lhbHR5VGFiLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/Dashboard/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRGFzaGJvYXJkXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -32,12 +64,28 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRHJ1Z1Nob3J0YWdlXEFkZE9yRWRpdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/DrugShortage/OtherPhNearDateDrugShortageList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRHJ1Z1Nob3J0YWdlXE90aGVyUGhOZWFyRGF0ZURydWdTaG9ydGFnZUxpc3QuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/DrugShortage/_ExchangeOffers.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRHJ1Z1Nob3J0YWdlXF9FeGNoYW5nZU9mZmVycy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/PharmacyAccount/DrugDistribution.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUGhhcm1hY3lBY2NvdW50XERydWdEaXN0cmlidXRpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/PharmacyRequest/AddOrEdit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUGhhcm1hY3lSZXF1ZXN0XEFkZE9yRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/PharmacyRequest/DarooyabPrescription.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUGhhcm1hY3lSZXF1ZXN0XERhcm9veWFiUHJlc2NyaXB0aW9uLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/PharmacyRequest/SendSMS.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUGhhcm1hY3lSZXF1ZXN0XFNlbmRTTVMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/PharmacyRequest/TabadolManage.cshtml]
@@ -66,6 +114,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/Wallet/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcV2FsbGV0XEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/Wallet/Rankings.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcV2FsbGV0XFJhbmtpbmdzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Projects/Dotnet/darooyab_new/darooyab_rewrite/Areas/Admin/Views/_ViewImports.cshtml]

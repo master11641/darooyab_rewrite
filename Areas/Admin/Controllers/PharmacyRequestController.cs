@@ -3,6 +3,7 @@ using darooyab.Models;
 using darooyab_rewrite.Areas.Admin.ViewModels;
 using darooyab_rewrite.Services.Authentication;
 using darooyab_rewrite.Services.Authentication.Pharmacy;
+using darooyab_rewrite.Services.PharmacyPrescriptions;
 using darooyab_rewrite.Services.PharmacyRequests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,8 +19,138 @@ public sealed class PharmacyRequestController(
     darooConContext context,
     IAuthenticationService authenticationService,
     IPharmacyRequestService pharmacyRequestService,
-    IPharmacyExchangeService pharmacyExchangeService) : Controller
+    IPharmacyExchangeService pharmacyExchangeService,
+    IPharmacyPrescriptionService pharmacyPrescriptionService) : Controller
 {
+    [HttpGet("DarooyabPrescription")]
+    public async Task<IActionResult> DarooyabPrescription(
+        string? trackingCode,
+        bool? isReviewed = false,
+        int page = 1,
+        CancellationToken cancellationToken = default)
+    {
+        var pharmacyAccountId = await GetCurrentPharmacyAccountIdAsync(cancellationToken);
+        if (!pharmacyAccountId.HasValue)
+        {
+            await authenticationService.LogoutAsync();
+            return Challenge();
+        }
+
+        await SetPharmacyNameAsync(pharmacyAccountId.Value, cancellationToken);
+        return View(new PharmacyPrescriptionPageViewModel
+        {
+            TrackingCode = trackingCode,
+            IsReviewed = isReviewed,
+            Page = Math.Max(1, page)
+        });
+    }
+
+    [HttpGet("SearchPrescriptions")]
+    public async Task<IActionResult> SearchPrescriptions(
+        string? trackingCode,
+        bool? isReviewed,
+        int page = 1,
+        CancellationToken cancellationToken = default)
+    {
+        var pharmacyAccountId = await GetCurrentPharmacyAccountIdAsync(cancellationToken);
+        if (!pharmacyAccountId.HasValue)
+        {
+            await authenticationService.LogoutAsync();
+            return Challenge();
+        }
+
+        var model = await pharmacyPrescriptionService.GetPageAsync(
+            pharmacyAccountId.Value,
+            trackingCode,
+            isReviewed,
+            page,
+            cancellationToken);
+        return Json(new
+        {
+            items = model.Items,
+            currentPage = model.Page,
+            totalPages = model.TotalPages,
+            totalRecords = model.TotalRecords
+        });
+    }
+
+    [HttpPost("UpdateIsReviewed")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateIsReviewed(
+        int id,
+        bool isReviewed,
+        CancellationToken cancellationToken = default)
+    {
+        var pharmacyAccountId = await GetCurrentPharmacyAccountIdAsync(cancellationToken);
+        if (!pharmacyAccountId.HasValue)
+        {
+            await authenticationService.LogoutAsync();
+            return Challenge();
+        }
+
+        var updated = await pharmacyPrescriptionService.UpdateReviewedAsync(
+            pharmacyAccountId.Value,
+            id,
+            isReviewed,
+            cancellationToken);
+        return updated
+            ? Json(new { success = true })
+            : NotFound(new { success = false, message = "نسخه‌ی موردنظر در دسترس نیست." });
+    }
+
+    [HttpGet("SendSMS")]
+    public async Task<IActionResult> SendSMS(
+        int prescriptionId,
+        CancellationToken cancellationToken = default)
+    {
+        var pharmacyAccountId = await GetCurrentPharmacyAccountIdAsync(cancellationToken);
+        if (!pharmacyAccountId.HasValue)
+        {
+            await authenticationService.LogoutAsync();
+            return Challenge();
+        }
+
+        var statusMessage = TempData["PharmacyPrescriptionSmsMessage"] as string;
+        var model = await pharmacyPrescriptionService.GetSmsPageAsync(
+            pharmacyAccountId.Value,
+            prescriptionId,
+            statusMessage,
+            cancellationToken);
+        if (model is null)
+        {
+            return NotFound();
+        }
+
+        ViewData["PharmacyName"] = model.PharmacyName;
+        return View("SendSMS", model);
+    }
+
+    [HttpPost("SendSMSPost")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SendSMSPost(
+        int prescriptionId,
+        CancellationToken cancellationToken = default)
+    {
+        var pharmacyAccountId = await GetCurrentPharmacyAccountIdAsync(cancellationToken);
+        if (!pharmacyAccountId.HasValue)
+        {
+            await authenticationService.LogoutAsync();
+            return Challenge();
+        }
+
+        var result = await pharmacyPrescriptionService.SendSmsAsync(
+            pharmacyAccountId.Value,
+            prescriptionId,
+            cancellationToken);
+        if (result.Status == PharmacyPrescriptionSmsSendStatus.NotFound)
+        {
+            return NotFound();
+        }
+
+        TempData["PharmacyPrescriptionSmsMessage"] = result.Message;
+        return RedirectToAction(nameof(SendSMS), new { prescriptionId });
+    }
+
     [HttpGet("AddOrEdit/{id:int?}")]
     public async Task<IActionResult> AddOrEdit(
         int? id,

@@ -1,0 +1,50 @@
+@model darooyab_rewrite.Areas.Admin.ViewModels.PharmacyImagesTabViewModel
+@{
+    var images = new[] { Model.Image1Url, Model.Image2Url, Model.Image3Url };
+}
+
+<div class="pharmacy-management-section">
+    <h2>تصویر داروخانه</h2>
+    <p class="pharmacy-management-note">
+        تصویرها باید JPG یا WebP، حداکثر ۵۰ کیلوبایت و حداکثر ۶۰۰×۴۰۰ پیکسل باشند.
+        برای بارگذاری تصویر دوم ابتدا تصویر اول و برای تصویر سوم ابتدا تصویر دوم را ثبت کنید.
+    </p>
+    <form method="post"
+          action="/DarooyabPharmacy/ManageImages"
+          enctype="multipart/form-data"
+          data-pharmacy-images-form>
+        @Html.AntiForgeryToken()
+        <div class="pharmacy-management-image-grid">
+            @for (var index = 0; index < images.Length; index++)
+            {
+                var imageNumber = index + 1;
+                var fileId = $"Image{imageNumber}File";
+                <article class="pharmacy-management-image-card">
+                    <h3>تصویر @imageNumber</h3>
+                    @if (!string.IsNullOrEmpty(images[index]))
+                    {
+                        <div class="pharmacy-management-image-preview">
+                            <img src="@Url.Content(images[index])" alt="تصویر @imageNumber داروخانه" />
+                            <button class="pharmacy-management-button is-danger"
+                                    type="button"
+                                    data-delete-pharmacy-image="@imageNumber">حذف تصویر</button>
+                        </div>
+                    }
+                    <label class="pharmacy-management-label" for="@fileId">انتخاب تصویر</label>
+                    <input class="pharmacy-management-input pharmacy-management-file"
+                           type="file"
+                           id="@fileId"
+                           name="image@(imageNumber)File"
+                           accept=".jpg,.jpeg,.webp,image/jpeg,image/webp"
+                           data-image-number="@imageNumber"
+                           disabled="@(index > 0 && string.IsNullOrEmpty(images[index - 1]))" />
+                    <p class="pharmacy-management-help" data-image-file-name="@imageNumber">
+                        @(index > 0 && string.IsNullOrEmpty(images[index - 1]) ? $"ابتدا تصویر {imageNumber - 1} را انتخاب کنید." : "فایلی انتخاب نشده است.")
+                    </p>
+                    <div class="pharmacy-management-image-local-preview" data-image-preview="@imageNumber"></div>
+                </article>
+            }
+        </div>
+        <button class="pharmacy-management-button" type="submit">ذخیره تغییرات تصویر</button>
+    </form>
+</div>

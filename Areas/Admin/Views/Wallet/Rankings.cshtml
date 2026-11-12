@@ -1,0 +1,142 @@
+@model PharmacyPurchasedRankingsPageViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "رتبه‌های خریداری‌شده";
+    var startPage = Math.Max(1, Model.Page - 5);
+    var endPage = Math.Min(Model.TotalPages, Model.Page + 5);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pharmacy-wallet.css" asp-append-version="true" />
+}
+
+<div class="admin-page pharmacy-wallet pharmacy-rankings">
+    <nav class="admin-breadcrumb" aria-label="مسیر صفحه">
+        <a href="/PharmacyAdmin/Dashboard">داشبورد</a>
+        <span aria-hidden="true">/</span>
+        <a href="/Wallet">کیف پول</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">رتبه‌های خریداری‌شده</span>
+    </nav>
+
+    <section class="admin-panel-card rankings-card" aria-labelledby="rankings-title">
+        <div class="wallet-section-heading">
+            <div>
+                <span class="admin-eyebrow">سابقه خرید</span>
+                <h2 id="rankings-title">رتبه‌های خریداری‌شده</h2>
+            </div>
+            <span class="wallet-page-indicator">صفحه @Model.Page از @Model.TotalPages</span>
+        </div>
+
+        @if (Model.Rankings.Count == 0)
+        {
+            <div class="wallet-empty" role="status">
+                <strong>رتبهٔ خریداری‌شده‌ای برای نمایش وجود ندارد.</strong>
+            </div>
+        }
+        else
+        {
+            <div class="purchased-rankings-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">برند خریداری‌شده</th>
+                            <th scope="col">تاریخ شروع</th>
+                            <th scope="col">تعداد روز خریداری‌شده</th>
+                            <th scope="col">زمان انقضاء</th>
+                            <th scope="col">جایگاه</th>
+                            <th scope="col">قیمت کل (تومان)</th>
+                            <th scope="col">توضیحات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ranking in Model.Rankings)
+                        {
+                            <tr>
+                                <td data-label="برند خریداری‌شده">@ranking.DrugName</td>
+                                <td data-label="تاریخ شروع">@ranking.StartDateDisplay</td>
+                                <td data-label="تعداد روز خریداری‌شده">@ranking.DurationInDays</td>
+                                <td data-label="زمان انقضاء">@ranking.ExpiryDateDisplay</td>
+                                <td data-label="جایگاه">
+                                    <div class="purchased-ranking-placement">
+                                        @if (ranking.RankNumber is >= 1 and <= 10)
+                                        {
+                                            <img src="~/Content/Images/ranking@(ranking.RankNumber).webp"
+                                                 alt=""
+                                                 loading="lazy"
+                                                 width="80"
+                                                 height="80" />
+                                        }
+                                        <span>رتبه @ranking.RankNumber</span>
+                                    </div>
+                                </td>
+                                <td data-label="قیمت کل (تومان)">
+                                    @ranking.AmountToman.ToString("N0", CultureInfo.InvariantCulture)
+                                </td>
+                                <td data-label="توضیحات">
+                                    @if (!string.IsNullOrEmpty(ranking.ModifyDescription))
+                                    {
+                                        <div class="purchased-ranking-description">@ranking.ModifyDescription</div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="wallet-pagination" aria-label="صفحه‌بندی رتبه‌های خریداری‌شده">
+                @if (Model.Page > 1)
+                {
+                    <a href="/Wallet/Rankings?page=@(Model.Page - 1)" rel="prev">قبلی</a>
+                }
+                else
+                {
+                    <span class="is-disabled" aria-disabled="true">قبلی</span>
+                }
+
+                @if (startPage > 1)
+                {
+                    <a href="/Wallet/Rankings?page=1">۱</a>
+                    @if (startPage > 2)
+                    {
+                        <span class="wallet-pagination-gap" aria-hidden="true">…</span>
+                    }
+                }
+
+                @for (var pageNumber = startPage; pageNumber <= endPage; pageNumber++)
+                {
+                    if (pageNumber == Model.Page)
+                    {
+                        <span aria-current="page">@pageNumber</span>
+                    }
+                    else
+                    {
+                        <a href="/Wallet/Rankings?page=@pageNumber">@pageNumber</a>
+                    }
+                }
+
+                @if (endPage < Model.TotalPages)
+                {
+                    @if (endPage < Model.TotalPages - 1)
+                    {
+                        <span class="wallet-pagination-gap" aria-hidden="true">…</span>
+                    }
+                    <a href="/Wallet/Rankings?page=@Model.TotalPages">@Model.TotalPages</a>
+                }
+
+                @if (Model.Page < Model.TotalPages)
+                {
+                    <a href="/Wallet/Rankings?page=@(Model.Page + 1)" rel="next">بعدی</a>
+                }
+                else
+                {
+                    <span class="is-disabled" aria-disabled="true">بعدی</span>
+                }
+            </nav>
+        }
+    </section>
+</div>

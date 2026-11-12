@@ -7,9 +7,13 @@ using darooyab_rewrite.Services.Authentication.Pharmacy;
 using darooyab_rewrite.Services.Captcha;
 using darooyab_rewrite.Services.Comments;
 using darooyab_rewrite.Services.PharmacyRequests;
+using darooyab_rewrite.Services.PharmacyDrugDistributions;
+using darooyab_rewrite.Services.PharmacyBrandSuggestions;
 using darooyab_rewrite.Services.PharmacyDrugShortages;
+using darooyab_rewrite.Services.PharmacyPrescriptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using darooyab_rewrite.Services.PharmacySpecialties;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,8 +27,21 @@ builder.Services.AddCaptcha(builder.Configuration);
 builder.Services.AddAuthenticationCore(builder.Configuration, builder.Environment);
 builder.Services.AddPharmacyAuthenticationProvider();
 builder.Services.AddScoped<IPharmacyRequestService, PharmacyRequestService>();
+builder.Services.AddScoped<IPharmacyDrugDistributionService, PharmacyDrugDistributionService>();
+builder.Services.AddScoped<IPharmacyBrandSuggestionService, PharmacyBrandSuggestionService>();
 builder.Services.AddScoped<IPharmacyDrugShortageService, PharmacyDrugShortageService>();
 builder.Services.AddScoped<IPharmacyExchangeService, PharmacyExchangeService>();
+builder.Services.AddScoped<IPharmacyPrescriptionService, PharmacyPrescriptionService>();
+builder.Services.AddScoped<PharmacySpecialtiesService>();
+builder.Services.Configure<PrescriptionSmsOptions>(
+    builder.Configuration.GetSection(PrescriptionSmsOptions.SectionName));
+builder.Logging.AddFilter(
+    "System.Net.Http.HttpClient.IPharmacyPrescriptionSmsSender",
+    LogLevel.None);
+builder.Services.AddHttpClient<IPharmacyPrescriptionSmsSender, KavenegarPrescriptionSmsSender>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
 builder.Services.Configure<ZarinPalOptions>(
     builder.Configuration.GetSection(ZarinPalOptions.SectionName));
 builder.Services.AddHttpClient<IPharmacyWalletService, PharmacyWalletService>(client =>

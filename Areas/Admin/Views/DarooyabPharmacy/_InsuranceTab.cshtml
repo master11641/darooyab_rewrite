@@ -1,0 +1,55 @@
+@model darooyab_rewrite.Areas.Admin.ViewModels.PharmacyInsuranceTabViewModel
+
+<div class="pharmacy-management-section">
+    <h2>بیمه‌های طرف قرارداد</h2>
+    <form method="post" action="/DarooyabPharmacy/SavePharmacyInsurances">
+        @Html.AntiForgeryToken()
+        <fieldset class="pharmacy-management-fieldset">
+            <legend>بیمه‌های پایه</legend>
+            <p class="pharmacy-management-help">انتخاب حداقل یک بیمه‌ی پایه الزامی است.</p>
+            @if (Model.BaseInsurances.Count == 0)
+            {
+                <p class="pharmacy-management-empty">در حال حاضر بیمه‌ی پایه‌ی فعالی برای انتخاب وجود ندارد.</p>
+            }
+            else
+            {
+                <div class="pharmacy-management-options">
+                    @foreach (var insurance in Model.BaseInsurances)
+                    {
+                        <label class="pharmacy-management-option">
+                            <input type="checkbox"
+                                   name="selectedBaseInsuranceIds"
+                                   value="@insurance.Id"
+                                   checked="@insurance.Selected" />
+                            <span>@insurance.Name</span>
+                        </label>
+                    }
+                </div>
+            }
+        </fieldset>
+        <fieldset class="pharmacy-management-fieldset">
+            <legend>بیمه‌های تکمیلی</legend>
+            <p class="pharmacy-management-help">انتخاب بیمه‌ی تکمیلی اختیاری است.</p>
+            @if (Model.SupplementaryInsurances.Count == 0)
+            {
+                <p class="pharmacy-management-empty">در حال حاضر بیمه‌ی تکمیلی فعالی برای انتخاب وجود ندارد.</p>
+            }
+            else
+            {
+                <div class="pharmacy-management-options">
+                    @foreach (var insurance in Model.SupplementaryInsurances)
+                    {
+                        <label class="pharmacy-management-option">
+                            <input type="checkbox"
+                                   name="selectedSupplementaryInsuranceIds"
+                                   value="@insurance.Id"
+                                   checked="@insurance.Selected" />
+                            <span>@insurance.Name</span>
+                        </label>
+                    }
+                </div>
+            }
+        </fieldset>
+        <button class="pharmacy-management-button" type="submit">ذخیره بیمه‌ها</button>
+    </form>
+</div>

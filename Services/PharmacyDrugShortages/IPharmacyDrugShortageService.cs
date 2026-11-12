@@ -20,6 +20,13 @@ public interface IPharmacyDrugShortageService
         int provinceId,
         CancellationToken cancellationToken = default);
 
+    Task<PharmacyNearDatePageViewModel> GetNearDatePageAsync(
+        int pharmacyAccountId,
+        int provinceId,
+        int townshipId,
+        int page,
+        CancellationToken cancellationToken = default);
+
     Task<PharmacyDrugShortageSaveStatus> SaveAsync(
         int pharmacyAccountId,
         PharmacyDrugShortageFormViewModel form,

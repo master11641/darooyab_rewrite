@@ -13,6 +13,11 @@ public interface IPharmacyWalletService
         int page = 1,
         CancellationToken cancellationToken = default);
 
+    Task<PharmacyPurchasedRankingsPageViewModel> GetPurchasedRankingsPageAsync(
+        int pharmacyAccountId,
+        int page = 1,
+        CancellationToken cancellationToken = default);
+
     Task<PharmacyWalletPaymentStartResult> StartTopUpAsync(
         int pharmacyAccountId,
         long amountToman,

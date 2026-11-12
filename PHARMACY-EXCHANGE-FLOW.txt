@@ -1,0 +1,272 @@
+فرایند تبادل داروخانه‌ها: جداول، فیلدها و مراحل
+نسخه مستند: 2026-11-12
+
+هدف
+این فایل قرارداد داده و جریان تبادل داروخانه‌ها را برای تحلیل و پیاده‌سازی در ChatGPT توضیح می‌دهد. پیش از هر تغییر یا درج داده، وضعیت واقعی دیتابیس، کلیدهای خارجی، Categoryها و نسخه Stored Procedure را دوباره بررسی کنید. اطلاعات این فایل جایگزین اعتبارسنجی دیتابیس مقصد نیست.
+
+نکته اصلی: دو مرحله مستقل وجود دارد
+1) پیدا کردن و نمایش پیشنهادهای داروخانه‌های دیگر، بر اساس درخواست کسری و مازادهای ثبت‌شده.
+2) نهایی کردن معامله و ثبت یک ردیف در PharmacyExchange.
+
+در نسخه جدید darooyab_rewrite، مرحله اول در /DrugShortage/ExchangeOffers پیاده شده است، اما مرحله دوم و درج PharmacyExchange در این مسیر پیاده‌سازی نشده است. صفحه /PharmacyRequest/TabadolManage نیز مازادها را مدیریت می‌کند و خودش معامله را ثبت نمی‌کند. در نسخه قدیمی، ثبت معامله در ExchangeDrugController.SubmitExchange انجام می‌شد.
+
+------------------------------------------------------------
+1. جداول و ارتباط‌ها
+------------------------------------------------------------
+
+Category
+- CatID: شناسه دسته‌بندی.
+- Type: نوع دسته‌بندی؛ مقادیر مهم:
+  - drug_shortages: درخواست کسری.
+  - excess_drugs: اعلام مازاد.
+- کدهای CatID وابسته به محیط هستند؛ در برنامه از Category.Type استفاده کنید، نه عدد ثابت.
+- نسخه SQL ارسالی برای SP شناسه‌های 548 (مازاد) و 549 (کسری) را hard-code کرده است. قبل از استفاده باید تأیید شود این شناسه‌ها در دیتابیس مقصد همین Typeها هستند.
+
+PharmacyRequest
+یک جدول مشترک برای کسری و مازاد است. نوع ردیف با RequestType_FromCategoryId_fk مشخص می‌شود و مالک آن PharmacyAccountId_fk است.
+
+فیلدهای مهم:
+- ID: شناسه درخواست؛ در PharmacyExchange به آن ارجاع می‌شود.
+- PharmacyAccountId_fk: حساب داروخانه مالک درخواست.
+- RequestType_FromCategoryId_fk: Category نوع درخواست، یعنی کسری یا مازاد.
+- IRC: شناسه برند دارو. برای جستجوی دقیق و تبادل بر اساس برند، باید با DrugsName.IRC معتبر تطبیق داشته باشد.
+- DrugShap_FromDosageId_fk: شناسه شکل/فرم دارویی؛ در درخواست کسری می‌تواند به‌جای IRC استفاده شود.
+- StatusNum: وضعیت؛ 1 = باز، 2 = بسته‌شده توسط داروخانه، 3 = بسته‌شده خودکار (برای نمونه پس از مصرف کامل موجودی).
+- RegistrationDateTime: زمان ثبت.
+- ExchangeLimitNum: نوع دسترسی/گروه مازاد: 1 = ویژه/لوکس/کمیاب، 2 = معمولی، 3 = تاریخ نزدیک.
+- DrugCount: تعداد بسته/واحد قابل عرضه در ردیف مازاد؛ برای درخواست کسری در منطق فعلی صفحه جدید تعیین‌کننده نتیجه نیست.
+- DrugUnitNum: 1 = عدد، 2 = بسته. در نسخه جدید برای مازادهای ثبت/ویرایش‌شده مقدار 2 ثابت شده است.
+- DrugExpireDate: تاریخ انقضای داروی مازاد.
+- UnitPrice: قیمت واحد؛ در نسخه قدیمی در رسید از ردیف مازاد کپی می‌شود.
+- ExchangeRandomCode: کد تبادل ثبت‌شده روی ردیف مازاد؛ نسخه قدیمی آن را هنگام ثبت معامله بررسی می‌کند.
+- PurchaseInvoiceNumber و PatchNumber: اطلاعات فاکتور و بچ؛ در رسید معامله از مازاد کپی می‌شوند.
+- CompanyDistributorId_fk: شرکت پخش؛ در شاخه ثبت مازاد قدیمی مورد بررسی، همیشه NULL ذخیره می‌شد.
+- SellToColleague و ColleaguePrice: فروش نقدی به همکار و قیمت آن. نسخه جدید برای مازادهای جدید/ویرایش‌شده SellToColleague = 0 و ColleaguePrice = NULL را اعمال می‌کند. Stored Procedure پیشنهادی در SQL ارسالی فیلتر فروش نقدی ندارد.
+- RequestView: تنظیم نمایش؛ در ثبت کسری نسخه جدید مقدار 0 می‌گیرد.
+- DrugExpireDate و RequestExpireDate در کسری ثبت‌شده توسط فرم جدید NULL هستند.
+
+PharmacyAccount و Pharmacy
+- PharmacyRequest.PharmacyAccountId_fk به PharmacyAccount.ID تعلق دارد.
+- PharmacyAccount.PharmacyId_fk به Pharmacy.ID وصل می‌شود.
+- فیلتر شهر و استان از Pharmacy.CityId_fk و Pharmacy.ProvinceId_fk استفاده می‌کند.
+- برای اجرای Query پیشنهادها، اطلاعات داروخانه/حساب عرضه‌کننده باید در همان دیتابیسی موجود باشد که JOINهای Stored Procedure از آن می‌خوانند.
+
+DrugsName و DosageForm
+- تطبیق پیشنهادها بر اساس IRC انجام می‌شود.
+- Stored Procedure به ردیف نام انگلیسی دارو نیاز دارد: DrugsName.IRC و DrugNameLanguage = 1 (در EF قدیمی true).
+- برای درخواست کسری مبتنی بر شکل دارویی، DrugShap_FromDosageId_fk از طریق DosageForm و DrugsName.IRGenericID به یک یا چند IRC تبدیل می‌شود.
+- نبودن ردیف DrugsName انگلیسی یا IRC نامعتبر می‌تواند باعث حذف ردیف از نتیجه به‌دلیل INNER JOIN شود.
+
+PharmacyExchange
+هر ردیف نشان‌دهنده یک معامله ثبت‌شده روی یک مازاد و یک کسری است.
+
+فیلدها:
+- ID: شناسه معامله.
+- RegisterDatetime: زمان ثبت معامله.
+- ExcessPhReqId_fk: کلید خارجی به PharmacyRequest مازاد.
+- ShortagePhReqId_fk: کلید خارجی به PharmacyRequest کسری.
+- ExchangeRandomCode: کد تبادل استفاده‌شده.
+- RequireCount: تعداد تحویل‌شده در این معامله؛ باید مثبت باشد.
+- DrugUnitNum: واحد معامله؛ باید با واحد مازاد مبنا سازگار باشد.
+- UnitPrice: قیمت واحد ذخیره‌شده برای معامله؛ در Legacy از PharmacyRequest مازاد کپی می‌شود.
+- InvoiceNumber: شماره فاکتور؛ از مازاد کپی می‌شود.
+- PatchNumber: شماره بچ؛ از مازاد کپی می‌شود.
+- CompanyDistributorId_fk: شرکت پخش؛ از مازاد کپی می‌شود.
+
+هر دو شناسه ExcessPhReqId_fk و ShortagePhReqId_fk باید به PharmacyRequest موجود اشاره کنند. یک ردیف PharmacyExchange، تعداد مصرف‌شده از مازاد را افزایش می‌دهد؛ مصرف‌شده کل با SUM(RequireCount) برای ExcessPhReqId_fk محاسبه می‌شود.
+
+------------------------------------------------------------
+2. ساخت درخواست کسری
+------------------------------------------------------------
+
+در نسخه جدید:
+1) داروخانه باید احراز هویت شده و حساب فعال داشته باشد.
+2) یک برند معتبر (IRC) یا یک شکل دارویی معتبر انتخاب می‌شود.
+3) ردیف PharmacyRequest با RequestType_FromCategoryId_fk متناظر با Category.Type = drug_shortages ساخته می‌شود.
+4) PharmacyAccountId_fk از حساب احراز هویت‌شده گرفته می‌شود، نه از ورودی مرورگر.
+5) StatusNum = "1"، RegistrationDateTime = زمان فعلی و RequestView = 0 ذخیره می‌شود.
+6) اگر برند انتخاب شده باشد IRC پر و DrugShap_FromDosageId_fk خالی است؛ اگر شکل دارویی انتخاب شده باشد DrugShap_FromDosageId_fk پر و IRC خالی است.
+7) درخواست کسری باید برای واکشی پیشنهادها باز و متعلق به همان حساب جاری باشد.
+
+در نسخه قدیمی، فرم کسری فیلدهای بیشتری از جمله ExchangeLimitNum و DrugCount داشت. نسخه جدید فعلی برای ثبت کسری فقط انتخاب دارو را می‌گیرد و همه آن فیلدهای قدیمی را به‌عنوان الزام جریان فعلی فرض نکنید.
+
+------------------------------------------------------------
+3. ساخت درخواست مازاد
+------------------------------------------------------------
+
+برای اینکه یک داروخانه عرضه‌کننده باشد، باید ردیف PharmacyRequest با Category.Type = excess_drugs داشته باشد.
+
+فیلدهای لازم/مهم برای نتیجه و معامله:
+- PharmacyAccountId_fk: حساب داروخانه عرضه‌کننده.
+- RequestType_FromCategoryId_fk: Category مازاد.
+- IRC: همان IRCی که درخواست کسری/فهرست IRCها جستجو می‌کند.
+- StatusNum = "1": ردیف باز.
+- ExchangeLimitNum:
+  - "1" برای ویژه/لوکس/کمیاب.
+  - "2" برای معمولی.
+  - "3" برای تاریخ نزدیک.
+- DrugExpireDate: لازم برای پیشنهادهای تاریخ نزدیک؛ باید امروز یا پس از امروز باشد.
+- DrugCount: تعداد موجود؛ برای ثبت معامله باید تعداد باقیمانده مثبت باشد.
+- DrugUnitNum: 2 (بسته) برای مازادهایی که نسخه جدید ثبت یا ویرایش می‌کند.
+- ExchangeRandomCode: کد تبادل چهاررقمی که Legacy هنگام ثبت معامله بررسی می‌کند.
+- RegistrationDateTime: زمان ثبت.
+
+اطلاعات تکمیلی مازاد که در Legacy/مدل‌ها وجود دارند:
+- UnitPrice، PurchaseInvoiceNumber، PatchNumber، CompanyDistributorId_fk،
+  SellToColleague، ColleaguePrice، DiscountPercentage، ExchangeFacility.
+- این فیلدها ممکن است در فرم/نسخه جدید پنهان یا غیرفعال باشند؛ وجودشان در Entity به معنی قابل‌ثبت‌بودنشان در UI جدید نیست.
+- نسخه جدید در مسیر فعلی TabadolManage تعداد جدید را 0 می‌سازد و فرم پایه فقط برند، نوع مازاد و ماه/سال انقضا را می‌گیرد. بنابراین ردیف جدید این مسیر به‌تنهایی موجودی قابل تحویل ایجاد نمی‌کند و برای ثبت معامله واقعی کافی نیست.
+- در نسخه جدید SellToColleague برای مازادهای جدید و ویرایش‌شده سمت سرور false و ColleaguePrice برابر NULL نگه داشته می‌شود.
+
+------------------------------------------------------------
+4. شرط‌های پیدا شدن پیشنهاد در Stored Procedure
+------------------------------------------------------------
+
+نسخه SQL ارسالی برای dbo.SP_GetOtherPharmacyExcess_ForThisShortage این پارامترها را دارد:
+- @MyPhAccountId: حساب داروخانه درخواست‌کننده.
+- @splitLst_DrugExchangeLimitNums: نوع مازادهای قابل جستجو.
+- @splitLst_IrcMyShortage: فهرست IRCهای داروی موردنیاز.
+- @CityId و @ProvinceId: محدوده جغرافیایی.
+
+در نسخه جدید:
+- تب NormalExchange مقدار ExchangeLimitNumهای "2,3" را می‌فرستد؛ یعنی عادی و تاریخ‌نزدیک.
+- تب StarExchange مقدار "1" را می‌فرستد.
+- تب NearDate از Query مستقیم جداگانه استفاده می‌کند؛ شرط‌های آن با Stored Procedure یکی نیست.
+
+شرط‌های اصلی Stored Procedure ارسالی:
+1) ردیف عرضه‌کننده در PharmacyRequest از نوع مازاد باشد، باز باشد و IRC آن در فهرست IRCهای کسری درخواست جاری باشد.
+2) PharmacyAccountId_fk عرضه‌کننده با @MyPhAccountId متفاوت باشد.
+3) ExchangeLimitNum مازاد در فهرست limitهای درخواست باشد.
+4) IRC و نام انگلیسی دارو در DrugsName قابل تطبیق باشند.
+5) عرضه‌کننده و PharmacyAccount/Pharmacy اطلاعات قابل Join داشته باشند.
+6) یک ردیف کسری باز از همان حساب عرضه‌کننده وجود داشته باشد.
+7) IRC آن کسری متقابل با IRC یکی از مازادهای باز حساب جاری (@MyPhAccountId) تطبیق داشته باشد.
+8) محدوده جغرافیایی هم برای داروخانه عرضه‌کننده مازاد و هم برای داروخانه دارای کسری متقابل بررسی می‌شود.
+9) اگر CityId غیرصفر باشد، شهر ملاک است؛ در غیر این صورت اگر ProvinceId غیرصفر باشد، استان ملاک است؛ اگر هر دو صفر باشند محدودیت مکانی اعمال نمی‌شود.
+10) SUM(PharmacyExchange.RequireCount) برای هر مازاد در خروجی به‌عنوان SumRequireCountExchAlready محاسبه می‌شود.
+
+نکته مهم درباره شرط متقابل:
+صرف اینکه داروخانه دیگری برای IRC کسری شما مازاد داشته باشد، الزاماً برای Stored Procedure کافی نیست. در SQL ارسالی، همان داروخانه عرضه‌کننده باید خودش نیز یک کسری باز داشته باشد که IRC آن با یکی از مازادهای باز حساب شما برابر باشد. این شرط مستقل از تطابق IRC مازاد عرضه‌کننده با IRC کسری شماست.
+
+نکته درباره موجودی باقیمانده:
+SQL ارسالی مجموع RequireCountهای قبلی را محاسبه می‌کند، اما در متن آن شرط صریحی برای حذف مازادهایی که DrugCount آن‌ها کاملاً مصرف شده دیده نمی‌شود. قبل از معامله باید باقیمانده را دوباره سمت سرور محاسبه و RequireCount را کنترل کرد؛ صرف نمایش یک ردیف به معنی موجودی قابل معامله نیست.
+
+------------------------------------------------------------
+5. تب تاریخ نزدیک
+------------------------------------------------------------
+
+در نسخه جدید، تب NearDate مسیر مستقل دارد و Stored Procedure بالا را فراخوانی نمی‌کند. شرط‌های اصلی:
+- درخواست مازاد از نوع excess_drugs و باز باشد.
+- ExchangeLimitNum = "3".
+- DrugExpireDate موجود و برابر امروز یا آینده باشد.
+- IRC با IRCهای کسری جاری تطبیق کند.
+- عرضه‌کننده حساب دیگری باشد.
+- فیلتر شهر، یا در نبود آن فیلتر استان اعمال شود.
+- نام انگلیسی دارو از DrugsName قابل Join باشد.
+
+فهرست مستقل /DrugShortage/otherPhNearDateDrugShortageList نیز فقط فهرست مازادهای تاریخ نزدیک را نشان می‌دهد و خودش معامله‌ای ثبت نمی‌کند.
+
+------------------------------------------------------------
+6. فراخوانی UI و Endpoint در نسخه جدید
+------------------------------------------------------------
+
+1) در فرم /DrugShortage/AddOrEdit برای یک کسری باز، پنجره نتایج باز می‌شود.
+2) JavaScript با POST به /DrugShortage/ExchangeOffers درخواست می‌فرستد؛ داده‌ها شامل:
+   - __RequestVerificationToken
+   - PharmacyShortageId: شناسه PharmacyRequest کسری، نه شناسه PharmacyAccount.
+   - DisplayType: NormalExchange، StarExchange یا NearDate.
+   - ProvinceId و CityId.
+3) Controller حساب جاری را از هویت احراز‌شده می‌گیرد، وضعیت فعال حساب و Anti-Forgery را بررسی می‌کند.
+4) سرویس بررسی می‌کند PharmacyShortageId متعلق به حساب جاری، از نوع drug_shortages و باز باشد.
+5) IRC مستقیم یا IRCهای حاصل از شکل دارویی به Query داده می‌شوند.
+6) خروجی یک Partial HTML است؛ حالت خالی هم به‌صورت پیام نمایش داده می‌شود.
+7) باز شدن پنجره به‌تنهایی واکشی انجام نمی‌دهد؛ انتخاب تب یا تغییر فیلتر باعث واکشی تنبل می‌شود.
+
+این Endpoint فقط نتیجه را نمایش می‌دهد. در آن ExchangeRandomCode یا RequireCount برای ثبت معامله ارسال نمی‌شود و PharmacyExchange درج نمی‌شود.
+
+------------------------------------------------------------
+7. ثبت معامله واقعی در Legacy
+------------------------------------------------------------
+
+مسیر قدیمی: ExchangeDrugController.SubmitExchange
+
+روند کد قدیمی:
+1) فرم تبادل ExcessPhReqId_fk، ShortagePhReqId_fk، ExchangeRandomCode و RequireCount را ارسال می‌کند.
+2) ModelState باید معتبر باشد؛ کد تبادل چهار رقم و RequireCount عدد مثبت است.
+3) ردیف مازاد از PharmacyRequest خوانده می‌شود.
+4) مجموع RequireCountهای قبلی برای همان ExcessPhReqId_fk جمع می‌شود.
+5) ExchangeRandomCode ارسالی با کد روی ردیف مازاد مقایسه می‌شود.
+6) مقدار جدید باید از DrugCount منهای تعداد قبلاً تبادل‌شده بیشتر نباشد.
+7) در یک تراکنش، PharmacyExchange درج می‌شود و مقادیر زیر از مازاد کپی می‌شوند:
+   - RegisterDatetime = زمان فعلی
+   - InvoiceNumber = PurchaseInvoiceNumber مازاد
+   - PatchNumber = PatchNumber مازاد
+   - CompanyDistributorId_fk = CompanyDistributorId_fk مازاد
+   - DrugUnitNum = DrugUnitNum مازاد
+   - UnitPrice = UnitPrice مازاد
+8) اگر مجموع تبادل‌ها دقیقاً DrugCount را پر کند، StatusNum مازاد به "3" تغییر می‌کند.
+9) در کد Legacy وضعیت ردیف کسری پس از ثبت معامله بسته نمی‌شود.
+10) پس از ثبت، رسید معامله با اطلاعات دو PharmacyRequest و داروخانه‌ها نمایش داده می‌شود.
+
+فیلدهای متقاضی معامله که باید سمت سرور بررسی شوند:
+- ExcessPhReqId_fk باید ردیف مازاد باز و قابل معامله باشد.
+- ShortagePhReqId_fk باید ردیف کسری معتبر و متعلق به داروخانه دریافت‌کننده باشد.
+- RequireCount باید بزرگ‌تر از صفر و حداکثر برابر موجودی باقیمانده باشد.
+- ExchangeRandomCode باید با کد همان ردیف مازاد برابر باشد.
+- IRC دو طرف، نوع درخواست، وضعیت، مالکیت و واحد باید قبل از درج کنترل شوند.
+
+احتیاط در انتقال Legacy:
+در SubmitExchange قدیمی، کنترل‌های صریح قابل مشاهده عمدتاً روی کد و تعداد مازاد انجام می‌شوند. از این کد نتیجه نگیرید که مالکیت ردیف کسری، تطبیق IRC دو درخواست، بازبودن هر دو ردیف و کنترل همزمانی در همه مسیرها به‌طور کامل تضمین شده است. پیاده‌سازی جدید باید این موارد را پیش از درج و داخل تراکنش اعتبارسنجی کند.
+
+------------------------------------------------------------
+8. وضعیت واقعی Rewrite و محدودیت فعلی دیتابیس
+------------------------------------------------------------
+
+- /PharmacyRequest/TabadolManage برای ساخت/ویرایش پایه مازاد است؛ ثبت جدید تعداد را 0 می‌گذارد و عملیات ثبت PharmacyExchange ندارد.
+- /DrugShortage/ExchangeOffers فقط Partial پیشنهادها را برمی‌گرداند؛ عملیات واقعی معامله در Rewrite تکمیل نشده است.
+- کد Stored Procedure در فایل‌های پروژه Rewrite پیدا نشد؛ تعریف SQL در گفتگوی قبلی توسط کاربر ارائه شد.
+- نسخه SQL با USE [darooConLocal] شروع می‌شود، اما تعدادی از JOINهای اجباری آن صریحاً به [darooCon].[dbo] ارجاع می‌دهند.
+- در بررسی فقط‌خواندنی 2026-11-12، حساب‌های 847، 864، 1113 و 1372 در darooConLocal فعال و شهر 593 بودند، اما در darooCon وجود نداشتند. هیچ حساب فعال شهر 593 در Local نیز با حسابی هم‌شماره در darooCon تطبیق نکرد.
+- بنابراین افزودن PharmacyRequest برای این شناسه‌ها در darooConLocal به‌تنهایی خروجی Stored Procedure فعلی را تضمین نمی‌کند؛ INNER JOIN به PharmacyAccount/Pharmacy در darooCon می‌تواند آن‌ها را حذف کند.
+- در همان Snapshot، برای PharmacyAccount=1377 درخواست کسری باز ID=297019 و IRC=1228090677 بررسی شده بود؛ این شناسه‌ها داده زنده یا دائمی محسوب نمی‌شوند و قبل از استفاده باید دوباره بررسی شوند. ID=298087 در بررسی قبلی به‌عنوان PharmacyRequest پیدا نشد؛ شناسه PharmacyAccount را با ID درخواست اشتباه نگیرید.
+- هیچ درج یا تغییری در دیتابیس برای ساخت داده آزمایشی انجام نشده است.
+
+------------------------------------------------------------
+9. چک‌لیست بررسی قبل از تست یا درج داده
+------------------------------------------------------------
+
+1) دیتابیس مقصد و ConnectionString را از تنظیمات امن برنامه شناسایی کنید؛ مقدار اتصال یا رمز را در گزارش/ChatGPT قرار ندهید.
+2) بررسی کنید SP در کدام دیتابیس اجرا می‌شود و همه JOINهای صریح آن به همان محیط تست اشاره می‌کنند یا نه.
+3) Category.Typeهای drug_shortages و excess_drugs را در همان DB پیدا کنید؛ CatIDهای 548/549 را بدون تأیید کپی نکنید.
+4) برای حساب دریافت‌کننده، PharmacyAccount فعال، Pharmacy، و PharmacyRequest کسری باز را تأیید کنید.
+5) برای عرضه‌کننده، PharmacyAccount و Pharmacy متناظر در همان دیتابیس JOIN، و ردیف‌های PharmacyRequest باز را تأیید کنید.
+6) تطبیق IRC را در DrugsName بررسی کنید؛ برای Stored Procedure ردیف زبان انگلیسی لازم است.
+7) بررسی کنید شرط کسری متقابل عرضه‌کننده با یکی از مازادهای باز حساب دریافت‌کننده برقرار است.
+8) مقدار ExchangeLimitNum و فیلتر شهر/استان را دقیقاً با DisplayType و درخواست UI هماهنگ کنید.
+9) پیش از معامله، باقیمانده را با DrugCount - SUM(PharmacyExchange.RequireCount) محاسبه کنید.
+10) پیش از درج PharmacyExchange، مالکیت هر دو درخواست، نوع و وضعیت، تطبیق IRC، ExchangeRandomCode، RequireCount و DrugUnitNum را اعتبارسنجی کنید.
+11) درج و تغییر وضعیت مازاد را در یک تراکنش انجام دهید و سناریوی رقابت همزمان برای آخرین موجودی را کنترل کنید.
+12) ابتدا SELECTهای فقط‌خواندنی و خروجی واقعی Stored Procedure را اعتبارسنجی کنید؛ داده آزمایشی را بدون مجوز وارد دیتابیس مشترک/تولید نکنید.
+
+------------------------------------------------------------
+10. منابع بررسی در سورس
+------------------------------------------------------------
+
+Rewrite:
+- darooyab_rewrite/Services/PharmacyDrugShortages/PharmacyDrugShortageService.cs
+- darooyab_rewrite/Areas/Admin/Controllers/DrugShortageController.cs
+- darooyab_rewrite/wwwroot/js/pharmacy-drug-shortage.js
+- darooyab_rewrite/Areas/Admin/Views/DrugShortage/_ExchangeOffers.cshtml
+- darooyab_rewrite/Services/PharmacyRequests/PharmacyExchangeService.cs
+- darooyab_rewrite/Models/PharmacyRequest.cs
+- darooyab_rewrite/Models/PharmacyExchange.cs
+- darooyab_rewrite/Models/darooConContext.cs
+- darooyab_rewrite/PHARMACY-REQUESTS.md
+
+Legacy:
+- darooyab_build_expired/Controllers/DrugShortageController.cs
+- darooyab_build_expired/Controllers/ExchangeDrugController.cs
+- darooyab_build_expired/Models/PharmacyRequest.cs
+- darooyab_build_expired/Models/PharmacyExchange.cs
+- darooyab_build_expired/ViewModels/PharmacyExchangeVM.cs
+- تعریف SQL Stored Procedure بر اساس متن ارسالی کاربر برای dbo.SP_GetOtherPharmacyExcess_ForThisShortage است؛ تعریف آن در فایل‌های پروژه Rewrite پیدا نشد.

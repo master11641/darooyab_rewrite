@@ -1,0 +1,416 @@
+.pharmacy-prescriptions,
+.pharmacy-prescription-sms {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.pharmacy-prescriptions-intro,
+.pharmacy-prescriptions-results-heading,
+.pharmacy-prescription-sms-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.pharmacy-prescriptions-intro h2,
+.pharmacy-prescriptions-results-heading h2,
+.pharmacy-prescription-sms-heading h2 {
+    margin: .25rem 0;
+}
+
+.pharmacy-prescriptions-intro p {
+    margin: .5rem 0 0;
+    color: var(--admin-text-muted, #596b75);
+}
+
+.pharmacy-prescriptions-owner {
+    display: grid;
+    gap: .25rem;
+    min-width: 10rem;
+    padding: .7rem .85rem;
+    border: 1px solid var(--admin-border, #dce5e8);
+    border-radius: .75rem;
+}
+
+.pharmacy-prescriptions-owner small {
+    color: var(--admin-text-muted, #596b75);
+}
+
+.pharmacy-prescriptions-fields {
+    display: grid;
+    grid-template-columns: minmax(12rem, 1fr) minmax(10rem, .7fr) auto;
+    align-items: end;
+    gap: .85rem;
+}
+
+.pharmacy-prescriptions-field {
+    display: grid;
+    gap: .4rem;
+    min-width: 0;
+}
+
+.pharmacy-prescriptions-field label {
+    font-weight: 650;
+}
+
+.pharmacy-prescriptions-input {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: .6rem .75rem;
+    border: 1px solid var(--admin-border, #cbd8dc);
+    border-radius: .6rem;
+    background: var(--admin-surface, #fff);
+    color: var(--admin-text, #17313c);
+}
+
+.pharmacy-prescriptions-input:focus-visible,
+.pharmacy-prescriptions button:focus-visible,
+.pharmacy-prescriptions a:focus-visible,
+.pharmacy-prescription-sms button:focus-visible,
+.pharmacy-prescription-sms a:focus-visible {
+    outline: 3px solid var(--admin-accent, #087e83);
+    outline-offset: 2px;
+}
+
+.pharmacy-prescriptions-filter-actions,
+.pharmacy-prescription-sms-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .6rem;
+}
+
+.pharmacy-prescriptions-clear,
+.pharmacy-prescription-sms-back,
+.pharmacy-prescription-sms-wallet {
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .55rem .85rem;
+    border: 1px solid var(--admin-border, #cbd8dc);
+    border-radius: .6rem;
+    background: transparent;
+    color: var(--admin-text, #17313c);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.pharmacy-prescriptions-results {
+    min-width: 0;
+}
+
+.pharmacy-prescriptions-results-heading {
+    align-items: center;
+    margin-bottom: .75rem;
+}
+
+.pharmacy-prescriptions-count {
+    color: var(--admin-text-muted, #596b75);
+}
+
+.pharmacy-prescriptions-live {
+    min-height: 1.5rem;
+    margin-bottom: .5rem;
+    color: var(--admin-text-muted, #596b75);
+}
+
+.pharmacy-prescriptions-live[data-kind="error"] {
+    color: #a12622;
+}
+
+.pharmacy-prescriptions-table-wrap {
+    min-width: 0;
+    overflow-x: auto;
+}
+
+.pharmacy-prescriptions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .86rem;
+}
+
+.pharmacy-prescriptions-table th,
+.pharmacy-prescriptions-table td {
+    padding: .65rem .5rem;
+    border-bottom: 1px solid var(--admin-border, #dce5e8);
+    text-align: right;
+    vertical-align: middle;
+}
+
+.pharmacy-prescriptions-table th {
+    background: var(--admin-surface-muted, #f3f7f8);
+    white-space: nowrap;
+}
+
+.pharmacy-prescriptions-table td {
+    overflow-wrap: anywhere;
+}
+
+.pharmacy-prescriptions-placeholder {
+    padding: 2rem !important;
+    text-align: center !important;
+}
+
+.pharmacy-prescriptions-review {
+    width: 1.15rem;
+    height: 1.15rem;
+    accent-color: var(--admin-accent, #087e83);
+    cursor: pointer;
+}
+
+.pharmacy-prescriptions-image {
+    width: 3.75rem;
+    height: 3.75rem;
+    object-fit: cover;
+    border-radius: .4rem;
+}
+
+.pharmacy-prescriptions-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.25rem;
+    padding: .4rem .65rem;
+    border-radius: .5rem;
+    background: var(--admin-accent, #087e83);
+    color: #fff;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.pharmacy-prescriptions-action-disabled {
+    color: var(--admin-text-muted, #596b75);
+    white-space: nowrap;
+}
+
+.pharmacy-prescriptions-pagination {
+    margin-top: 1rem;
+}
+
+.pharmacy-prescriptions-pagination ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pharmacy-prescriptions-page-button {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    border: 1px solid var(--admin-border, #cbd8dc);
+    border-radius: .5rem;
+    background: transparent;
+    color: var(--admin-text, #17313c);
+    cursor: pointer;
+}
+
+.pharmacy-prescriptions-page-button[aria-current="page"] {
+    border-color: var(--admin-accent, #087e83);
+    background: var(--admin-accent, #087e83);
+    color: #fff;
+}
+
+.pharmacy-prescriptions-page-button:disabled,
+.pharmacy-prescription-sms button:disabled {
+    cursor: not-allowed;
+    opacity: .58;
+}
+
+.pharmacy-prescriptions-token {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.pharmacy-prescriptions .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.pharmacy-prescription-sms-card {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.pharmacy-prescription-sms-cost {
+    padding: .55rem .75rem;
+    border-radius: .6rem;
+    background: var(--admin-surface-muted, #f3f7f8);
+    font-weight: 700;
+}
+
+.pharmacy-prescription-sms-submit-status {
+    flex: 1 0 100%;
+    min-height: 1.5rem;
+    color: var(--admin-text-muted, #596b75);
+}
+
+.pharmacy-prescription-sms-alert {
+    padding: .75rem 1rem;
+    border-radius: .6rem;
+    background: #e8f5f0;
+    color: #15583b;
+}
+
+.pharmacy-prescription-sms-alert-warning {
+    background: #fff5dc;
+    color: #73510b;
+}
+
+.pharmacy-prescription-sms-details {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .75rem;
+    margin: 0;
+}
+
+.pharmacy-prescription-sms-details > div {
+    min-width: 0;
+    padding: .75rem;
+    border: 1px solid var(--admin-border, #dce5e8);
+    border-radius: .6rem;
+}
+
+.pharmacy-prescription-sms-details dt {
+    margin-bottom: .25rem;
+    color: var(--admin-text-muted, #596b75);
+}
+
+.pharmacy-prescription-sms-details dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.pharmacy-prescription-sms-preview {
+    min-width: 0;
+}
+
+.pharmacy-prescription-sms-preview h3 {
+    margin: 0 0 .5rem;
+    font-size: 1rem;
+}
+
+.pharmacy-prescription-sms-preview pre {
+    max-width: 100%;
+    margin: 0;
+    padding: 1rem;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    border: 1px solid var(--admin-border, #dce5e8);
+    border-radius: .6rem;
+    background: var(--admin-surface-muted, #f7f9fa);
+    color: var(--admin-text, #17313c);
+    font: inherit;
+}
+
+@media (max-width: 1024px) {
+    .pharmacy-prescriptions-table-wrap {
+        overflow: visible;
+    }
+
+    .pharmacy-prescriptions-table,
+    .pharmacy-prescriptions-table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .pharmacy-prescriptions-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .pharmacy-prescriptions-table tbody tr:not(.pharmacy-prescriptions-placeholder-row) {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0 .75rem;
+        margin-bottom: .85rem;
+        padding: .35rem .75rem;
+        border: 1px solid var(--admin-border, #dce5e8);
+        border-radius: .75rem;
+    }
+
+    .pharmacy-prescriptions-table td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .6rem;
+        min-width: 0;
+        padding: .55rem 0;
+        border-bottom: 1px solid var(--admin-border, #e6edef);
+        text-align: left;
+    }
+
+    .pharmacy-prescriptions-table td::before {
+        flex: 0 0 auto;
+        content: attr(data-label);
+        font-weight: 650;
+        text-align: right;
+    }
+
+    .pharmacy-prescriptions-table .pharmacy-prescriptions-placeholder-row td.pharmacy-prescriptions-placeholder {
+        display: block;
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 640px) {
+    .pharmacy-prescriptions-intro,
+    .pharmacy-prescriptions-results-heading,
+    .pharmacy-prescription-sms-heading {
+        flex-direction: column;
+    }
+
+    .pharmacy-prescriptions-owner {
+        width: 100%;
+    }
+
+    .pharmacy-prescriptions-fields {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pharmacy-prescriptions-filter-actions > * {
+        flex: 1 1 auto;
+    }
+
+    .pharmacy-prescriptions-table tbody tr:not(.pharmacy-prescriptions-placeholder-row) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pharmacy-prescription-sms-details {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pharmacy-prescription-sms-actions,
+    .pharmacy-prescription-sms-actions form,
+    .pharmacy-prescription-sms-actions button,
+    .pharmacy-prescription-sms-actions a {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pharmacy-prescriptions *,
+    .pharmacy-prescription-sms * {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+    }
+}

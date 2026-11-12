@@ -1,0 +1,82 @@
+@model PharmacyPrescriptionSmsViewModel
+@{
+    ViewData["Title"] = "ارسال پیامک نسخه";
+}
+
+<section class="admin-page pharmacy-prescription-sms">
+    <nav class="admin-breadcrumb" aria-label="مسیر صفحه">
+        <a href="/PharmacyAdmin/Dashboard">داشبورد</a>
+        <span aria-hidden="true">/</span>
+        <a href="/PharmacyRequest/DarooyabPrescription">نسخه‌های ارسالی</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">ارسال پیامک</span>
+    </nav>
+
+    <section class="admin-panel-card pharmacy-prescription-sms-card" aria-labelledby="prescription-sms-title">
+        <div class="pharmacy-prescription-sms-heading">
+            <div>
+                <span class="admin-eyebrow">پیگیری نسخه</span>
+                <h2 id="prescription-sms-title">ارسال پیامک به کاربر</h2>
+            </div>
+            <span class="pharmacy-prescription-sms-cost">هزینه ارسال: ۵٬۰۰۰ تومان</span>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+        {
+            <div class="pharmacy-prescription-sms-alert" role="status">@Model.StatusMessage</div>
+        }
+
+        @if (!Model.SmsConfigured)
+        {
+            <div class="pharmacy-prescription-sms-alert pharmacy-prescription-sms-alert-warning" role="status">
+                ارسال پیامک در این محیط پیکربندی نشده است؛ API Key باید پس از چرخش در تنظیمات امن اجرا ثبت شود.
+            </div>
+        }
+        else if (Model.BalanceInRial < 50_000)
+        {
+            <div class="pharmacy-prescription-sms-alert pharmacy-prescription-sms-alert-warning" role="status">
+                موجودی کیف پول برای ارسال پیامک کافی نیست. برای ادامه، کیف پول را شارژ کنید.
+            </div>
+        }
+
+        <dl class="pharmacy-prescription-sms-details">
+            <div><dt>گیرنده</dt><dd>@Model.Recipient</dd></div>
+            <div><dt>نام دارو</dt><dd>@(string.IsNullOrWhiteSpace(Model.DrugName) ? "ثبت نشده" : Model.DrugName)</dd></div>
+            <div><dt>موجودی قابل استفاده</dt><dd>@((Math.Max(0, Model.BalanceInRial) / 10).ToString("N0")) تومان</dd></div>
+        </dl>
+
+        <div class="pharmacy-prescription-sms-preview">
+            <h3>پیش‌نمایش پیام</h3>
+            <pre>@Model.Message</pre>
+        </div>
+
+        <div class="pharmacy-prescription-sms-actions">
+            <div class="pharmacy-prescription-sms-submit-status"
+                 data-prescription-sms-status
+                 role="status"
+                 aria-live="polite"></div>
+            <form method="post"
+                  action="/PharmacyRequest/SendSMSPost"
+                  data-prescription-sms-form>
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="prescriptionId" value="@Model.PrescriptionId" />
+                <button class="admin-secondary-button"
+                        data-prescription-sms-submit
+                        type="submit"
+                        disabled="@(!Model.SmsConfigured || Model.BalanceInRial < 50_000 || !Model.HasValidRecipient)">
+                    ارسال پیامک
+                </button>
+            </form>
+            <a class="pharmacy-prescription-sms-back" href="/PharmacyRequest/DarooyabPrescription">بازگشت به نسخه‌های ارسالی</a>
+            <a class="pharmacy-prescription-sms-wallet" href="/Wallet">مشاهده کیف پول</a>
+        </div>
+    </section>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pharmacy-prescriptions.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/pharmacy-prescription-sms.js" asp-append-version="true" defer></script>
+}

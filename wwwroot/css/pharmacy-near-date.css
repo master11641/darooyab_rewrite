@@ -1,0 +1,315 @@
+.pharmacy-near-date {
+    display: grid;
+    gap: 1.15rem;
+    min-width: 0;
+}
+
+.near-date-intro,
+.near-date-section-heading,
+.near-date-item-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.near-date-intro,
+.near-date-filter-card,
+.near-date-item {
+    padding: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+.near-date-intro h2,
+.near-date-section-heading h2 {
+    margin: .25rem 0;
+    color: var(--admin-text, #192b40);
+}
+
+.near-date-intro p,
+.near-date-empty-state p {
+    margin: .4rem 0 0;
+    color: var(--admin-muted, #68788c);
+}
+
+.near-date-owner {
+    display: grid;
+    min-width: 10rem;
+    gap: .25rem;
+    padding: .75rem 1rem;
+    border: 1px solid var(--admin-border, #e2e8ef);
+    border-radius: 1rem;
+    background: var(--admin-primary-soft, #e8f3f5);
+}
+
+.near-date-owner small,
+.near-date-field-label,
+.near-date-registration small,
+.near-date-row-number,
+.near-date-pagination,
+.near-date-filter-status {
+    color: var(--admin-muted, #68788c);
+    font-size: .86rem;
+}
+
+.near-date-alert {
+    padding: .8rem 1rem;
+    border: 1px solid #edc0c0;
+    border-radius: .85rem;
+    color: #8c3131;
+    background: #fff3f3;
+}
+
+.near-date-section-heading {
+    margin-bottom: 1rem;
+}
+
+.near-date-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+    align-items: end;
+    gap: 1rem;
+}
+
+.near-date-filter-field {
+    min-width: 0;
+}
+
+.near-date-filter-field label,
+.near-date-field-label {
+    display: block;
+    margin-bottom: .35rem;
+    font-weight: 600;
+}
+
+.near-date-filter-field select {
+    width: 100%;
+    min-height: 2.8rem;
+    padding: .45rem .7rem;
+    border: 1px solid var(--admin-border, #e2e8ef);
+    border-radius: .7rem;
+    color: var(--admin-text, #192b40);
+    background: var(--admin-surface, #fff);
+}
+
+.near-date-filter-field select:focus-visible,
+.near-date-retry-button:focus-visible,
+.near-date-search-button:focus-visible,
+.near-date-pagination a:focus-visible {
+    outline: 3px solid #78c6d6;
+    outline-offset: 3px;
+}
+
+.near-date-filter-field select:disabled {
+    cursor: not-allowed;
+    opacity: .7;
+}
+
+.near-date-filter-status {
+    display: block;
+    min-height: 1.4rem;
+    margin-top: .2rem;
+}
+
+.near-date-retry-button {
+    padding: .3rem 0;
+    border: 0;
+    color: var(--admin-primary, #216b80);
+    background: transparent;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: .15em;
+}
+
+.near-date-search-button,
+.near-date-pagination a {
+    display: inline-flex;
+    min-height: 2.8rem;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .55rem 1.05rem;
+    border: 1px solid var(--admin-primary, #216b80);
+    border-radius: .7rem;
+    color: #fff;
+    background: var(--admin-primary, #216b80);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.near-date-search-button svg {
+    width: 1.1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 1.8;
+}
+
+.near-date-result-count {
+    color: var(--admin-muted, #68788c);
+    white-space: nowrap;
+}
+
+.near-date-item-list {
+    display: grid;
+    gap: .9rem;
+}
+
+.near-date-item {
+    min-width: 0;
+}
+
+.near-date-item-heading {
+    justify-content: flex-start;
+    padding-bottom: .9rem;
+    border-bottom: 1px solid var(--admin-border, #e2e8ef);
+}
+
+.near-date-row-number {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--admin-primary-soft, #e8f3f5);
+}
+
+.near-date-pharmacy {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.near-date-pharmacy h3 {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.near-date-registration {
+    display: grid;
+    flex: 0 1 auto;
+    justify-items: start;
+}
+
+.near-date-registration small {
+    color: #a54545;
+}
+
+.near-date-item-details {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+    gap: .8rem;
+    padding: 1rem 0;
+}
+
+.near-date-detail {
+    min-width: 0;
+}
+
+.near-date-detail strong {
+    overflow-wrap: anywhere;
+}
+
+.near-date-drug-name strong {
+    display: block;
+    text-align: right;
+}
+
+.near-date-expiry {
+    color: #297446;
+}
+
+.near-date-contact {
+    display: grid;
+    gap: .25rem;
+    padding-top: .8rem;
+    border-top: 1px solid var(--admin-border, #e2e8ef);
+}
+
+.near-date-contact > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .2rem .45rem;
+    overflow-wrap: anywhere;
+}
+
+.near-date-contact p {
+    margin: .2rem 0 0;
+}
+
+.near-date-empty-state {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.near-date-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .8rem;
+}
+
+.near-date-pagination > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+}
+
+.near-date-pagination a {
+    min-height: 2.5rem;
+}
+
+@media (max-width: 760px) {
+    .near-date-filters {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .near-date-filter-actions,
+    .near-date-search-button {
+        width: 100%;
+    }
+
+    .near-date-item-details {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .near-date-intro,
+    .near-date-item-heading,
+    .near-date-pagination {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .near-date-owner {
+        min-width: 0;
+    }
+
+    .near-date-item-heading {
+        position: relative;
+        padding-right: 2.7rem;
+    }
+
+    .near-date-row-number {
+        position: absolute;
+        inset: .1rem auto auto 0;
+    }
+
+    .near-date-item-details {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .near-date-result-count {
+        white-space: normal;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pharmacy-near-date *,
+    .pharmacy-near-date *::before,
+    .pharmacy-near-date *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+    }
+}

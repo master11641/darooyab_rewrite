@@ -13,6 +13,22 @@ public sealed class PharmacyWalletPageViewModel
     public bool CanCharge { get; init; }
 }
 
+public sealed class PharmacyPurchasedRankingsPageViewModel
+{
+    public IReadOnlyList<PharmacyPurchasedRankingItem> Rankings { get; init; } = [];
+    public int Page { get; init; } = 1;
+    public int TotalPages { get; init; } = 1;
+}
+
+public sealed record PharmacyPurchasedRankingItem(
+    string DrugName,
+    string StartDateDisplay,
+    int DurationInDays,
+    string ExpiryDateDisplay,
+    short RankNumber,
+    long AmountToman,
+    string? ModifyDescription);
+
 public sealed record PharmacyWalletTransactionItem(
     int Id,
     DateTime? RegisteredAt,

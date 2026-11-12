@@ -1,0 +1,107 @@
+@model PharmacyPrescriptionPageViewModel
+@{
+    ViewData["Title"] = "نسخه‌های ارسالی (جدید)";
+}
+
+<section class="admin-page pharmacy-prescriptions"
+         data-prescriptions
+         data-search-url="/PharmacyRequest/SearchPrescriptions"
+         data-review-url="/PharmacyRequest/UpdateIsReviewed"
+         data-start-page="@Model.Page">
+    <nav class="admin-breadcrumb" aria-label="مسیر صفحه">
+        <a href="/PharmacyAdmin/Dashboard">داشبورد</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">نسخه‌های ارسالی</span>
+    </nav>
+
+    <section class="admin-panel-card pharmacy-prescriptions-intro" aria-labelledby="prescriptions-title">
+        <div>
+            <span class="admin-eyebrow">مدیریت نسخه‌های ثبت‌شده</span>
+            <h2 id="prescriptions-title">نسخه‌های ارسالی کاربران</h2>
+            <p>نسخه‌های ثبت‌شده برای داروخانه‌ی شما را بررسی و در صورت نیاز پیگیری کنید.</p>
+        </div>
+        <span class="pharmacy-prescriptions-owner">
+            <small>داروخانه</small>
+            <strong>@ViewData["PharmacyName"]</strong>
+        </span>
+    </section>
+
+    <section class="admin-panel-card pharmacy-prescriptions-filter" aria-label="جستجوی نسخه‌ها">
+        <div class="pharmacy-prescriptions-fields">
+            <div class="pharmacy-prescriptions-field">
+                <label for="prescription-tracking-code">کد رهگیری</label>
+                <input id="prescription-tracking-code"
+                       name="trackingCode"
+                       type="search"
+                       value="@Model.TrackingCode"
+                       class="pharmacy-prescriptions-input"
+                       autocomplete="off"
+                       placeholder="کد رهگیری را وارد کنید" />
+            </div>
+            <div class="pharmacy-prescriptions-field">
+                <label for="prescription-review-status">وضعیت بررسی</label>
+                <select id="prescription-review-status" name="isReviewed" class="pharmacy-prescriptions-input">
+                    <option value="" selected="@(Model.IsReviewed is null ? "selected" : null)">همه</option>
+                    <option value="true" selected="@(Model.IsReviewed == true ? "selected" : null)">بررسی‌شده</option>
+                    <option value="false" selected="@(Model.IsReviewed == false ? "selected" : null)">بررسی‌نشده</option>
+                </select>
+            </div>
+            <div class="pharmacy-prescriptions-filter-actions">
+                <button class="admin-secondary-button" type="button" data-search-prescriptions>جستجو</button>
+                <button class="pharmacy-prescriptions-clear" type="button" data-clear-prescription-filters>حذف فیلتر</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="admin-panel-card pharmacy-prescriptions-results" aria-labelledby="prescriptions-results-title">
+        <div class="pharmacy-prescriptions-results-heading">
+            <div>
+                <span class="admin-eyebrow">فهرست نسخه‌ها</span>
+                <h2 id="prescriptions-results-title">نسخه‌های ثبت‌شده</h2>
+            </div>
+            <span class="pharmacy-prescriptions-count" data-result-count></span>
+        </div>
+
+        <div class="pharmacy-prescriptions-live" data-prescription-status role="status" aria-live="polite"></div>
+        <form class="pharmacy-prescriptions-token" data-review-token-form aria-hidden="true">
+            @Html.AntiForgeryToken()
+        </form>
+
+        <div class="pharmacy-prescriptions-table-wrap" data-prescription-results aria-busy="true">
+            <table class="pharmacy-prescriptions-table">
+                <thead>
+                    <tr>
+                        <th scope="col">شناسه</th>
+                        <th scope="col">کد رهگیری</th>
+                        <th scope="col">نام دارو</th>
+                        <th scope="col">نام کاربر</th>
+                        <th scope="col">کد ملی</th>
+                        <th scope="col">شماره همراه</th>
+                        <th scope="col">نوع بیمه</th>
+                        <th scope="col">تاریخ ثبت</th>
+                        <th scope="col">منبع ارسال</th>
+                        <th scope="col">بررسی شده</th>
+                        <th scope="col">تصویر نسخه</th>
+                        <th scope="col">پیامک شده؟</th>
+                        <th scope="col">پیامک</th>
+                    </tr>
+                </thead>
+                <tbody data-prescription-rows>
+                    <tr class="pharmacy-prescriptions-placeholder-row"><td class="pharmacy-prescriptions-placeholder" colspan="13">در حال بارگذاری نسخه‌ها…</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <nav class="pharmacy-prescriptions-pagination" aria-label="صفحه‌بندی نسخه‌ها">
+            <ul data-prescription-pagination></ul>
+        </nav>
+    </section>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pharmacy-prescriptions.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/pharmacy-prescriptions.js" asp-append-version="true" defer></script>
+}

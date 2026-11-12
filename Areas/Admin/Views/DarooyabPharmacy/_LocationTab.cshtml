@@ -1,0 +1,25 @@
+@model darooyab_rewrite.Areas.Admin.ViewModels.PharmacyLocationTabViewModel
+
+<div class="pharmacy-management-section">
+    <h2>لوکیشن داروخانه</h2>
+    <p class="pharmacy-management-note">
+        موقعیت را روی نقشه انتخاب کنید، نشانگر را جابه‌جا کنید یا موقعیت فعلی را دریافت کنید.
+        با انتخاب هر موقعیت، مختصات به‌صورت خودکار ذخیره می‌شود.
+    </p>
+    <div id="pharmacy-management-geo-status" class="pharmacy-management-alert" role="status" aria-live="polite" hidden></div>
+    <button class="pharmacy-management-button" type="button" data-get-current-location>
+        دریافت موقعیت فعلی من
+    </button>
+    <form method="post" action="/GeoLocation/SetPharmacyGeoLocarion" data-location-token hidden>
+        @Html.AntiForgeryToken()
+    </form>
+    <div id="pharmacy-management-map"
+         class="pharmacy-management-map"
+         data-latitude="@Model.Latitude"
+         data-longitude="@Model.Longitude"
+         data-save-url="/GeoLocation/SetPharmacyGeoLocarion"
+         aria-label="نقشه‌ی انتخاب موقعیت داروخانه"></div>
+    <p class="pharmacy-management-help">
+        اگر موقعیتی قبلاً ثبت نشده باشد، تهران به‌صورت پیش‌فرض روی نقشه نمایش داده می‌شود.
+    </p>
+</div>

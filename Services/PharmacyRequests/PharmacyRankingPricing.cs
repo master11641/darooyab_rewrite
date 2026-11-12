@@ -2,6 +2,8 @@ namespace darooyab_rewrite.Services.PharmacyRequests;
 
 public static class PharmacyRankingPricing
 {
+    public const int MaximumRankNumber = 15;
+
     public static int GetDailyPriceToman(int rankNumber) => rankNumber switch
     {
         1 => 5000,
@@ -11,7 +13,7 @@ public static class PharmacyRankingPricing
         5 => 2500,
         6 => 2000,
         7 or 8 => 1500,
-        9 or 10 => 1000,
+        >= 9 and <= MaximumRankNumber => 1000,
         _ => throw new ArgumentOutOfRangeException(nameof(rankNumber))
     };
 

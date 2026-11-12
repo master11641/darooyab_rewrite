@@ -1,0 +1,174 @@
+@model PharmacyDrugDistributionPageViewModel
+@{
+    ViewData["Title"] = "تازه‌های شرکت پخش";
+    var startPage = Math.Max(1, Model.Page - 5);
+    var endPage = Math.Min(Model.TotalPages, Model.Page + 5);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pharmacy-drug-distribution.css" asp-append-version="true" />
+}
+
+<div class="admin-page pharmacy-drug-distribution">
+    <nav class="admin-breadcrumb" aria-label="مسیر صفحه">
+        <a href="/PharmacyAdmin/Dashboard">داشبورد</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">تازه‌های شرکت پخش</span>
+    </nav>
+
+    <section class="admin-panel-card distribution-filter-card" aria-label="جستجوی تازه‌های شرکت پخش">
+        <form method="get" action="/PharmacyAccount/DrugDistribution" class="distribution-filter-form">
+            <div class="distribution-filter-field">
+                <label for="distribution-drug-name">نام برند</label>
+                <input id="distribution-drug-name"
+                       name="drugName"
+                       type="search"
+                       value="@Model.DrugName"
+                       placeholder="نام برند را وارد کنید"
+                       autocomplete="off" />
+            </div>
+            <div class="distribution-filter-field">
+                <label for="distribution-factory">شرکت توزیع</label>
+                <select id="distribution-factory" name="factoryId">
+                    <option value="0">همه شرکت‌ها</option>
+                    @foreach (var factory in Model.Factories)
+                    {
+                        <option value="@factory.Id"
+                                selected="@(Model.FactoryId == factory.Id ? "selected" : null)">
+                            @factory.Name
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="distribution-filter-actions">
+                <button class="distribution-primary-button" type="submit">جستجو</button>
+                <a class="distribution-reset-button" href="/PharmacyAccount/DrugDistribution">بازنشانی</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="admin-panel-card distribution-results-card" aria-label="فهرست تازه‌های شرکت پخش">
+        @if (Model.Rows.Count == 0)
+        {
+            <div class="distribution-empty" role="status">
+                <strong>موردی برای نمایش پیدا نشد.</strong>
+                <p>عبارت جستجو یا شرکت توزیع را تغییر دهید.</p>
+            </div>
+        }
+        else
+        {
+            <div class="distribution-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">نام برند</th>
+                            <th scope="col">شرکت توزیع</th>
+                            <th scope="col">تاریخ اعلام</th>
+                            <th scope="col">توضیحات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Rows)
+                        {
+                            <tr>
+                                <td data-label="نام برند">@row.DrugName</td>
+                                <td data-label="شرکت توزیع">@row.FactoryName</td>
+                                <td data-label="تاریخ اعلام">@row.AnnouncementDate</td>
+                                <td data-label="توضیحات">
+                                    @if (!string.IsNullOrWhiteSpace(row.SanitizedDescriptionHtml))
+                                    {
+                                        <div class="distribution-description">@Html.Raw(row.SanitizedDescriptionHtml)</div>
+                                    }
+                                    else
+                                    {
+                                        <span>—</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="distribution-pagination" aria-label="صفحه‌بندی تازه‌های شرکت پخش">
+                @if (Model.Page > 1)
+                {
+                    <a asp-area="Admin"
+                       asp-controller="PharmacyAccount"
+                       asp-action="DrugDistribution"
+                       asp-route-page="@(Model.Page - 1)"
+                       asp-route-drugName="@Model.DrugName"
+                       asp-route-factoryId="@Model.FactoryId"
+                       rel="prev">قبلی</a>
+                }
+                else
+                {
+                    <span class="is-disabled" aria-disabled="true">قبلی</span>
+                }
+
+                @if (startPage > 1)
+                {
+                    <a asp-area="Admin"
+                       asp-controller="PharmacyAccount"
+                       asp-action="DrugDistribution"
+                       asp-route-page="1"
+                       asp-route-drugName="@Model.DrugName"
+                       asp-route-factoryId="@Model.FactoryId">۱</a>
+                    @if (startPage > 2)
+                    {
+                        <span class="distribution-pagination-gap" aria-hidden="true">…</span>
+                    }
+                }
+
+                @for (var pageNumber = startPage; pageNumber <= endPage; pageNumber++)
+                {
+                    if (pageNumber == Model.Page)
+                    {
+                        <span aria-current="page">@pageNumber</span>
+                    }
+                    else
+                    {
+                        <a asp-area="Admin"
+                           asp-controller="PharmacyAccount"
+                           asp-action="DrugDistribution"
+                           asp-route-page="@pageNumber"
+                           asp-route-drugName="@Model.DrugName"
+                           asp-route-factoryId="@Model.FactoryId">@pageNumber</a>
+                    }
+                }
+
+                @if (endPage < Model.TotalPages)
+                {
+                    @if (endPage < Model.TotalPages - 1)
+                    {
+                        <span class="distribution-pagination-gap" aria-hidden="true">…</span>
+                    }
+                    <a asp-area="Admin"
+                       asp-controller="PharmacyAccount"
+                       asp-action="DrugDistribution"
+                       asp-route-page="@Model.TotalPages"
+                       asp-route-drugName="@Model.DrugName"
+                       asp-route-factoryId="@Model.FactoryId">@Model.TotalPages</a>
+                }
+
+                @if (Model.Page < Model.TotalPages)
+                {
+                    <a asp-area="Admin"
+                       asp-controller="PharmacyAccount"
+                       asp-action="DrugDistribution"
+                       asp-route-page="@(Model.Page + 1)"
+                       asp-route-drugName="@Model.DrugName"
+                       asp-route-factoryId="@Model.FactoryId"
+                       rel="next">بعدی</a>
+                }
+                else
+                {
+                    <span class="is-disabled" aria-disabled="true">بعدی</span>
+                }
+            </nav>
+        }
+    </section>
+</div>

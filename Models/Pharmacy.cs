@@ -23,6 +23,9 @@ namespace darooyab.Models
         public int PharmacyNatureFromCategoryIdFk { get; set; }
         public int PharmacyTypeFromCategoryIdFk { get; set; }
         public string? Phone { get; set; }
+        public string? PharmacyManagerMobile { get; set; }
+        public string? InventoryManagerMobile { get; set; }
+        public string? PharmacyTechnicianMobile { get; set; }
         public string? Introduction { get; set; }
         public string? PharmacyEngName { get; set; }
         public bool? DarooyabAdminApproved { get; set; }

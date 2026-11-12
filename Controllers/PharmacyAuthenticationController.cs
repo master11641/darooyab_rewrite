@@ -97,7 +97,7 @@ public sealed class PharmacyAuthenticationController(
         var returnUrl = !string.IsNullOrWhiteSpace(model.ReturnUrl) &&
                         Url.IsLocalUrl(model.ReturnUrl)
             ? model.ReturnUrl
-            : "/Admin/Dashboard";
+            : "/PharmacyAdmin/Dashboard";
         return LocalRedirect(returnUrl);
     }
 

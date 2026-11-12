@@ -1,0 +1,60 @@
+@model darooyab_rewrite.Areas.Admin.ViewModels.PharmacyContactsTabViewModel
+
+<div class="pharmacy-management-section">
+    <h2>اطلاعات تماس داروخانه</h2>
+    <div class="pharmacy-management-contact-grid">
+        <div>
+            <label class="pharmacy-management-label" for="pharmacy-province">استان</label>
+            <input id="pharmacy-province" class="pharmacy-management-input" value="@Model.ProvinceName" readonly />
+        </div>
+        <div>
+            <label class="pharmacy-management-label" for="pharmacy-city">شهر</label>
+            <input id="pharmacy-city" class="pharmacy-management-input" value="@Model.CityName" readonly />
+        </div>
+        <div>
+            <label class="pharmacy-management-label" for="pharmacy-address">آدرس داروخانه</label>
+            <textarea id="pharmacy-address" class="pharmacy-management-input" rows="3" readonly>@Model.Address</textarea>
+        </div>
+        <div>
+            <label class="pharmacy-management-label" for="pharmacy-phone">تلفن داروخانه</label>
+            <input id="pharmacy-phone" class="pharmacy-management-input" value="@Model.Phone" readonly />
+        </div>
+    </div>
+    <hr />
+    <h3>شماره‌های تماس مسئولان</h3>
+    <form method="post" action="/PharmacyContactInfo/Save" data-pharmacy-contact-form>
+        @Html.AntiForgeryToken()
+        <label class="pharmacy-management-label" for="PharmacyManagerMobile">موبایل مدیر داروخانه</label>
+        <input class="pharmacy-management-input pharmacy-management-mobile"
+               id="PharmacyManagerMobile"
+               name="pharmacyManagerMobile"
+               type="tel"
+               inputmode="numeric"
+               maxlength="11"
+               pattern="09[0-9]{9}"
+               value="@Model.PharmacyManagerMobile"
+               placeholder="09xxxxxxxxx" />
+        <label class="pharmacy-management-label" for="InventoryManagerMobile">موبایل مسئول اعلام موجودی</label>
+        <input class="pharmacy-management-input pharmacy-management-mobile"
+               id="InventoryManagerMobile"
+               name="inventoryManagerMobile"
+               type="tel"
+               inputmode="numeric"
+               maxlength="11"
+               pattern="09[0-9]{9}"
+               value="@Model.InventoryManagerMobile"
+               placeholder="09xxxxxxxxx" />
+        <label class="pharmacy-management-label" for="PharmacyTechnicianMobile">موبایل تکنسین داروخانه</label>
+        <input class="pharmacy-management-input pharmacy-management-mobile"
+               id="PharmacyTechnicianMobile"
+               name="pharmacyTechnicianMobile"
+               type="tel"
+               inputmode="numeric"
+               maxlength="11"
+               pattern="09[0-9]{9}"
+               value="@Model.PharmacyTechnicianMobile"
+               placeholder="09xxxxxxxxx" />
+        <p class="pharmacy-management-help">شماره‌ها اختیاری‌اند؛ در صورت ورود باید ۱۱ رقم و با 09 شروع شوند.</p>
+        <button class="pharmacy-management-button" type="submit">ذخیره اطلاعات تماس</button>
+    </form>
+</div>
